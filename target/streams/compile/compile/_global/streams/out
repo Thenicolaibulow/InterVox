@@ -1,0 +1,9 @@
+[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/chisel-lab/lab1/src/main/scala/Hello.scala:34:15: type mismatch;[0m
+[0m[[0m[31merror[0m] [0m[0m found   : scala.collection.immutable.IndexedSeq[chisel3.SInt][0m
+[0m[[0m[31merror[0m] [0m[0m required: Seq[Int][0m
+[0m[[0m[31merror[0m] [0m[0m      VecInit(inits)[0m
+[0m[[0m[31merror[0m] [0m[0m              ^[0m
+[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/chisel-lab/lab1/src/main/scala/Hello.scala:157:29: Int does not take parameters[0m
+[0m[[0m[31merror[0m] [0m[0m            bDATA := (lutOut((width - 1.U) - Bit_Counter))[0m
+[0m[[0m[31merror[0m] [0m[0m                            ^[0m
+[0m[[0m[31merror[0m] [0m[0mtwo errors found[0m
