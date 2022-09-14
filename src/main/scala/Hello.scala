@@ -17,13 +17,12 @@ class I2S_Transmitter(width: UInt) extends Module {
     val CLKR =    Output(UInt(16.W))
   })
 
-    /*
     def buildSineLookupTable(amp: Double, n: Int): Vec[SInt] = {
       val Pi = math.Pi
       val times = (0 until n).map(i => (i*2*Pi)/(n.toDouble - 1) - Pi)
       val inits = times.map(t => Math.round(amp * math.sin(t)).asSInt(32.W))
       VecInit(inits)
-    }*/
+    }
 
   // Define state enum.. case sentitive!
   val state_Reset :: state_TransmitWord :: Nil = Enum(2)
@@ -37,11 +36,11 @@ class I2S_Transmitter(width: UInt) extends Module {
   val MCLKTckr      = RegInit(1.U(1.W))
   val bDATA         = RegInit(0.U(1.W))
   val DATA          = RegInit(0.U(32.W))
-  
-  //val FRAME_NR      = RegInit(0.U(8.W))
-  //val sineLUT = Module(new sinTable(0.9, 1))
-  //val sineLUT = buildSineLookupTable(0.9, 10)
-  //val lutOut = sineLUT(FRAME_NR)
+  val lutOut        = RegInit(0.S(32.W))
+  val FRAME_NR      = RegInit(0.U(8.W))
+
+  val sineLUT = buildSineLookupTable(4.25, 100)
+  lutOut := sineLUT(FRAME_NR)
 
   // Increment clock counter
   ClkCntr := ClkCntr + 1.U 
@@ -74,7 +73,7 @@ class I2S_Transmitter(width: UInt) extends Module {
   //... very crude clock divider. 
   when( ClkCntr === 32.U || 
         ClkCntr === 64.U) {
-          // BCLK should be MCLK / 4
+          //BCLK should be MCLK / 4
           BCLKTckr := ~BCLKTckr
 
   }
@@ -84,7 +83,7 @@ class I2S_Transmitter(width: UInt) extends Module {
     // FS is then BCLK / 64
     Tckr := 1.U 
     ClkCntr := 0.U
-    //FRAME_NR := FRAME_NR + 1.U
+    FRAME_NR := FRAME_NR + 1.U
 
   }.otherwise {
     Tckr := 0.U
@@ -103,11 +102,9 @@ class I2S_Transmitter(width: UInt) extends Module {
   io.Ready    := 0.U
   io.State_o  := 0.U
 
-  /*
   when(FRAME_NR === 25.U) {
     FRAME_NR := 0.U
   }
-  */
 
   // Actual 'transmitter'
   when (Tckr === 1.U) {
@@ -137,10 +134,10 @@ class I2S_Transmitter(width: UInt) extends Module {
           when ((Bit_Counter === 0.U) || (Bit_Counter <= width - 1.U)){ 
             // When switches are not set, default to arbitrary test data.
 
-            val dumb_tst_dat = (9896087).U
-            bDATA := (dumb_tst_dat((width - 1.U) - Bit_Counter))
-            DATA  := (dumb_tst_dat)
-            //bDATA := (lutOut((width - 1.U) - Bit_Counter))
+            //val dumb_tst_dat = (9896087).U
+            //bDATA := (dumb_tst_dat((width - 1.U) - Bit_Counter))
+            //DATA  := (dumb_tst_dat)
+            bDATA := (lutOut((width - 1.U) - Bit_Counter))
             //DATA  := (lutOut)
           }
         }.otherwise {

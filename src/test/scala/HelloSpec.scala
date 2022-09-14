@@ -17,7 +17,7 @@ class I2S_Periph_spec extends AnyFlatSpec with ChiselScalatestTester {
 
       for (i <- 0 until 16385) {
         //dut.io.sw.poke(((16 + 7) + ((16 + 7) << (bitdepth / 2))).U)
-        dut.io.sw.poke(7.U)
+        //dut.io.sw.poke(7.U)
         dut.clock.step()
       }
     }
