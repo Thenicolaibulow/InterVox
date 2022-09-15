@@ -1,13 +1,1 @@
-[0m[[0m[0mdebug[0m] [0m[0mPackaging /Users/nixen/Development/fpga/InterVox/target/scala-2.12/intervox_2.12-0.1.0-SNAPSHOT.jar ...[0m
-[0m[[0m[0mdebug[0m] [0m[0mInput file mappings:[0m
-[0m[[0m[0mdebug[0m] [0m[0m	I2S_Transmitter.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	  /Users/nixen/Development/fpga/InterVox/target/scala-2.12/classes/I2S_Transmitter.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	HelloMain.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	  /Users/nixen/Development/fpga/InterVox/target/scala-2.12/classes/HelloMain.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	I2S_Transmitter$$anon$1.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	  /Users/nixen/Development/fpga/InterVox/target/scala-2.12/classes/I2S_Transmitter$$anon$1.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	HelloMain$.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	  /Users/nixen/Development/fpga/InterVox/target/scala-2.12/classes/HelloMain$.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	HelloMain$delayedInit$body.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	  /Users/nixen/Development/fpga/InterVox/target/scala-2.12/classes/HelloMain$delayedInit$body.class[0m
-[0m[[0m[0mdebug[0m] [0m[0mDone packaging.[0m
+[0m[[0m[0mdebug[0m] [0m[0mJar uptodate: /Users/nixen/Development/fpga/InterVox/target/scala-2.12/intervox_2.12-0.1.0-SNAPSHOT.jar[0m

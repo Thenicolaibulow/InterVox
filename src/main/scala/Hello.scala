@@ -20,7 +20,7 @@ class I2S_Transmitter(width: UInt) extends Module {
     def buildSineLookupTable(amp: Double, n: Int): Vec[SInt] = {
       val Pi = math.Pi
       val times = (0 until n).map(i => (i*2*Pi)/(n.toDouble - 1) - Pi)
-      val inits = times.map(t => Math.round(amp * math.sin(t)).asSInt(32.W))
+      val inits = times.map(t => Math.round(amp * math.sin(t)).asSInt(16.W))
       VecInit(inits)
     }
 
@@ -39,7 +39,7 @@ class I2S_Transmitter(width: UInt) extends Module {
   val lutOut        = RegInit(0.S(32.W))
   val FRAME_NR      = RegInit(0.U(8.W))
 
-  val sineLUT = buildSineLookupTable(4.25, 100)
+  val sineLUT = buildSineLookupTable(0.8, 10)
   lutOut := sineLUT(FRAME_NR)
 
   // Increment clock counter
@@ -83,11 +83,14 @@ class I2S_Transmitter(width: UInt) extends Module {
     // FS is then BCLK / 64
     Tckr := 1.U 
     ClkCntr := 0.U
-    FRAME_NR := FRAME_NR + 1.U
 
   }.otherwise {
     Tckr := 0.U
   }  
+
+  when(io.Ready === 1.U) {
+    FRAME_NR := FRAME_NR + 1.U
+  }
 
   // Bind registers to output io.
   io.BitCntr  := Bit_Counter
@@ -128,6 +131,7 @@ class I2S_Transmitter(width: UInt) extends Module {
       is(state_TransmitWord) {
 
         io.State_o := 1.U
+        io.Ready := 0.U
 
         when (io.sw === 0.U) {
           // Below, ensures 1 bit delay. 

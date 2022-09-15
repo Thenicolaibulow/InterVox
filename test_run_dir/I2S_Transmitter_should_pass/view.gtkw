@@ -1,0 +1,27 @@
+[*]
+[*] GTKWave Analyzer v3.3.107 (w)1999-2020 BSI
+[*] Wed Sep 14 20:28:55 2022
+[*]
+[dumpfile] "/Users/nixen/Development/fpga/InterVox/test_run_dir/I2S_Transmitter_should_pass/I2S_Transmitter.vcd"
+[dumpfile_mtime] "Wed Sep 14 20:27:07 2022"
+[dumpfile_size] 917086
+[savefile] "/Users/nixen/Development/fpga/InterVox/test_run_dir/I2S_Transmitter_should_pass/view.gtkw"
+[timestart] 39690
+[size] 1370 1257
+[pos] 342 -1
+*-14.000000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[sst_width] 193
+[signals_width] 98
+[sst_expanded] 1
+[sst_vpaned_height] 398
+@28
+[color] 5
+I2S_Transmitter.io_MCLK
+[color] 5
+I2S_Transmitter.io_BCLK
+[color] 2
+I2S_Transmitter.io_LRCLK
+@29
+I2S_Transmitter.io_bDATA
+[pattern_trace] 1
+[pattern_trace] 0
