@@ -15,10 +15,11 @@ class I2S_Periph_spec extends AnyFlatSpec with ChiselScalatestTester {
       dut.clock.setTimeout(0)
       println("Testing I2S transmitter!")
 
-      for (i <- 0 until 16385) {
+      for (i <- 0 until 196620) {
         //dut.io.sw.poke(((16 + 7) + ((16 + 7) << (bitdepth / 2))).U)
-        dut.io.sw.poke(10.U)
+        dut.io.sw.poke(0.S)
         dut.clock.step()
+        println("i: " + i)
       }
     }
   } 

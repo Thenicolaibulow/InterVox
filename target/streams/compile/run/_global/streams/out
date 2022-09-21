@@ -1,7 +1,21 @@
-[0m[[0m[31merror[0m] [0m[0mjava.util.NoSuchElementException: None.get[0m
+[0m[[0m[31merror[0m] [0m[0mchisel3.internal.ChiselException: Connection between sink (I2S_Transmitter.DATA: Reg[SInt<16>]) and source (I2S_Transmitter.io.sw: IO[UInt<16>]) failed @: Sink (SInt<16>) and Source (UInt<16>) have different types.[0m
 [0m[[0m[31merror[0m] [0m[0m	at ... ()[0m
-[0m[[0m[31merror[0m] [0m[0m	at I2S_Transmitter.<init>(Hello.scala:72)[0m
-[0m[[0m[31merror[0m] [0m[0m	at HelloMain$.$anonfun$new$71(Hello.scala:197)[0m
+[0m[[0m[31merror[0m] [0m[0m	at I2S_Transmitter.$anonfun$new$54(Hello.scala:167)[0m
+[0m[[0m[31merror[0m] [0m[0m	at scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.java:23)[0m
+[0m[[0m[31merror[0m] [0m[0m	at chisel3.WhenContext.<init>(When.scala:143)[0m
+[0m[[0m[31merror[0m] [0m[0m	at chisel3.WhenContext.otherwise(When.scala:125)[0m
+[0m[[0m[31merror[0m] [0m[0m	at I2S_Transmitter.$anonfun$new$42(Hello.scala:160)[0m
+[0m[[0m[31merror[0m] [0m[0m	at scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.java:23)[0m
+[0m[[0m[31merror[0m] [0m[0m	at chisel3.WhenContext.<init>(When.scala:143)[0m
+[0m[[0m[31merror[0m] [0m[0m	at chisel3.WhenContext.elsewhen(When.scala:114)[0m
+[0m[[0m[31merror[0m] [0m[0m	at chisel3.util.SwitchContext.is(Conditional.scala:37)[0m
+[0m[[0m[31merror[0m] [0m[0m	at chisel3.util.SwitchContext.is(Conditional.scala:45)[0m
+[0m[[0m[31merror[0m] [0m[0m	at I2S_Transmitter.$anonfun$new$31(Hello.scala:124)[0m
+[0m[[0m[31merror[0m] [0m[0m	at scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.java:23)[0m
+[0m[[0m[31merror[0m] [0m[0m	at chisel3.WhenContext.<init>(When.scala:143)[0m
+[0m[[0m[31merror[0m] [0m[0m	at chisel3.when$.apply(When.scala:38)[0m
+[0m[[0m[31merror[0m] [0m[0m	at I2S_Transmitter.<init>(Hello.scala:122)[0m
+[0m[[0m[31merror[0m] [0m[0m	at HelloMain$.$anonfun$new$75(Hello.scala:196)[0m
 [0m[[0m[31merror[0m] [0m[0m	at ... ()[0m
 [0m[[0m[31merror[0m] [0m[0m	at ... (Stack trace trimmed to user code only. Rerun with --full-stacktrace to see the full stack trace)[0m
-[0m[[0m[31merror[0m] [0m[0m(Compile / [31mrun[0m) java.util.NoSuchElementException: None.get[0m
+[0m[[0m[31merror[0m] [0m[0m(Compile / [31mrun[0m) chisel3.internal.ChiselException: Connection between sink (I2S_Transmitter.DATA: Reg[SInt<16>]) and source (I2S_Transmitter.io.sw: IO[UInt<16>]) failed @: Sink (SInt<16>) and Source (UInt<16>) have different types.[0m

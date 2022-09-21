@@ -8,20 +8,28 @@ class I2S_Transmitter(width: UInt) extends Module {
     val LRCLK =   Output(UInt(1.W))    
     val BCLK =    Output(UInt(1.W))  
     val MCLK =    Output(UInt(1.W))  
-    val DATA =    Output(UInt(32.W))
+    val DATA =    Output(SInt(16.W))
     val bDATA =   Output(UInt(1.W))      
     val State_o = Output(UInt(2.W))
     val BitCntr = Output(UInt(8.W))
-    val tick =    Output (UInt(1.W))
-    val sw =      Input (UInt(16.W))
+    val tick =    Output(UInt(1.W))
+    val sw =      Input (SInt(16.W))
     val CLKR =    Output(UInt(16.W))
   })
 
-    def buildSineLookupTable(amp: Double, n: Int): Vec[SInt] = {
+    def buildSineLookupTable(amp: Double, n: Int, freq: Int): Vec[SInt] = {
       val Pi = math.Pi
-      val times = (0 until n).map(i => (i*2*Pi)/(n.toDouble - 1) - Pi)
-      val inits = times.map(t => Math.round(amp * math.sin(t)).asSInt(16.W))
-      VecInit(inits)
+      // val times = (0 until n).map(i => (i*2*Pi)/(n.toDouble - 1) - Pi)
+      val times = (0 until n)
+        // For this to work: freq is given in Hz, long as n = fs.
+        .map(i => i * (2*Pi/n))
+        .map(i => i * freq)
+        .map(i => math.sin(i))
+        // Amp should be significantly bigger than 1 to see output.
+        .map(i => amp * i)
+        .map(i => Math.round(i).asSInt(16.W))
+      // val inits = times.map(t => Math.round(amp * math.sin(t)).asSInt(16.W))
+      VecInit(times)
     }
 
   // Define state enum.. case sentitive!
@@ -35,12 +43,12 @@ class I2S_Transmitter(width: UInt) extends Module {
   val LRClkr        = RegInit(0.U(1.W))
   val MCLKTckr      = RegInit(1.U(1.W))
   val bDATA         = RegInit(0.U(1.W))
-  val DATA          = RegInit(0.U(32.W))
+  val DATA          = RegInit(0.S(16.W))
   val lutOut        = RegInit(0.S(32.W))
   val FRAME_NR      = RegInit(0.U(8.W))
 
-  val sineLUT = buildSineLookupTable(0.8, 10)
-  lutOut := sineLUT(FRAME_NR)
+  //val sineLUT = buildSineLookupTable(20, 44100)
+  //lutOut := sineLUT(FRAME_NR)
 
   // Increment clock counter
   ClkCntr := ClkCntr + 1.U 
@@ -121,7 +129,7 @@ class I2S_Transmitter(width: UInt) extends Module {
         io.LRCLK    := 0.U
         io.BCLK     := 0.U
         io.MCLK     := 0.U
-        io.DATA     := 0.U
+        io.DATA     := 0.S
         Bit_Counter := 0.U
         io.BitCntr  := 0.U
         current_state := state_TransmitWord
@@ -133,16 +141,16 @@ class I2S_Transmitter(width: UInt) extends Module {
         io.State_o := 1.U
         io.Ready := 0.U
 
-        when (io.sw === 0.U) {
+        when (io.sw === 0.S) {
           // Below, ensures 1 bit delay. 
           when ((Bit_Counter === 0.U) || (Bit_Counter <= width - 1.U)){ 
-            // When switches are not set, default to arbitrary test data.
+            // When switches are not set, default to sine test data.
+            // The three parameters for buildsine is: (Amplitude ie. +- peak value, samplerate, frequency.)
+            val sineLUT = buildSineLookupTable(32000, 100, 5)
+            lutOut := ((sineLUT(FRAME_NR) << 16) + sineLUT(FRAME_NR)) 
 
-            //val dumb_tst_dat = (9896087).U
-            //bDATA := (dumb_tst_dat((width - 1.U) - Bit_Counter))
-            //DATA  := (dumb_tst_dat)
             bDATA := (lutOut((width - 1.U) - Bit_Counter))
-            //DATA  := (lutOut)
+            DATA  := (lutOut)
           }
         }.otherwise {
             // Switches represent the arbitrary test data.
@@ -172,7 +180,7 @@ class I2S_Transmitter(width: UInt) extends Module {
           // Just counting the processed bits..
           Bit_Counter := Bit_Counter + 1.U    
 
-        }
+        } 
       }
     }
   }
