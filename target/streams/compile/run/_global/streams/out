@@ -1,21 +1,44 @@
-[0m[[0m[31merror[0m] [0m[0mchisel3.internal.ChiselException: Connection between sink (I2S_Transmitter.DATA: Reg[SInt<16>]) and source (I2S_Transmitter.io.sw: IO[UInt<16>]) failed @: Sink (SInt<16>) and Source (UInt<16>) have different types.[0m
-[0m[[0m[31merror[0m] [0m[0m	at ... ()[0m
-[0m[[0m[31merror[0m] [0m[0m	at I2S_Transmitter.$anonfun$new$54(Hello.scala:167)[0m
-[0m[[0m[31merror[0m] [0m[0m	at scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.java:23)[0m
-[0m[[0m[31merror[0m] [0m[0m	at chisel3.WhenContext.<init>(When.scala:143)[0m
-[0m[[0m[31merror[0m] [0m[0m	at chisel3.WhenContext.otherwise(When.scala:125)[0m
-[0m[[0m[31merror[0m] [0m[0m	at I2S_Transmitter.$anonfun$new$42(Hello.scala:160)[0m
-[0m[[0m[31merror[0m] [0m[0m	at scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.java:23)[0m
-[0m[[0m[31merror[0m] [0m[0m	at chisel3.WhenContext.<init>(When.scala:143)[0m
-[0m[[0m[31merror[0m] [0m[0m	at chisel3.WhenContext.elsewhen(When.scala:114)[0m
-[0m[[0m[31merror[0m] [0m[0m	at chisel3.util.SwitchContext.is(Conditional.scala:37)[0m
-[0m[[0m[31merror[0m] [0m[0m	at chisel3.util.SwitchContext.is(Conditional.scala:45)[0m
-[0m[[0m[31merror[0m] [0m[0m	at I2S_Transmitter.$anonfun$new$31(Hello.scala:124)[0m
-[0m[[0m[31merror[0m] [0m[0m	at scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.java:23)[0m
-[0m[[0m[31merror[0m] [0m[0m	at chisel3.WhenContext.<init>(When.scala:143)[0m
-[0m[[0m[31merror[0m] [0m[0m	at chisel3.when$.apply(When.scala:38)[0m
-[0m[[0m[31merror[0m] [0m[0m	at I2S_Transmitter.<init>(Hello.scala:122)[0m
-[0m[[0m[31merror[0m] [0m[0m	at HelloMain$.$anonfun$new$75(Hello.scala:196)[0m
-[0m[[0m[31merror[0m] [0m[0m	at ... ()[0m
-[0m[[0m[31merror[0m] [0m[0m	at ... (Stack trace trimmed to user code only. Rerun with --full-stacktrace to see the full stack trace)[0m
-[0m[[0m[31merror[0m] [0m[0m(Compile / [31mrun[0m) chisel3.internal.ChiselException: Connection between sink (I2S_Transmitter.DATA: Reg[SInt<16>]) and source (I2S_Transmitter.io.sw: IO[UInt<16>]) failed @: Sink (SInt<16>) and Source (UInt<16>) have different types.[0m
+[0m[[0m[31merror[0m] [0m[0mfirrtl.passes.PassExceptions: [0m
+[0m[[0m[31merror[0m] [0m[0mfirrtl.passes.CheckInitialization$RefNotInitializedException:  : [module I2S_Transmitter]  Reference io is not fully initialized.[0m
+[0m[[0m[31merror[0m] [0m[0m   : io.BitCntr <= mux(_T, _GEN_2043, VOID)[0m
+[0m[[0m[31merror[0m] [0m[0mfirrtl.passes.CheckInitialization$RefNotInitializedException:  : [module I2S_Transmitter]  Reference io is not fully initialized.[0m
+[0m[[0m[31merror[0m] [0m[0m   : io.bDATA <= mux(_T, bDATA, VOID)[0m
+[0m[[0m[31merror[0m] [0m[0mfirrtl.passes.CheckInitialization$RefNotInitializedException:  : [module I2S_Transmitter]  Reference io is not fully initialized.[0m
+[0m[[0m[31merror[0m] [0m[0m   : io.DATA <= mux(_T, _GEN_2041, VOID)[0m
+[0m[[0m[31merror[0m] [0m[0mfirrtl.passes.CheckInitialization$RefNotInitializedException:  : [module I2S_Transmitter]  Reference io is not fully initialized.[0m
+[0m[[0m[31merror[0m] [0m[0m   : io.LRCLK <= mux(_T, _GEN_2038, VOID)[0m
+[0m[[0m[31merror[0m] [0m[0mfirrtl.passes.CheckInitialization$RefNotInitializedException:  : [module I2S_Transmitter]  Reference io is not fully initialized.[0m
+[0m[[0m[31merror[0m] [0m[0m   : io.MCLK <= mux(_T, _GEN_2040, VOID)[0m
+[0m[[0m[31merror[0m] [0m[0mfirrtl.passes.CheckInitialization$RefNotInitializedException:  : [module I2S_Transmitter]  Reference io is not fully initialized.[0m
+[0m[[0m[31merror[0m] [0m[0m   : io.CLKR <= mux(_T, ClkCntr, VOID)[0m
+[0m[[0m[31merror[0m] [0m[0mfirrtl.passes.CheckInitialization$RefNotInitializedException:  : [module I2S_Transmitter]  Reference io is not fully initialized.[0m
+[0m[[0m[31merror[0m] [0m[0m   : io.tick <= mux(_T, Tckr, VOID)[0m
+[0m[[0m[31merror[0m] [0m[0mfirrtl.passes.CheckInitialization$RefNotInitializedException:  : [module I2S_Transmitter]  Reference io is not fully initialized.[0m
+[0m[[0m[31merror[0m] [0m[0m   : io.Ready <= mux(_T, _GEN_2037, VOID)[0m
+[0m[[0m[31merror[0m] [0m[0mfirrtl.passes.CheckInitialization$RefNotInitializedException:  : [module I2S_Transmitter]  Reference io is not fully initialized.[0m
+[0m[[0m[31merror[0m] [0m[0m   : io.State_o <= mux(_T, _GEN_2036, VOID)[0m
+[0m[[0m[31merror[0m] [0m[0mfirrtl.passes.CheckInitialization$RefNotInitializedException:  : [module I2S_Transmitter]  Reference io is not fully initialized.[0m
+[0m[[0m[31merror[0m] [0m[0m   : io.BCLK <= mux(_T, _GEN_2039, VOID)[0m
+[0m[[0m[31merror[0m] [0m[0mfirrtl.passes.PassException: 10 errors detected![0m
+[0m[[0m[31merror[0m] [0m[0m(Compile / [31mrun[0m) firrtl.passes.PassExceptions: [0m
+[0m[[0m[31merror[0m] [0m[0mfirrtl.passes.CheckInitialization$RefNotInitializedException:  : [module I2S_Transmitter]  Reference io is not fully initialized.[0m
+[0m[[0m[31merror[0m] [0m[0m   : io.BitCntr <= mux(_T, _GEN_2043, VOID)[0m
+[0m[[0m[31merror[0m] [0m[0mfirrtl.passes.CheckInitialization$RefNotInitializedException:  : [module I2S_Transmitter]  Reference io is not fully initialized.[0m
+[0m[[0m[31merror[0m] [0m[0m   : io.bDATA <= mux(_T, bDATA, VOID)[0m
+[0m[[0m[31merror[0m] [0m[0mfirrtl.passes.CheckInitialization$RefNotInitializedException:  : [module I2S_Transmitter]  Reference io is not fully initialized.[0m
+[0m[[0m[31merror[0m] [0m[0m   : io.DATA <= mux(_T, _GEN_2041, VOID)[0m
+[0m[[0m[31merror[0m] [0m[0mfirrtl.passes.CheckInitialization$RefNotInitializedException:  : [module I2S_Transmitter]  Reference io is not fully initialized.[0m
+[0m[[0m[31merror[0m] [0m[0m   : io.LRCLK <= mux(_T, _GEN_2038, VOID)[0m
+[0m[[0m[31merror[0m] [0m[0mfirrtl.passes.CheckInitialization$RefNotInitializedException:  : [module I2S_Transmitter]  Reference io is not fully initialized.[0m
+[0m[[0m[31merror[0m] [0m[0m   : io.MCLK <= mux(_T, _GEN_2040, VOID)[0m
+[0m[[0m[31merror[0m] [0m[0mfirrtl.passes.CheckInitialization$RefNotInitializedException:  : [module I2S_Transmitter]  Reference io is not fully initialized.[0m
+[0m[[0m[31merror[0m] [0m[0m   : io.CLKR <= mux(_T, ClkCntr, VOID)[0m
+[0m[[0m[31merror[0m] [0m[0mfirrtl.passes.CheckInitialization$RefNotInitializedException:  : [module I2S_Transmitter]  Reference io is not fully initialized.[0m
+[0m[[0m[31merror[0m] [0m[0m   : io.tick <= mux(_T, Tckr, VOID)[0m
+[0m[[0m[31merror[0m] [0m[0mfirrtl.passes.CheckInitialization$RefNotInitializedException:  : [module I2S_Transmitter]  Reference io is not fully initialized.[0m
+[0m[[0m[31merror[0m] [0m[0m   : io.Ready <= mux(_T, _GEN_2037, VOID)[0m
+[0m[[0m[31merror[0m] [0m[0mfirrtl.passes.CheckInitialization$RefNotInitializedException:  : [module I2S_Transmitter]  Reference io is not fully initialized.[0m
+[0m[[0m[31merror[0m] [0m[0m   : io.State_o <= mux(_T, _GEN_2036, VOID)[0m
+[0m[[0m[31merror[0m] [0m[0mfirrtl.passes.CheckInitialization$RefNotInitializedException:  : [module I2S_Transmitter]  Reference io is not fully initialized.[0m
+[0m[[0m[31merror[0m] [0m[0m   : io.BCLK <= mux(_T, _GEN_2039, VOID)[0m
+[0m[[0m[31merror[0m] [0m[0mfirrtl.passes.PassException: 10 errors detected![0m
