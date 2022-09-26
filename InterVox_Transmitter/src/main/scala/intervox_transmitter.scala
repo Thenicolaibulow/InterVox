@@ -10,11 +10,16 @@ import chisel3.util._
 
 class interVox_Encoder(width: UInt) extends Module {
   val io = IO(new Bundle {
-    //val MCLK_IN   = Input (Clock()) // 256 x fs
-    //val BCLK_IN   = Input (Clock()) //  64 x fs
-    //val LRCLK_IN  = Input (Clock()) //       fs  
+    val MCLK_IN   = Input (Clock())   // 256 x fs
+    val BCLK_IN   = Input (UInt(1.W)) //  64 x fs
+    val LRCLK_IN  = Input (UInt(1.W)) //       fs  
     val SDATA_IN  = Input (UInt(1.W))
     val DATA_O    = Output(UInt(1.W))
+    
+    val LRCLK_O   = Output(UInt(1.W))    
+    val BCLK_O    = Output(UInt(1.W))  
+    val MCLK_O    = Output(Clock())  
+    val SDATA_O   = Output(UInt(1.W))      
   })
 
   // Define state enum.. case sentitive!
@@ -27,12 +32,17 @@ class interVox_Encoder(width: UInt) extends Module {
   val DATA_OUT_REG = RegInit(0.U(1.W))
   io.DATA_O := DATA_OUT_REG
 
+  io.MCLK_O := io.MCLK_IN
+  io.BCLK_O := io.BCLK_IN 
+  io.LRCLK_O := io.LRCLK_IN 
+  io.SDATA_O := io.SDATA_IN
+
   // Clock internal logic off of the external I2S MCLK, to keep everything synced.
-  //withClock(io.MCLK_IN){
+  withClock(io.MCLK_IN){
 
     // First we need a clock divider to provide the 2 x BCLK, needed for the bi-phase mark encoding.
     BiPhase_CLK_CNTR := BiPhase_CLK_CNTR + 1.U
-    when(BiPhase_CLK_CNTR === 1.U){
+    when(BiPhase_CLK_CNTR === 3.U){
 
       switch(current_state) {
 
@@ -60,6 +70,7 @@ class interVox_Encoder(width: UInt) extends Module {
       }
     }
     BiPhase_CLK_CNTR := 0.U
+    }
   }
 }
 

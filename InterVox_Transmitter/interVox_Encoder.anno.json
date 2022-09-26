@@ -6,5 +6,33 @@
   {
     "class":"firrtl.transforms.BlackBoxTargetDirAnno",
     "targetDir":"."
+  },
+  {
+    "class":"firrtl.transforms.CombinationalPath",
+    "sink":"~interVox_Encoder|interVox_Encoder>io_SDATA_O",
+    "sources":[
+      "~interVox_Encoder|interVox_Encoder>io_SDATA_IN"
+    ]
+  },
+  {
+    "class":"firrtl.transforms.CombinationalPath",
+    "sink":"~interVox_Encoder|interVox_Encoder>io_BCLK_O",
+    "sources":[
+      "~interVox_Encoder|interVox_Encoder>io_BCLK_IN"
+    ]
+  },
+  {
+    "class":"firrtl.transforms.CombinationalPath",
+    "sink":"~interVox_Encoder|interVox_Encoder>io_MCLK_O",
+    "sources":[
+      "~interVox_Encoder|interVox_Encoder>io_MCLK_IN"
+    ]
+  },
+  {
+    "class":"firrtl.transforms.CombinationalPath",
+    "sink":"~interVox_Encoder|interVox_Encoder>io_LRCLK_O",
+    "sources":[
+      "~interVox_Encoder|interVox_Encoder>io_LRCLK_IN"
+    ]
   }
 ]
