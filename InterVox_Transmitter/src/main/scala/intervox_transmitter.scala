@@ -55,8 +55,10 @@ class interVox_Encoder(width: UInt) extends Module {
   val BiPhase_CLK_CNTR = RegInit(0.U(8.W))
   // Output register
   val DATA_OUT_REG = RegInit(0.U(1.W))
+  // Instantiate bi-phase encoder
   val bi_phase_enc = Module(new bi_phase_encoder())
   
+  // Assign pins. 
   io.DATA_O := DATA_OUT_REG
   io.MCLK_O := io.MCLK_IN
   io.BCLK_O := io.BCLK_IN 
@@ -67,6 +69,14 @@ class interVox_Encoder(width: UInt) extends Module {
 
   // Clock internal logic off of the external I2S MCLK, to keep everything synced.
   withClock(io.MCLK_IN){
+    
+    /*
+      For every frame (ie. LRCLK = ~LRCLK)
+      Populate a 32b register with the incoming sdata (offset adequitely). 
+      Pad this register with header and DSP data
+
+      { {HEADER + L_CH 24B} + {R_CH 24B + DSP} }
+    */
 
     // First we need a clock divider to provide the 2 x BCLK, needed for the bi-phase mark encoding.
     BiPhase_CLK_CNTR := BiPhase_CLK_CNTR + 1.U
