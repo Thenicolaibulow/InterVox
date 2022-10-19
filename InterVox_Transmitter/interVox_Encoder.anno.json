@@ -1,5 +1,17 @@
 [
   {
+    "class":"firrtl.transforms.DedupedResult",
+    "original":"~interVox_Encoder|RWSmem",
+    "duplicate":"~interVox_Encoder|interVox_Encoder/BFR:RWSmem",
+    "index":0.3333333333333333
+  },
+  {
+    "class":"firrtl.transforms.DedupedResult",
+    "original":"~interVox_Encoder|RWSmem_1",
+    "duplicate":"~interVox_Encoder|interVox_Encoder/BFR1:RWSmem",
+    "index":0.6666666666666666
+  },
+  {
     "class":"firrtl.EmitCircuitAnnotation",
     "emitter":"firrtl.VerilogEmitter"
   },

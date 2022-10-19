@@ -1,4 +1,4 @@
-[0m[[0m[31merror[0m] [0m[0mfirrtl.passes.CheckInitialization$RefNotInitializedException:  @[intervox_transmitter.scala 58:28] : [module interVox_Encoder]  Reference bi_phase_enc is not fully initialized.[0m
-[0m[[0m[31merror[0m] [0m[0m   : bi_phase_enc.io.NxtBit <= mux(_T, UInt<1>("h1"), VOID)[0m
-[0m[[0m[31merror[0m] [0m[0m(Compile / [31mrun[0m) firrtl.passes.CheckInitialization$RefNotInitializedException:  @[intervox_transmitter.scala 58:28] : [module interVox_Encoder]  Reference bi_phase_enc is not fully initialized.[0m
-[0m[[0m[31merror[0m] [0m[0m   : bi_phase_enc.io.NxtBit <= mux(_T, UInt<1>("h1"), VOID)[0m
+[0m[[0m[31merror[0m] [0m[0mfirrtl.passes.CheckInitialization$RefNotInitializedException:  @[intervox_transmitter.scala 112:33] : [module interVox_Encoder]  Reference BFR is not fully initialized.[0m
+[0m[[0m[31merror[0m] [0m[0m   : BFR.io.addr <= VOID[0m
+[0m[[0m[31merror[0m] [0m[0m(Compile / [31mrun[0m) firrtl.passes.CheckInitialization$RefNotInitializedException:  @[intervox_transmitter.scala 112:33] : [module interVox_Encoder]  Reference BFR is not fully initialized.[0m
+[0m[[0m[31merror[0m] [0m[0m   : BFR.io.addr <= VOID[0m
