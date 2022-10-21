@@ -1,4 +1,7 @@
-[0m[[0m[31merror[0m] [0m[0mfirrtl.passes.CheckInitialization$RefNotInitializedException:  @[intervox_transmitter.scala 112:33] : [module interVox_Encoder]  Reference BFR is not fully initialized.[0m
-[0m[[0m[31merror[0m] [0m[0m   : BFR.io.addr <= VOID[0m
-[0m[[0m[31merror[0m] [0m[0m(Compile / [31mrun[0m) firrtl.passes.CheckInitialization$RefNotInitializedException:  @[intervox_transmitter.scala 112:33] : [module interVox_Encoder]  Reference BFR is not fully initialized.[0m
-[0m[[0m[31merror[0m] [0m[0m   : BFR.io.addr <= VOID[0m
+[0m[[0m[31merror[0m] [0m[0mchisel3.internal.ChiselException: cannot connect interVox_Encoder.io.DATA_O: IO[Clock] and interVox_Encoder.DATA_OUT_REG_1B: Reg[UInt<1>][0m
+[0m[[0m[31merror[0m] [0m[0m	at ... ()[0m
+[0m[[0m[31merror[0m] [0m[0m	at interVox_Encoder.<init>(intervox_transmitter.scala:146)[0m
+[0m[[0m[31merror[0m] [0m[0m	at HelloMain$.$anonfun$new$114(intervox_transmitter.scala:258)[0m
+[0m[[0m[31merror[0m] [0m[0m	at ... ()[0m
+[0m[[0m[31merror[0m] [0m[0m	at ... (Stack trace trimmed to user code only. Rerun with --full-stacktrace to see the full stack trace)[0m
+[0m[[0m[31merror[0m] [0m[0m(Compile / [31mrun[0m) chisel3.internal.ChiselException: cannot connect interVox_Encoder.io.DATA_O: IO[Clock] and interVox_Encoder.DATA_OUT_REG_1B: Reg[UInt<1>][0m

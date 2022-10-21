@@ -30,11 +30,15 @@ module bi_phase_encoder(
   wire [5:0] _T_8 = dataIndex - 6'h4; // @[intervox_transmitter.scala 78:43]
   wire [63:0] _T_9 = stereoData >> _T_8; // @[intervox_transmitter.scala 78:31]
   wire  _GEN_4 = ~_T_9[0] | hasNone; // @[intervox_transmitter.scala 78:62 80:25 43:32]
-  wire  _GEN_5 = bitCntr < 8'h7f ? _GEN_4 : hasNone; // @[intervox_transmitter.scala 43:32 76:34]
-  wire [15:0] _T_15 = 16'h0 >> _T_8; // @[intervox_transmitter.scala 86:30]
-  wire  _GEN_6 = ~_T_15[0] | _GEN_5; // @[intervox_transmitter.scala 86:61 88:25]
-  wire  _GEN_7 = bitCntr > 8'h7f ? _GEN_6 : _GEN_5; // @[intervox_transmitter.scala 84:34]
-  wire  _GEN_14 = bitCntr == 8'hff | _GEN_2; // @[intervox_transmitter.scala 102:34 105:18]
+  wire  _GEN_5 = bitCntr < 8'h30 ? _GEN_4 : hasNone; // @[intervox_transmitter.scala 43:32 76:33]
+  wire [5:0] _T_18 = _T_8 - 6'h8; // @[intervox_transmitter.scala 85:49]
+  wire [63:0] _T_19 = stereoData >> _T_18; // @[intervox_transmitter.scala 85:31]
+  wire  _GEN_6 = ~_T_19[0] | _GEN_5; // @[intervox_transmitter.scala 85:68 87:25]
+  wire  _GEN_7 = bitCntr > 8'h30 & bitCntr < 8'h60 ? _GEN_6 : _GEN_5; // @[intervox_transmitter.scala 83:54]
+  wire [15:0] _T_27 = 16'h0 >> _T_8; // @[intervox_transmitter.scala 93:30]
+  wire  _GEN_8 = ~_T_27[0] | _GEN_7; // @[intervox_transmitter.scala 93:61 95:25]
+  wire  _GEN_9 = bitCntr > 8'h60 & bitCntr < 8'h7f ? _GEN_8 : _GEN_7; // @[intervox_transmitter.scala 91:55]
+  wire  _GEN_16 = bitCntr == 8'h7f | _GEN_2; // @[intervox_transmitter.scala 109:34 112:18]
   assign io_DATA_OUT = outReg; // @[intervox_transmitter.scala 46:17]
   assign io_NEXT = next; // @[intervox_transmitter.scala 50:13]
   always @(posedge clock) begin
@@ -42,8 +46,8 @@ module bi_phase_encoder(
       outReg <= 1'h0; // @[intervox_transmitter.scala 38:32]
     end else if (io_TICK) begin // @[intervox_transmitter.scala 52:28]
       if (bitCntr > 8'h7) begin // @[intervox_transmitter.scala 73:32]
-        if (!(hasNone)) begin // @[intervox_transmitter.scala 92:34]
-          outReg <= ~outReg; // @[intervox_transmitter.scala 98:22]
+        if (!(hasNone)) begin // @[intervox_transmitter.scala 99:34]
+          outReg <= ~outReg; // @[intervox_transmitter.scala 105:22]
         end
       end else if (bitCntr < 8'h7) begin // @[intervox_transmitter.scala 60:31]
         outReg <= _GEN_1;
@@ -52,13 +56,13 @@ module bi_phase_encoder(
     if (reset) begin // @[intervox_transmitter.scala 39:32]
       next <= 1'h0; // @[intervox_transmitter.scala 39:32]
     end else if (io_TICK) begin // @[intervox_transmitter.scala 52:28]
-      next <= _GEN_14;
+      next <= _GEN_16;
     end
     if (reset) begin // @[intervox_transmitter.scala 40:32]
       stereoData <= 64'h0; // @[intervox_transmitter.scala 40:32]
     end else if (io_TICK) begin // @[intervox_transmitter.scala 52:28]
-      if (bitCntr == 8'hff) begin // @[intervox_transmitter.scala 102:34]
-        stereoData <= 64'h0; // @[intervox_transmitter.scala 104:24]
+      if (bitCntr == 8'h7f) begin // @[intervox_transmitter.scala 109:34]
+        stereoData <= 64'h0; // @[intervox_transmitter.scala 111:24]
       end else begin
         stereoData <= io_AUDIOINPUT; // @[intervox_transmitter.scala 48:16]
       end
@@ -68,8 +72,8 @@ module bi_phase_encoder(
     if (reset) begin // @[intervox_transmitter.scala 42:32]
       bitCntr <= 8'h0; // @[intervox_transmitter.scala 42:32]
     end else if (io_TICK) begin // @[intervox_transmitter.scala 52:28]
-      if (bitCntr == 8'hff) begin // @[intervox_transmitter.scala 102:34]
-        bitCntr <= 8'h0; // @[intervox_transmitter.scala 103:21]
+      if (bitCntr == 8'h7f) begin // @[intervox_transmitter.scala 109:34]
+        bitCntr <= 8'h0; // @[intervox_transmitter.scala 110:21]
       end else begin
         bitCntr <= _bitCntr_T_1; // @[intervox_transmitter.scala 54:19]
       end
@@ -78,10 +82,10 @@ module bi_phase_encoder(
       hasNone <= 1'h0; // @[intervox_transmitter.scala 43:32]
     end else if (io_TICK) begin // @[intervox_transmitter.scala 52:28]
       if (bitCntr > 8'h7) begin // @[intervox_transmitter.scala 73:32]
-        if (hasNone) begin // @[intervox_transmitter.scala 92:34]
-          hasNone <= 1'h0; // @[intervox_transmitter.scala 94:23]
+        if (hasNone) begin // @[intervox_transmitter.scala 99:34]
+          hasNone <= 1'h0; // @[intervox_transmitter.scala 101:23]
         end else begin
-          hasNone <= _GEN_7;
+          hasNone <= _GEN_9;
         end
       end
     end
@@ -262,71 +266,75 @@ module interVox_Encoder(
   reg [31:0] _RAND_2;
   reg [31:0] _RAND_3;
 `endif // RANDOMIZE_REG_INIT
-  wire  bi_phase_enc_clock; // @[intervox_transmitter.scala 134:33]
-  wire  bi_phase_enc_reset; // @[intervox_transmitter.scala 134:33]
-  wire  bi_phase_enc_io_DATA_OUT; // @[intervox_transmitter.scala 134:33]
-  wire [63:0] bi_phase_enc_io_AUDIOINPUT; // @[intervox_transmitter.scala 134:33]
-  wire  bi_phase_enc_io_TICK; // @[intervox_transmitter.scala 134:33]
-  wire  bi_phase_enc_io_NEXT; // @[intervox_transmitter.scala 134:33]
-  wire  BFR_clock; // @[intervox_transmitter.scala 142:33]
-  wire  BFR_io_write; // @[intervox_transmitter.scala 142:33]
-  wire [63:0] BFR_io_dataIn; // @[intervox_transmitter.scala 142:33]
-  wire [63:0] BFR_io_dataOut; // @[intervox_transmitter.scala 142:33]
-  wire  BFR1_clock; // @[intervox_transmitter.scala 143:33]
-  wire  BFR1_io_write; // @[intervox_transmitter.scala 143:33]
-  wire [63:0] BFR1_io_dataIn; // @[intervox_transmitter.scala 143:33]
-  wire [63:0] BFR1_io_dataOut; // @[intervox_transmitter.scala 143:33]
-  reg [1:0] current_state; // @[intervox_transmitter.scala 126:34]
-  reg [7:0] BiPhase_CLK_CNTR; // @[intervox_transmitter.scala 128:34]
-  reg  DATA_OUT_REG_1B; // @[intervox_transmitter.scala 130:34]
-  reg [7:0] bitCntr; // @[intervox_transmitter.scala 136:34]
-  wire [7:0] _BiPhase_CLK_CNTR_T_1 = BiPhase_CLK_CNTR + 8'h1; // @[intervox_transmitter.scala 189:44]
-  wire  _T_4 = BiPhase_CLK_CNTR == 8'h3; // @[intervox_transmitter.scala 192:30]
-  wire  _T_5 = BiPhase_CLK_CNTR == 8'h1 | _T_4; // @[intervox_transmitter.scala 191:38]
-  wire  _T_6 = BiPhase_CLK_CNTR == 8'h5; // @[intervox_transmitter.scala 193:30]
-  wire  _T_7 = _T_5 | _T_6; // @[intervox_transmitter.scala 192:38]
-  wire  _T_8 = BiPhase_CLK_CNTR == 8'h7; // @[intervox_transmitter.scala 194:30]
-  wire  _T_9 = _T_7 | _T_8; // @[intervox_transmitter.scala 193:38]
-  wire [7:0] _bitCntr_T_1 = bitCntr + 8'h1; // @[intervox_transmitter.scala 201:28]
-  wire  _T_12 = ~io_SDATA_IN; // @[intervox_transmitter.scala 209:28]
-  wire [7:0] _BFR_io_dataIn_T_1 = bitCntr - 8'h10; // @[intervox_transmitter.scala 212:68]
-  wire [255:0] _BFR_io_dataIn_T_2 = 256'h0 << _BFR_io_dataIn_T_1; // @[intervox_transmitter.scala 212:56]
-  wire [255:0] _GEN_47 = {{192'd0}, BFR_io_dataOut}; // @[intervox_transmitter.scala 212:49]
-  wire [255:0] _BFR_io_dataIn_T_4 = _GEN_47 + _BFR_io_dataIn_T_2; // @[intervox_transmitter.scala 212:49]
-  wire [255:0] _GEN_2 = ~io_SDATA_IN ? _BFR_io_dataIn_T_4 : 256'h0; // @[intervox_transmitter.scala 154:25 209:37 212:31]
-  wire [255:0] _BFR_io_dataIn_T_7 = 256'h1 << _BFR_io_dataIn_T_1; // @[intervox_transmitter.scala 218:56]
-  wire [255:0] _BFR_io_dataIn_T_9 = _GEN_47 + _BFR_io_dataIn_T_7; // @[intervox_transmitter.scala 218:49]
-  wire  _GEN_3 = io_SDATA_IN | _T_12; // @[intervox_transmitter.scala 215:36 217:31]
-  wire [255:0] _GEN_4 = io_SDATA_IN ? _BFR_io_dataIn_T_9 : _GEN_2; // @[intervox_transmitter.scala 215:36 218:31]
-  wire [255:0] _BFR_io_dataIn_T_10 = 256'h0 << bitCntr; // @[intervox_transmitter.scala 224:56]
-  wire [255:0] _BFR_io_dataIn_T_12 = _GEN_47 + _BFR_io_dataIn_T_10; // @[intervox_transmitter.scala 224:49]
-  wire [255:0] _GEN_6 = _T_12 ? _BFR_io_dataIn_T_12 : 256'h0; // @[intervox_transmitter.scala 154:25 221:37 224:31]
-  wire [255:0] _BFR_io_dataIn_T_13 = 256'h1 << bitCntr; // @[intervox_transmitter.scala 230:56]
-  wire [255:0] _BFR_io_dataIn_T_15 = _GEN_47 + _BFR_io_dataIn_T_13; // @[intervox_transmitter.scala 230:49]
-  wire [255:0] _GEN_8 = io_SDATA_IN ? _BFR_io_dataIn_T_15 : _GEN_6; // @[intervox_transmitter.scala 227:36 230:31]
-  wire  _GEN_9 = bitCntr > 8'h28 ? _GEN_3 : _GEN_3; // @[intervox_transmitter.scala 206:29]
-  wire [255:0] _GEN_10 = bitCntr > 8'h28 ? _GEN_4 : _GEN_8; // @[intervox_transmitter.scala 206:29]
-  wire  _T_16 = bitCntr == 8'h3f; // @[intervox_transmitter.scala 233:22]
-  wire [63:0] _GEN_12 = bi_phase_enc_io_NEXT ? 64'h0 : BFR_io_dataOut; // @[intervox_transmitter.scala 237:29 242:45 244:29]
-  wire [63:0] _GEN_14 = bitCntr == 8'h3f ? _GEN_12 : 64'h0; // @[intervox_transmitter.scala 158:25 233:31]
-  wire  _GEN_15 = bitCntr == 8'h3f | _GEN_9; // @[intervox_transmitter.scala 233:31 239:29]
-  wire [255:0] _GEN_16 = bitCntr == 8'h3f ? 256'h0 : _GEN_10; // @[intervox_transmitter.scala 233:31 240:29]
-  wire [7:0] _GEN_17 = bitCntr == 8'h3f ? 8'h0 : _bitCntr_T_1; // @[intervox_transmitter.scala 201:17 233:31 246:28]
-  wire [7:0] _GEN_18 = _T_8 ? _GEN_17 : bitCntr; // @[intervox_transmitter.scala 136:34 198:37]
-  wire  _GEN_19 = _T_8 & _GEN_15; // @[intervox_transmitter.scala 153:25 198:37]
-  wire [255:0] _GEN_20 = _T_8 ? _GEN_16 : 256'h0; // @[intervox_transmitter.scala 154:25 198:37]
-  wire  _GEN_21 = _T_8 & _T_16; // @[intervox_transmitter.scala 157:25 198:37]
-  wire [63:0] _GEN_22 = _T_8 ? _GEN_14 : 64'h0; // @[intervox_transmitter.scala 158:25 198:37]
-  wire [7:0] _GEN_23 = _T_8 ? 8'h0 : _BiPhase_CLK_CNTR_T_1; // @[intervox_transmitter.scala 189:24 198:37 249:26]
-  wire [255:0] _GEN_28 = 2'h2 == current_state ? _GEN_20 : 256'h0; // @[intervox_transmitter.scala 179:24 154:25]
-  wire [63:0] _GEN_30 = 2'h2 == current_state ? _GEN_22 : 64'h0; // @[intervox_transmitter.scala 179:24 158:25]
-  wire  _GEN_33 = 2'h1 == current_state ? 1'h0 : 2'h2 == current_state & _T_9; // @[intervox_transmitter.scala 179:24 162:31]
-  wire  _GEN_35 = 2'h1 == current_state ? 1'h0 : 2'h2 == current_state & _GEN_19; // @[intervox_transmitter.scala 179:24 153:25]
-  wire [255:0] _GEN_36 = 2'h1 == current_state ? 256'h0 : _GEN_28; // @[intervox_transmitter.scala 179:24 154:25]
-  wire  _GEN_37 = 2'h1 == current_state ? 1'h0 : 2'h2 == current_state & _GEN_21; // @[intervox_transmitter.scala 179:24 157:25]
-  wire [63:0] _GEN_38 = 2'h1 == current_state ? 64'h0 : _GEN_30; // @[intervox_transmitter.scala 179:24 158:25]
-  wire [255:0] _GEN_44 = 2'h0 == current_state ? 256'h0 : _GEN_36; // @[intervox_transmitter.scala 179:24 154:25]
-  bi_phase_encoder bi_phase_enc ( // @[intervox_transmitter.scala 134:33]
+  wire  bi_phase_enc_clock; // @[intervox_transmitter.scala 141:33]
+  wire  bi_phase_enc_reset; // @[intervox_transmitter.scala 141:33]
+  wire  bi_phase_enc_io_DATA_OUT; // @[intervox_transmitter.scala 141:33]
+  wire [63:0] bi_phase_enc_io_AUDIOINPUT; // @[intervox_transmitter.scala 141:33]
+  wire  bi_phase_enc_io_TICK; // @[intervox_transmitter.scala 141:33]
+  wire  bi_phase_enc_io_NEXT; // @[intervox_transmitter.scala 141:33]
+  wire  BFR_clock; // @[intervox_transmitter.scala 149:33]
+  wire  BFR_io_write; // @[intervox_transmitter.scala 149:33]
+  wire [63:0] BFR_io_dataIn; // @[intervox_transmitter.scala 149:33]
+  wire [63:0] BFR_io_dataOut; // @[intervox_transmitter.scala 149:33]
+  wire  BFR1_clock; // @[intervox_transmitter.scala 150:33]
+  wire  BFR1_io_write; // @[intervox_transmitter.scala 150:33]
+  wire [63:0] BFR1_io_dataIn; // @[intervox_transmitter.scala 150:33]
+  wire [63:0] BFR1_io_dataOut; // @[intervox_transmitter.scala 150:33]
+  reg [1:0] current_state; // @[intervox_transmitter.scala 133:34]
+  reg [7:0] BiPhase_CLK_CNTR; // @[intervox_transmitter.scala 135:34]
+  reg  DATA_OUT_REG_1B; // @[intervox_transmitter.scala 137:34]
+  reg [7:0] bitCntr; // @[intervox_transmitter.scala 143:34]
+  wire [7:0] _BiPhase_CLK_CNTR_T_1 = BiPhase_CLK_CNTR + 8'h1; // @[intervox_transmitter.scala 196:46]
+  wire [7:0] _GEN_0 = BiPhase_CLK_CNTR % 8'h2; // @[intervox_transmitter.scala 199:31]
+  wire [1:0] _T_4 = _GEN_0[1:0]; // @[intervox_transmitter.scala 199:31]
+  wire  _T_5 = _T_4 == 2'h1; // @[intervox_transmitter.scala 199:37]
+  wire [7:0] _GEN_1 = BiPhase_CLK_CNTR == 8'h3 ? 8'h0 : _BiPhase_CLK_CNTR_T_1; // @[intervox_transmitter.scala 196:26 204:{39,57}]
+  wire [7:0] _bitCntr_T_1 = bitCntr + 8'h1; // @[intervox_transmitter.scala 209:30]
+  wire  _T_9 = ~io_SDATA_IN; // @[intervox_transmitter.scala 217:30]
+  wire [7:0] _BFR_io_dataIn_T_1 = bitCntr - 8'h10; // @[intervox_transmitter.scala 220:70]
+  wire [255:0] _BFR_io_dataIn_T_2 = 256'h0 << _BFR_io_dataIn_T_1; // @[intervox_transmitter.scala 220:58]
+  wire [255:0] _GEN_55 = {{192'd0}, BFR_io_dataOut}; // @[intervox_transmitter.scala 220:51]
+  wire [255:0] _BFR_io_dataIn_T_4 = _GEN_55 + _BFR_io_dataIn_T_2; // @[intervox_transmitter.scala 220:51]
+  wire [255:0] _GEN_3 = ~io_SDATA_IN ? _BFR_io_dataIn_T_4 : 256'h0; // @[intervox_transmitter.scala 161:25 217:39 220:33]
+  wire [255:0] _BFR_io_dataIn_T_7 = 256'h1 << _BFR_io_dataIn_T_1; // @[intervox_transmitter.scala 226:58]
+  wire [255:0] _BFR_io_dataIn_T_9 = _GEN_55 + _BFR_io_dataIn_T_7; // @[intervox_transmitter.scala 226:51]
+  wire  _GEN_4 = io_SDATA_IN | _T_9; // @[intervox_transmitter.scala 223:38 225:33]
+  wire [255:0] _GEN_5 = io_SDATA_IN ? _BFR_io_dataIn_T_9 : _GEN_3; // @[intervox_transmitter.scala 223:38 226:33]
+  wire [255:0] _BFR_io_dataIn_T_10 = 256'h0 << bitCntr; // @[intervox_transmitter.scala 232:58]
+  wire [255:0] _BFR_io_dataIn_T_12 = _GEN_55 + _BFR_io_dataIn_T_10; // @[intervox_transmitter.scala 232:51]
+  wire [255:0] _GEN_7 = _T_9 ? _BFR_io_dataIn_T_12 : 256'h0; // @[intervox_transmitter.scala 161:25 229:39 232:33]
+  wire [255:0] _BFR_io_dataIn_T_13 = 256'h1 << bitCntr; // @[intervox_transmitter.scala 238:58]
+  wire [255:0] _BFR_io_dataIn_T_15 = _GEN_55 + _BFR_io_dataIn_T_13; // @[intervox_transmitter.scala 238:51]
+  wire [255:0] _GEN_9 = io_SDATA_IN ? _BFR_io_dataIn_T_15 : _GEN_7; // @[intervox_transmitter.scala 235:38 238:33]
+  wire  _GEN_10 = bitCntr > 8'h28 ? _GEN_4 : _GEN_4; // @[intervox_transmitter.scala 214:31]
+  wire [255:0] _GEN_11 = bitCntr > 8'h28 ? _GEN_5 : _GEN_9; // @[intervox_transmitter.scala 214:31]
+  wire  _T_13 = bitCntr == 8'h3f; // @[intervox_transmitter.scala 241:24]
+  wire [63:0] _GEN_13 = bi_phase_enc_io_NEXT ? 64'h0 : BFR_io_dataOut; // @[intervox_transmitter.scala 245:31 250:47 252:31]
+  wire [63:0] _GEN_15 = bitCntr == 8'h3f ? _GEN_13 : 64'h0; // @[intervox_transmitter.scala 165:25 241:33]
+  wire  _GEN_16 = bitCntr == 8'h3f | _GEN_10; // @[intervox_transmitter.scala 241:33 247:31]
+  wire [255:0] _GEN_17 = bitCntr == 8'h3f ? 256'h0 : _GEN_11; // @[intervox_transmitter.scala 241:33 248:31]
+  wire [7:0] _GEN_18 = bitCntr == 8'h3f ? 8'h0 : _bitCntr_T_1; // @[intervox_transmitter.scala 209:19 241:33 254:30]
+  wire [7:0] _GEN_19 = io_BCLK_IN ? _GEN_18 : bitCntr; // @[intervox_transmitter.scala 206:33 143:34]
+  wire  _GEN_20 = io_BCLK_IN & _GEN_16; // @[intervox_transmitter.scala 160:25 206:33]
+  wire [255:0] _GEN_21 = io_BCLK_IN ? _GEN_17 : 256'h0; // @[intervox_transmitter.scala 161:25 206:33]
+  wire  _GEN_22 = io_BCLK_IN & _T_13; // @[intervox_transmitter.scala 164:25 206:33]
+  wire [63:0] _GEN_23 = io_BCLK_IN ? _GEN_15 : 64'h0; // @[intervox_transmitter.scala 165:25 206:33]
+  wire [7:0] _GEN_24 = 2'h2 == current_state ? _GEN_1 : BiPhase_CLK_CNTR; // @[intervox_transmitter.scala 186:26 135:34]
+  wire [7:0] _GEN_26 = 2'h2 == current_state ? _GEN_19 : bitCntr; // @[intervox_transmitter.scala 186:26 143:34]
+  wire [255:0] _GEN_28 = 2'h2 == current_state ? _GEN_21 : 256'h0; // @[intervox_transmitter.scala 161:25 186:26]
+  wire [63:0] _GEN_30 = 2'h2 == current_state ? _GEN_23 : 64'h0; // @[intervox_transmitter.scala 165:25 186:26]
+  wire  _GEN_33 = 2'h1 == current_state ? 1'h0 : 2'h2 == current_state & _T_5; // @[intervox_transmitter.scala 186:26 169:31]
+  wire  _GEN_35 = 2'h1 == current_state ? 1'h0 : 2'h2 == current_state & _GEN_20; // @[intervox_transmitter.scala 160:25 186:26]
+  wire [255:0] _GEN_36 = 2'h1 == current_state ? 256'h0 : _GEN_28; // @[intervox_transmitter.scala 161:25 186:26]
+  wire  _GEN_37 = 2'h1 == current_state ? 1'h0 : 2'h2 == current_state & _GEN_22; // @[intervox_transmitter.scala 164:25 186:26]
+  wire [63:0] _GEN_38 = 2'h1 == current_state ? 64'h0 : _GEN_30; // @[intervox_transmitter.scala 165:25 186:26]
+  wire  _GEN_41 = 2'h0 == current_state ? 1'h0 : _GEN_33; // @[intervox_transmitter.scala 186:26 169:31]
+  wire  _GEN_43 = 2'h0 == current_state ? 1'h0 : _GEN_35; // @[intervox_transmitter.scala 160:25 186:26]
+  wire [255:0] _GEN_44 = 2'h0 == current_state ? 256'h0 : _GEN_36; // @[intervox_transmitter.scala 161:25 186:26]
+  wire  _GEN_45 = 2'h0 == current_state ? 1'h0 : _GEN_37; // @[intervox_transmitter.scala 164:25 186:26]
+  wire [63:0] _GEN_46 = 2'h0 == current_state ? 64'h0 : _GEN_38; // @[intervox_transmitter.scala 165:25 186:26]
+  wire [255:0] _GEN_52 = io_MCLK_IN ? _GEN_44 : 256'h0; // @[intervox_transmitter.scala 161:25 176:27]
+  bi_phase_encoder bi_phase_enc ( // @[intervox_transmitter.scala 141:33]
     .clock(bi_phase_enc_clock),
     .reset(bi_phase_enc_reset),
     .io_DATA_OUT(bi_phase_enc_io_DATA_OUT),
@@ -334,62 +342,64 @@ module interVox_Encoder(
     .io_TICK(bi_phase_enc_io_TICK),
     .io_NEXT(bi_phase_enc_io_NEXT)
   );
-  RWSmem BFR ( // @[intervox_transmitter.scala 142:33]
+  RWSmem BFR ( // @[intervox_transmitter.scala 149:33]
     .clock(BFR_clock),
     .io_write(BFR_io_write),
     .io_dataIn(BFR_io_dataIn),
     .io_dataOut(BFR_io_dataOut)
   );
-  RWSmem BFR1 ( // @[intervox_transmitter.scala 143:33]
+  RWSmem BFR1 ( // @[intervox_transmitter.scala 150:33]
     .clock(BFR1_clock),
     .io_write(BFR1_io_write),
     .io_dataIn(BFR1_io_dataIn),
     .io_dataOut(BFR1_io_dataOut)
   );
-  assign io_MCLK_O = io_MCLK_IN; // @[intervox_transmitter.scala 147:25]
-  assign io_DATA_O = DATA_OUT_REG_1B; // @[intervox_transmitter.scala 146:25]
-  assign io_LRCLK_O = io_LRCLK_IN; // @[intervox_transmitter.scala 149:25]
-  assign io_BCLK_O = io_BCLK_IN; // @[intervox_transmitter.scala 148:25]
-  assign io_SDATA_O = io_SDATA_IN; // @[intervox_transmitter.scala 150:25]
-  assign io_NXT_FRAME = bi_phase_enc_io_TICK; // @[intervox_transmitter.scala 159:25]
+  assign io_MCLK_O = io_MCLK_IN; // @[intervox_transmitter.scala 154:25]
+  assign io_DATA_O = DATA_OUT_REG_1B; // @[intervox_transmitter.scala 153:25]
+  assign io_LRCLK_O = io_LRCLK_IN; // @[intervox_transmitter.scala 156:25]
+  assign io_BCLK_O = io_BCLK_IN; // @[intervox_transmitter.scala 155:25]
+  assign io_SDATA_O = io_SDATA_IN; // @[intervox_transmitter.scala 157:25]
+  assign io_NXT_FRAME = bi_phase_enc_io_TICK; // @[intervox_transmitter.scala 166:25]
   assign bi_phase_enc_clock = clock;
   assign bi_phase_enc_reset = reset;
-  assign bi_phase_enc_io_AUDIOINPUT = BFR1_io_dataOut; // @[intervox_transmitter.scala 163:31]
-  assign bi_phase_enc_io_TICK = 2'h0 == current_state ? 1'h0 : _GEN_33; // @[intervox_transmitter.scala 179:24 162:31]
+  assign bi_phase_enc_io_AUDIOINPUT = BFR1_io_dataOut; // @[intervox_transmitter.scala 170:31]
+  assign bi_phase_enc_io_TICK = io_MCLK_IN & _GEN_41; // @[intervox_transmitter.scala 176:27 169:31]
   assign BFR_clock = clock;
-  assign BFR_io_write = 2'h0 == current_state ? 1'h0 : _GEN_35; // @[intervox_transmitter.scala 179:24 153:25]
-  assign BFR_io_dataIn = _GEN_44[63:0];
+  assign BFR_io_write = io_MCLK_IN & _GEN_43; // @[intervox_transmitter.scala 160:25 176:27]
+  assign BFR_io_dataIn = _GEN_52[63:0];
   assign BFR1_clock = clock;
-  assign BFR1_io_write = 2'h0 == current_state ? 1'h0 : _GEN_37; // @[intervox_transmitter.scala 179:24 157:25]
-  assign BFR1_io_dataIn = 2'h0 == current_state ? 64'h0 : _GEN_38; // @[intervox_transmitter.scala 179:24 158:25]
+  assign BFR1_io_write = io_MCLK_IN & _GEN_45; // @[intervox_transmitter.scala 164:25 176:27]
+  assign BFR1_io_dataIn = io_MCLK_IN ? _GEN_46 : 64'h0; // @[intervox_transmitter.scala 165:25 176:27]
   always @(posedge clock) begin
-    if (reset) begin // @[intervox_transmitter.scala 126:34]
-      current_state <= 2'h0; // @[intervox_transmitter.scala 126:34]
-    end else if (2'h0 == current_state) begin // @[intervox_transmitter.scala 179:24]
-      current_state <= 2'h2; // @[intervox_transmitter.scala 182:21]
-    end else if (2'h1 == current_state) begin // @[intervox_transmitter.scala 179:24]
-      current_state <= 2'h2; // @[intervox_transmitter.scala 185:21]
+    if (reset) begin // @[intervox_transmitter.scala 133:34]
+      current_state <= 2'h0; // @[intervox_transmitter.scala 133:34]
+    end else if (io_MCLK_IN) begin // @[intervox_transmitter.scala 176:27]
+      if (2'h0 == current_state) begin // @[intervox_transmitter.scala 186:26]
+        current_state <= 2'h2; // @[intervox_transmitter.scala 189:23]
+      end else if (2'h1 == current_state) begin // @[intervox_transmitter.scala 186:26]
+        current_state <= 2'h2; // @[intervox_transmitter.scala 192:23]
+      end
     end
-    if (reset) begin // @[intervox_transmitter.scala 128:34]
-      BiPhase_CLK_CNTR <= 8'h0; // @[intervox_transmitter.scala 128:34]
-    end else if (!(2'h0 == current_state)) begin // @[intervox_transmitter.scala 179:24]
-      if (!(2'h1 == current_state)) begin // @[intervox_transmitter.scala 179:24]
-        if (2'h2 == current_state) begin // @[intervox_transmitter.scala 179:24]
-          BiPhase_CLK_CNTR <= _GEN_23;
+    if (reset) begin // @[intervox_transmitter.scala 135:34]
+      BiPhase_CLK_CNTR <= 8'h0; // @[intervox_transmitter.scala 135:34]
+    end else if (io_MCLK_IN) begin // @[intervox_transmitter.scala 176:27]
+      if (!(2'h0 == current_state)) begin // @[intervox_transmitter.scala 186:26]
+        if (!(2'h1 == current_state)) begin // @[intervox_transmitter.scala 186:26]
+          BiPhase_CLK_CNTR <= _GEN_24;
         end
       end
     end
-    if (reset) begin // @[intervox_transmitter.scala 130:34]
-      DATA_OUT_REG_1B <= 1'h0; // @[intervox_transmitter.scala 130:34]
+    if (reset) begin // @[intervox_transmitter.scala 137:34]
+      DATA_OUT_REG_1B <= 1'h0; // @[intervox_transmitter.scala 137:34]
     end else begin
-      DATA_OUT_REG_1B <= bi_phase_enc_io_DATA_OUT; // @[intervox_transmitter.scala 166:19]
+      DATA_OUT_REG_1B <= bi_phase_enc_io_DATA_OUT; // @[intervox_transmitter.scala 173:19]
     end
-    if (reset) begin // @[intervox_transmitter.scala 136:34]
-      bitCntr <= 8'h0; // @[intervox_transmitter.scala 136:34]
-    end else if (!(2'h0 == current_state)) begin // @[intervox_transmitter.scala 179:24]
-      if (!(2'h1 == current_state)) begin // @[intervox_transmitter.scala 179:24]
-        if (2'h2 == current_state) begin // @[intervox_transmitter.scala 179:24]
-          bitCntr <= _GEN_18;
+    if (reset) begin // @[intervox_transmitter.scala 143:34]
+      bitCntr <= 8'h0; // @[intervox_transmitter.scala 143:34]
+    end else if (io_MCLK_IN) begin // @[intervox_transmitter.scala 176:27]
+      if (!(2'h0 == current_state)) begin // @[intervox_transmitter.scala 186:26]
+        if (!(2'h1 == current_state)) begin // @[intervox_transmitter.scala 186:26]
+          bitCntr <= _GEN_26;
         end
       end
     end

@@ -42,6 +42,13 @@
   },
   {
     "class":"firrtl.transforms.CombinationalPath",
+    "sink":"~interVox_Encoder|interVox_Encoder>io_NXT_FRAME",
+    "sources":[
+      "~interVox_Encoder|interVox_Encoder>io_MCLK_IN"
+    ]
+  },
+  {
+    "class":"firrtl.transforms.CombinationalPath",
     "sink":"~interVox_Encoder|interVox_Encoder>io_LRCLK_O",
     "sources":[
       "~interVox_Encoder|interVox_Encoder>io_LRCLK_IN"

@@ -1,4 +1,4 @@
-[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/InterVox_Transmitter/src/main/scala/intervox_transmitter.scala:206:14: not found: value bitCntr[0m
-[0m[[0m[31merror[0m] [0m[0m        when(bitCntr >= 40.U){[0m
-[0m[[0m[31merror[0m] [0m[0m             ^[0m
+[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/InterVox_Transmitter/src/main/scala/intervox_transmitter.scala:116:1: Missing closing brace `}' assumed here[0m
+[0m[[0m[31merror[0m] [0m[0mclass interVox_Encoder(width: UInt) extends Module {[0m
+[0m[[0m[31merror[0m] [0m[0m^[0m
 [0m[[0m[31merror[0m] [0m[0mone error found[0m

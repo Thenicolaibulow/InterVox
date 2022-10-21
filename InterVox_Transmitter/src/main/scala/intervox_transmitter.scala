@@ -73,15 +73,22 @@ class bi_phase_encoder() extends Module {
           when((bitCntr > 7.U)){
             
             // Up to 64 bits
-            when(bitCntr < 127.U){
+            when(bitCntr < 48.U){
 
               when((stereoData((dataIndex - 4.U)))  === 0.U) {
                 // Then don't change for one cycle
                 hasNone := 1.U
               }
+            }
+            when((bitCntr > 48.U) & (bitCntr < 96.U)){
+
+              when((stereoData((dataIndex - 4.U - 8.U)))  === 0.U) {
+                // Then don't change for one cycle
+                hasNone := 1.U
+              }              
 
             } // Append DSP data
-            when(bitCntr > 127.U){
+            when((bitCntr > 96.U & (bitCntr < 127.U))){
 
                 when((dspData((dataIndex - 4.U)))  === 0.U) {
                 // Then don't change for one cycle
@@ -99,7 +106,7 @@ class bi_phase_encoder() extends Module {
             }
           }
 
-          when(bitCntr === 255.U){
+          when(bitCntr === 127.U){
             bitCntr := 0.U
             stereoData := 0.U
             next := 1.U
@@ -109,8 +116,8 @@ class bi_phase_encoder() extends Module {
 
 class interVox_Encoder(width: UInt) extends Module {
   val io = IO(new Bundle {
-    val MCLK_IN   = Input (Clock())     // 256 x fs
-    val MCLK_O    = Output(Clock())  
+    val MCLK_IN   = Input (UInt(1.W))     // 256 x fs
+    val MCLK_O    = Output(UInt(1.W))  
     val BCLK_IN   = Input (UInt(1.W))   //  64 x fs
     val LRCLK_IN  = Input (UInt(1.W))   //       fs  
     val SDATA_IN  = Input (UInt(1.W))
@@ -166,7 +173,7 @@ class interVox_Encoder(width: UInt) extends Module {
   DATA_OUT_REG_1B := bi_phase_enc.io.DATA_OUT
 
   // Clock internal logic off of the external I2S MCLK, to keep everything synced.
-  withClock(io.MCLK_IN){
+  when(io.MCLK_IN === 1.U){
 
     /*
       For every frame (ie. LRCLK = ~LRCLK)
@@ -176,80 +183,80 @@ class interVox_Encoder(width: UInt) extends Module {
       { {HEADER + L_CH 24B} + {R_CH 24B + DSP} }
     */
 
-  switch(current_state){
+    switch(current_state){
+            
+      is(state_Reset){
+        current_state := state_Transmit
+      }
+      is(state_Setup){
+        current_state := state_Transmit
+      }
+      is(state_Transmit){ 
+        
+        BiPhase_CLK_CNTR := BiPhase_CLK_CNTR + 1.U
+
+        // Clock multipler for biphase_encoder
+        when(BiPhase_CLK_CNTR % 2.U === 1.U){
+          bi_phase_enc.io.TICK := 1.U
           
-    is(state_Reset){
-      current_state := state_Transmit
-    }
-    is(state_Setup){
-      current_state := state_Transmit
-    }
-    is(state_Transmit){ 
-      
-      BiPhase_CLK_CNTR := BiPhase_CLK_CNTR + 1.U
-
-      when( BiPhase_CLK_CNTR === 1.U | 
-            BiPhase_CLK_CNTR === 3.U |
-            BiPhase_CLK_CNTR === 5.U |
-            BiPhase_CLK_CNTR === 7.U ){
-        bi_phase_enc.io.TICK := 1.U
-      }
-
-      when(BiPhase_CLK_CNTR === 7.U){
-
-        // Count bits
-        bitCntr := bitCntr + 1.U
-
-        // For each bit, assign it the appropriate bit in DATA_OUT_REG_WIDTH
-        // Effectively 'repackaging' the I2S Serial data for use with intervox.          
-        
-        when(bitCntr > 40.U){
-          // Truncate the last 8 bits of a 32 bit word. 
-          // Limits the incoming data to 24 bit, purposely. 
-          when(io.SDATA_IN === 0.U) {
-            // We always write to adress 1.
-            BFR.io.write      := 1.U
-            BFR.io.dataIn     := BFR.io.dataOut + (0.U << (bitCntr - 16.U))
-          }
-
-          when(io.SDATA_IN === 1.U){
-            // We always write to adress 1.
-            BFR.io.write      := 1.U
-            BFR.io.dataIn     := BFR.io.dataOut + (1.U << (bitCntr - 16.U))
-          }
-        }.otherwise{
-          when(io.SDATA_IN === 0.U) {
-            // We always write to adress 1.
-            BFR.io.write      := 1.U
-            BFR.io.dataIn     := BFR.io.dataOut + (0.U << (bitCntr))
-          }
-
-          when(io.SDATA_IN === 1.U){
-            // We always write to adress 1.
-            BFR.io.write      := 1.U
-            BFR.io.dataIn     := BFR.io.dataOut + (1.U << (bitCntr))
-          }          
         }
-        when(bitCntr === 63.U){
-          // Allows for one sample delay. 
-          // Dump BFR into BFR1
-          BFR1.io.write     := 1.U
-          BFR1.io.dataIn    := BFR.io.dataOut
-          // Clear Buffers. 
-          BFR.io.write      := 1.U
-          BFR.io.dataIn     := 0.U
 
-          when(bi_phase_enc.io.NEXT === 1.U){
-            BFR1.io.write   := 1.U
-            BFR1.io.dataIn  := 0.U
-          }
-          bitCntr          := 0.U
-        }
+        when(BiPhase_CLK_CNTR === 3.U){BiPhase_CLK_CNTR := 0.U}
         
-        BiPhase_CLK_CNTR := 0.U
+        when(io.BCLK_IN === 1.U){  
+
+          // Count bits
+          bitCntr := bitCntr + 1.U
+
+          // For each bit, assign it the appropriate bit in DATA_OUT_REG_WIDTH
+          // Effectively 'repackaging' the I2S Serial data for use with intervox.          
+          
+          when(bitCntr > 40.U){
+            // Truncate the last 8 bits of a 32 bit word. 
+            // Limits the incoming data to 24 bit, purposely. 
+            when(io.SDATA_IN === 0.U) {
+              // We always write to adress 1.ffff
+              BFR.io.write      := 1.U
+              BFR.io.dataIn     := BFR.io.dataOut + (0.U << (bitCntr - 16.U))
+            }
+
+            when(io.SDATA_IN === 1.U){
+              // We always write to adress 1.
+              BFR.io.write      := 1.U
+              BFR.io.dataIn     := BFR.io.dataOut + (1.U << (bitCntr - 16.U))
+            }
+          }.otherwise{
+            when(io.SDATA_IN === 0.U) {
+              // We always write to adress 1.
+              BFR.io.write      := 1.U
+              BFR.io.dataIn     := BFR.io.dataOut + (0.U << (bitCntr))
+            }
+
+            when(io.SDATA_IN === 1.U){
+              // We always write to adress 1.
+              BFR.io.write      := 1.U
+              BFR.io.dataIn     := BFR.io.dataOut + (1.U << (bitCntr))
+            }          
+          }
+          when(bitCntr === 63.U){
+            // Allows for one sample delay. 
+            // Dump BFR into BFR1
+            BFR1.io.write     := 1.U
+            BFR1.io.dataIn    := BFR.io.dataOut
+            // Clear Buffers. 
+            BFR.io.write      := 1.U
+            BFR.io.dataIn     := 0.U
+
+            when(bi_phase_enc.io.NEXT === 1.U){
+              BFR1.io.write   := 1.U
+              BFR1.io.dataIn  := 0.U
+            }
+            bitCntr          := 0.U
+          }
+          
+        }
       }
     }
-  }
   }
 }
 

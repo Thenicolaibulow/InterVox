@@ -9,13 +9,14 @@ set_property PACKAGE_PIN M1     [get_ports {io_LRCLK_IN}]
 set_property PACKAGE_PIN M2      [get_ports {io_SDATA_IN}]
 set_property PACKAGE_PIN J3      [get_ports {io_DATA_O}]
 set_property PACKAGE_PIN K3      [get_ports {io_NXT_FRAME}]
-
+.
 set_property PACKAGE_PIN P17    [get_ports {io_SDATA_O}]
 set_property PACKAGE_PIN N17    [get_ports {io_LRCLK_O}]
 set_property PACKAGE_PIN P18    [get_ports {io_BCLK_O}]
 set_property PACKAGE_PIN R18    [get_ports {io_MCLK_O}]
-set_property -dict {PACKAGE_PIN R18 IOSTANDARD LVCMOS33 DRIVE 16 SLEW FAST} [get_ports io_MCLK_O]
-set_property -dict {PACKAGE_PIN P18 IOSTANDARD LVCMOS33 DRIVE 16 SLEW FAST} [get_ports io_BCLK_O]
+#set_property -dict {PACKAGE_PIN R18 IOSTANDARD LVCMOS33 DRIVE 16 SLEW FAST} [get_ports io_MCLK_O]
+#set_property -dict {PACKAGE_PIN P18 IOSTANDARD LVCMOS33 DRIVE 16 SLEW FAST} [get_ports io_BCLK_O]
+#set_property -dict {PACKAGE_PIN J3 IOSTANDARD LVCMOS33 DRIVE 16 SLEW FAST} [get_ports io_DATA_O]
 
 set_property PACKAGE_PIN T17 [get_ports reset]
 
