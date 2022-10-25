@@ -16,137 +16,150 @@ class I2S_Periph_spec extends AnyFlatSpec with ChiselScalatestTester {
       println("Testing I2S transmitter!")
       // Init system        
 
-      for (i <- 0 until 6) {
+      // Delayed by one bit, according to I2S Standard
+      dut.clock.step(4)  
+      dut.io.LRCLK_IN.poke(1.U)
+      for (i <- 0 until 16) {
+        // 32 low cycles
+        dut.io.BCLK_IN.poke(1.U)    
+        dut.clock.step(2)
+        dut.io.BCLK_IN.poke(0.U)
+        dut.clock.step(2)
+        dut.io.SDATA_IN.poke(0.U)
+        dut.io.BCLK_IN.poke(1.U)        
+        dut.clock.step(2)    
+        dut.io.BCLK_IN.poke(0.U)
+        dut.clock.step(2)
+      }
+      dut.io.LRCLK_IN.poke(0.U)
+      for (i <- 0 until 16) {
+        // 32 low cycles
+        dut.io.BCLK_IN.poke(1.U)           
+        dut.clock.step(2)
+        dut.io.BCLK_IN.poke(0.U)
+        dut.clock.step(2)
+        dut.io.SDATA_IN.poke(0.U)
+        dut.io.BCLK_IN.poke(1.U)        
+        dut.clock.step(2)    
+        dut.io.BCLK_IN.poke(0.U)
+        dut.clock.step(2)
+      }      
+
+      for(i <- 0 until 5){
         dut.io.LRCLK_IN.poke(1.U)
-        dut.io.BCLK_IN.poke(1.U)
-        dut.clock.step(4)
-        dut.io.BCLK_IN.poke(0.U)
-        dut.clock.step(4)
-        //0 1 0 1 1 1 1 0 0 0 0 0...
-        dut.io.BCLK_IN.poke(1.U)
-        dut.io.SDATA_IN.poke(1.U)
-        dut.clock.step(4)
-        dut.io.BCLK_IN.poke(0.U)
-        dut.clock.step(4)        
-        dut.io.BCLK_IN.poke(1.U)
-        dut.io.SDATA_IN.poke(0.U)
-        dut.clock.step(4)
-        dut.io.BCLK_IN.poke(0.U)
-        dut.clock.step(4)
-        dut.io.BCLK_IN.poke(1.U)
-        dut.io.SDATA_IN.poke(1.U)
-        dut.clock.step(4)
-        dut.io.BCLK_IN.poke(0.U)
-        dut.clock.step(4)
-        dut.io.BCLK_IN.poke(1.U)
-        dut.io.SDATA_IN.poke(1.U)
-        dut.clock.step(4)    
-        dut.io.BCLK_IN.poke(0.U)
-        dut.clock.step(4)    
-        dut.io.BCLK_IN.poke(1.U)    
-        dut.io.SDATA_IN.poke(1.U)
-        dut.clock.step(4)    
-        dut.io.BCLK_IN.poke(0.U)
-        dut.clock.step(4)
-        dut.io.BCLK_IN.poke(1.U)    
-        dut.io.SDATA_IN.poke(1.U)
-        dut.clock.step(4)
-        dut.io.BCLK_IN.poke(0.U)        
-        dut.clock.step(4)  
-        dut.io.SDATA_IN.poke(0.U)    
+        for (i <- 0 until 1) {
+          // First frame
 
-        for (i <- 0 until 8){
-          dut.io.BCLK_IN.poke(1.U)    
-          dut.clock.step(4)
-          dut.io.BCLK_IN.poke(0.U)    
-          dut.clock.step(4)
+          for (i <- 0 until 4) {
+            // Eight high cycles
+            dut.io.BCLK_IN.poke(1.U)    
+            dut.io.SDATA_IN.poke(1.U)
+            dut.clock.step(2)
+            dut.io.BCLK_IN.poke(0.U)
+            dut.clock.step(2)
+            dut.io.BCLK_IN.poke(1.U)        
+            dut.clock.step(2)    
+            dut.io.BCLK_IN.poke(0.U)
+            dut.clock.step(2)    
+          }
+          dut.io.SDATA_IN.poke(0.U)    
+          for (i <- 0 until 2) {
+            // Four low cycles
+            dut.io.BCLK_IN.poke(1.U)    
+            dut.io.SDATA_IN.poke(0.U)
+            dut.clock.step(2)
+            dut.io.BCLK_IN.poke(0.U)
+            dut.clock.step(2)
+            dut.io.BCLK_IN.poke(1.U)        
+            dut.clock.step(2)    
+            dut.io.BCLK_IN.poke(0.U)
+            dut.clock.step(2)
+          }        
+          for (i <- 0 until 2) {
+            // Four high cycles
+            dut.io.BCLK_IN.poke(1.U)    
+            dut.io.SDATA_IN.poke(1.U)
+            dut.clock.step(2)
+            dut.io.BCLK_IN.poke(0.U)
+            dut.clock.step(2)
+            dut.io.BCLK_IN.poke(1.U)        
+            dut.clock.step(2)    
+            dut.io.BCLK_IN.poke(0.U)
+            dut.clock.step(2)
+          }
+          dut.io.SDATA_IN.poke(0.U)    
+          for (i <- 0 until 8) {
+            // Sixteen low cycles
+            dut.io.BCLK_IN.poke(1.U)    
+            dut.io.SDATA_IN.poke(0.U)
+            dut.clock.step(2)
+            dut.io.BCLK_IN.poke(0.U)
+            dut.clock.step(2)
+            dut.io.BCLK_IN.poke(1.U)        
+            dut.clock.step(2)    
+            dut.io.BCLK_IN.poke(0.U)
+            dut.clock.step(2)
+          }        
+
+          println("i: " + i)
         }
-
-        dut.io.BCLK_IN.poke(1.U)
-        dut.io.SDATA_IN.poke(1.U)
-        dut.clock.step(4)
-        dut.io.BCLK_IN.poke(0.U)
-        dut.clock.step(4)        
-        dut.io.BCLK_IN.poke(1.U)
-        dut.io.SDATA_IN.poke(0.U)
-        for (i <- 0 until 15){
-          dut.io.BCLK_IN.poke(1.U)    
-          dut.clock.step(4)
-          dut.io.BCLK_IN.poke(0.U)    
-          dut.clock.step(4)
-        }
-        dut.io.BCLK_IN.poke(1.U)    
-        dut.clock.step(4)
-         dut.io.BCLK_IN.poke(0.U)    
-        dut.clock.step(4)
-
-        // Next Frame
-
         dut.io.LRCLK_IN.poke(0.U)
-        dut.io.BCLK_IN.poke(1.U)
-        dut.clock.step(4)
-        dut.io.BCLK_IN.poke(0.U)
-        dut.clock.step(4)
-        //0 1 0 1 1 1 1 0 0 0 0 0...
-        dut.io.BCLK_IN.poke(1.U)
-        dut.io.SDATA_IN.poke(1.U)
-        dut.clock.step(4)
-        dut.io.BCLK_IN.poke(0.U)
-        dut.clock.step(4)        
-        dut.io.BCLK_IN.poke(1.U)
-        dut.io.SDATA_IN.poke(0.U)
-        dut.clock.step(4)
-        dut.io.BCLK_IN.poke(0.U)
-        dut.clock.step(4)
-        dut.io.BCLK_IN.poke(1.U)
-        dut.io.SDATA_IN.poke(1.U)
-        dut.clock.step(4)
-        dut.io.BCLK_IN.poke(0.U)
-        dut.clock.step(4)
-        dut.io.BCLK_IN.poke(1.U)
-        dut.io.SDATA_IN.poke(1.U)
-        dut.clock.step(4)    
-        dut.io.BCLK_IN.poke(0.U)
-        dut.clock.step(4)    
-        dut.io.BCLK_IN.poke(1.U)    
-        dut.io.SDATA_IN.poke(1.U)
-        dut.clock.step(4)    
-        dut.io.BCLK_IN.poke(0.U)
-        dut.clock.step(4)
-        dut.io.BCLK_IN.poke(1.U)    
-        dut.io.SDATA_IN.poke(1.U)
-        dut.clock.step(4)
-        dut.io.BCLK_IN.poke(0.U)        
-        dut.clock.step(4)  
-        dut.io.SDATA_IN.poke(0.U)    
+        for (i <- 0 until 1) {
+          // First frame
 
-        for (i <- 0 until 8){
-          dut.io.BCLK_IN.poke(1.U)    
-          dut.clock.step(4)
-          dut.io.BCLK_IN.poke(0.U)    
-          dut.clock.step(4)
-        }
+          for (i <- 0 until 4) {
+            // Eight high cycles
+            dut.io.BCLK_IN.poke(1.U)    
+            dut.io.SDATA_IN.poke(1.U)
+            dut.clock.step(2)
+            dut.io.BCLK_IN.poke(0.U)
+            dut.clock.step(2)
+            dut.io.BCLK_IN.poke(1.U)        
+            dut.clock.step(2)    
+            dut.io.BCLK_IN.poke(0.U)
+            dut.clock.step(2)    
+          }
+          dut.io.SDATA_IN.poke(0.U)    
+          for (i <- 0 until 2) {
+            // Four low cycles
+            dut.io.BCLK_IN.poke(1.U)    
+            dut.io.SDATA_IN.poke(0.U)
+            dut.clock.step(2)
+            dut.io.BCLK_IN.poke(0.U)
+            dut.clock.step(2)
+            dut.io.BCLK_IN.poke(1.U)        
+            dut.clock.step(2)    
+            dut.io.BCLK_IN.poke(0.U)
+            dut.clock.step(2)
+          }        
+          for (i <- 0 until 2) {
+            // Four high cycles
+            dut.io.BCLK_IN.poke(1.U)    
+            dut.io.SDATA_IN.poke(1.U)
+            dut.clock.step(2)
+            dut.io.BCLK_IN.poke(0.U)
+            dut.clock.step(2)
+            dut.io.BCLK_IN.poke(1.U)        
+            dut.clock.step(2)    
+            dut.io.BCLK_IN.poke(0.U)
+            dut.clock.step(2)
+          }
+          dut.io.SDATA_IN.poke(0.U)    
+          for (i <- 0 until 8) {
+            // Sixteen low cycles
+            dut.io.BCLK_IN.poke(1.U)    
+            dut.io.SDATA_IN.poke(0.U)
+            dut.clock.step(2)
+            dut.io.BCLK_IN.poke(0.U)
+            dut.clock.step(2)
+            dut.io.BCLK_IN.poke(1.U)        
+            dut.clock.step(2)    
+            dut.io.BCLK_IN.poke(0.U)
+            dut.clock.step(2)
+          }        
 
-        dut.io.BCLK_IN.poke(1.U)
-        dut.io.SDATA_IN.poke(1.U)
-        dut.clock.step(4)
-        dut.io.BCLK_IN.poke(0.U)
-        dut.clock.step(4)        
-        dut.io.BCLK_IN.poke(1.U)
-        dut.io.SDATA_IN.poke(0.U)
-        
-        for (i <- 0 until 15){
-          dut.io.BCLK_IN.poke(1.U)    
-          dut.clock.step(4)
-          dut.io.BCLK_IN.poke(0.U)    
-          dut.clock.step(4)
-        }
-        dut.io.BCLK_IN.poke(1.U)    
-        dut.clock.step(4)
-         dut.io.BCLK_IN.poke(0.U)    
-        dut.clock.step(4)
-
-        println("i: " + i)
+          println("i: " + i)
+        }      
       }
     }
   } 

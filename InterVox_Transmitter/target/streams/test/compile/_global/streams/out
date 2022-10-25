@@ -1,7 +1,4 @@
-[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/InterVox_Transmitter/src/test/scala/intervox_transmitterSpec.scala:21:16: value LRCLK is not a member of chisel3.Bundle{val BCLK_IN: chisel3.UInt; val LRCLK_IN: chisel3.UInt; val SDATA_IN: chisel3.UInt; val DATA_O: chisel3.UInt; val LRCLK_O: chisel3.UInt; val BCLK_O: chisel3.UInt; val SDATA_O: chisel3.UInt; val NXT_FRAME: chisel3.UInt}[0m
-[0m[[0m[31merror[0m] [0m[0m        dut.io.LRCLK.poke(1.U)  [0m
-[0m[[0m[31merror[0m] [0m[0m               ^[0m
-[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/InterVox_Transmitter/src/test/scala/intervox_transmitterSpec.scala:43:16: value LRCLK is not a member of chisel3.Bundle{val BCLK_IN: chisel3.UInt; val LRCLK_IN: chisel3.UInt; val SDATA_IN: chisel3.UInt; val DATA_O: chisel3.UInt; val LRCLK_O: chisel3.UInt; val BCLK_O: chisel3.UInt; val SDATA_O: chisel3.UInt; val NXT_FRAME: chisel3.UInt}[0m
-[0m[[0m[31merror[0m] [0m[0m        dut.io.LRCLK.poke(0.U)[0m
-[0m[[0m[31merror[0m] [0m[0m               ^[0m
-[0m[[0m[31merror[0m] [0m[0mtwo errors found[0m
+[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/InterVox_Transmitter/src/test/scala/intervox_transmitterSpec.scala:21:12: ')' expected but '<-' found.[0m
+[0m[[0m[31merror[0m] [0m[0m        (i <- 0 until 4) {[0m
+[0m[[0m[31merror[0m] [0m[0m           ^[0m
+[0m[[0m[31merror[0m] [0m[0mone error found[0m

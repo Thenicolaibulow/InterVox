@@ -52,7 +52,7 @@ class bi_phase_encoder() extends Module {
       when(io.TICK === 1.U){
           // Count bits
           bitCntr := bitCntr + 1.U
-          when(bitCntr % 2.U === 1.U){
+          when(bitCntr % 2.U === 0.U){
             dataIndex := dataIndex + 1.U
           }
 
@@ -80,15 +80,15 @@ class bi_phase_encoder() extends Module {
                 hasNone := 1.U
               }
             }
-            when((bitCntr > 48.U) & (bitCntr < 96.U)){
+            when((bitCntr >= 48.U) & (bitCntr < 96.U)){
 
-              when((stereoData((dataIndex - 4.U - 8.U)))  === 0.U) {
+              when((stereoData((dataIndex - 4.U  - 8.U)))  === 0.U) {
                 // Then don't change for one cycle
                 hasNone := 1.U
               }              
 
             } // Append DSP data
-            when((bitCntr > 96.U & (bitCntr < 127.U))){
+            when((bitCntr >= 96.U & (bitCntr < 127.U))){
 
                 when((dspData((dataIndex - 4.U)))  === 0.U) {
                 // Then don't change for one cycle
@@ -144,10 +144,10 @@ class interVox_Encoder(width: UInt) extends Module {
   val LR                = RegInit(0.U(1.W))
   val tick              = RegInit(0.U(1.W))
   val PROCESSED         = RegInit(0.U(1.W))
-  
+  val tmpAudio          = RegInit(0.U(32.W))
   
   val BFR               = Module(new RWSmem())
-  val BFR1              = Module(new RWSmem())
+  val BFR1               = Module(new RWSmem())
 
   // Assign pins. 
   io.DATA_O             := DATA_OUT_REG_1B
@@ -155,25 +155,27 @@ class interVox_Encoder(width: UInt) extends Module {
   io.BCLK_O             := io.BCLK_IN 
   io.LRCLK_O            := io.LRCLK_IN 
   io.SDATA_O            := io.SDATA_IN
-  BFR.io.addr           := 1.U
+
   BFR.io.enable         := 1.U
+  BFR.io.addr           := 1.U
   BFR.io.write          := 0.U
   BFR.io.dataIn         := 0.U
-  BFR1.io.addr          := 1.U
   BFR1.io.enable        := 1.U
+  BFR1.io.addr          := 1.U
   BFR1.io.write         := 0.U
   BFR1.io.dataIn        := 0.U
-  io.NXT_FRAME          := bi_phase_enc.io.TICK
 
-  // Get the bi-phase encoder ready
+  io.NXT_FRAME          := bi_phase_enc.io.TICK
+  // Get the bi-phase encoder read
   bi_phase_enc.io.TICK        := 0.U
+  // Always pass the buffered audio data to the encoder, adress 2 that is. 
   bi_phase_enc.io.AUDIOINPUT  := BFR1.io.dataOut
   bi_phase_enc.io.DSPINPUT    := 0.U
   // Recieve encoded data, and clock it out on data_out
   DATA_OUT_REG_1B := bi_phase_enc.io.DATA_OUT
 
   // Clock internal logic off of the external I2S MCLK, to keep everything synced.
-  when(io.MCLK_IN === 1.U){
+  //when(io.MCLK_IN === 1.U){
 
     /*
       For every frame (ie. LRCLK = ~LRCLK)
@@ -198,10 +200,9 @@ class interVox_Encoder(width: UInt) extends Module {
         // Clock multipler for biphase_encoder
         when(BiPhase_CLK_CNTR % 2.U === 1.U){
           bi_phase_enc.io.TICK := 1.U
-          
         }
 
-        when(BiPhase_CLK_CNTR === 3.U){BiPhase_CLK_CNTR := 0.U}
+        when(BiPhase_CLK_CNTR === 7.U){BiPhase_CLK_CNTR := 0.U}
         
         when(io.BCLK_IN === 1.U){  
 
@@ -214,50 +215,54 @@ class interVox_Encoder(width: UInt) extends Module {
           when(bitCntr > 40.U){
             // Truncate the last 8 bits of a 32 bit word. 
             // Limits the incoming data to 24 bit, purposely. 
-            when(io.SDATA_IN === 0.U) {
-              // We always write to adress 1.ffff
-              BFR.io.write      := 1.U
+            
+            BFR.io.write      := 1.U
+
+            when(io.SDATA_IN === 0.U){             
               BFR.io.dataIn     := BFR.io.dataOut + (0.U << (bitCntr - 16.U))
             }
 
-            when(io.SDATA_IN === 1.U){
-              // We always write to adress 1.
-              BFR.io.write      := 1.U
+            when(io.SDATA_IN === 1.U){              
               BFR.io.dataIn     := BFR.io.dataOut + (1.U << (bitCntr - 16.U))
             }
           }.otherwise{
+            // We always write to adress 1.
+            BFR.io.write      := 1.U            
+
             when(io.SDATA_IN === 0.U) {
-              // We always write to adress 1.
-              BFR.io.write      := 1.U
               BFR.io.dataIn     := BFR.io.dataOut + (0.U << (bitCntr))
             }
 
             when(io.SDATA_IN === 1.U){
-              // We always write to adress 1.
-              BFR.io.write      := 1.U
               BFR.io.dataIn     := BFR.io.dataOut + (1.U << (bitCntr))
             }          
           }
-          when(bitCntr === 63.U){
-            // Allows for one sample delay. 
-            // Dump BFR into BFR1
-            BFR1.io.write     := 1.U
-            BFR1.io.dataIn    := BFR.io.dataOut
-            // Clear Buffers. 
-            BFR.io.write      := 1.U
-            BFR.io.dataIn     := 0.U
 
-            when(bi_phase_enc.io.NEXT === 1.U){
-              BFR1.io.write   := 1.U
-              BFR1.io.dataIn  := 0.U
-            }
+          when(bi_phase_enc.io.NEXT === 1.U){
+            BFR1.io.write   := 1.U
+            BFR1.io.dataIn  := 0.U
+          }
+
+          when(bitCntr === 63.U){
             bitCntr          := 0.U
           }
+
+          when(bitCntr === 63.U){
+            // Allows for one sample delay. 
+            // Dump BFR 0 into BFR 1
+            BFR.io.write      := 0.U
+            BFR1.io.write     := 1.U
+            BFR1.io.dataIn    := BFR.io.dataOut
+
+            // Clear Buffer. 
+            BFR.io.write      := 1.U
+            BFR.io.dataIn     := 0.U
+          }          
           
         }
       }
     }
-  }
+  //}
 }
 
 object HelloMain extends App {
