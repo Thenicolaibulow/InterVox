@@ -16,8 +16,8 @@ class I2S_Periph_spec extends AnyFlatSpec with ChiselScalatestTester {
       println("Testing I2S transmitter!")
       // Init system        
 
-      // Delayed by one bit, according to I2S Standard
-      dut.clock.step(4)  
+      dut.clock.step(1)
+
       dut.io.LRCLK_IN.poke(1.U)
       for (i <- 0 until 16) {
         // 32 low cycles
@@ -45,7 +45,7 @@ class I2S_Periph_spec extends AnyFlatSpec with ChiselScalatestTester {
         dut.clock.step(2)
       }      
 
-      for(i <- 0 until 5){
+      for(i <- 0 until 8){
         dut.io.LRCLK_IN.poke(1.U)
         for (i <- 0 until 1) {
           // First frame
@@ -75,8 +75,8 @@ class I2S_Periph_spec extends AnyFlatSpec with ChiselScalatestTester {
             dut.io.BCLK_IN.poke(0.U)
             dut.clock.step(2)
           }        
-          for (i <- 0 until 2) {
-            // Four high cycles
+          for (i <- 0 until 4) {
+            // Eight high cycles
             dut.io.BCLK_IN.poke(1.U)    
             dut.io.SDATA_IN.poke(1.U)
             dut.clock.step(2)
@@ -88,8 +88,8 @@ class I2S_Periph_spec extends AnyFlatSpec with ChiselScalatestTester {
             dut.clock.step(2)
           }
           dut.io.SDATA_IN.poke(0.U)    
-          for (i <- 0 until 8) {
-            // Sixteen low cycles
+          for (i <- 0 until 1) {
+            // 2 low cycles
             dut.io.BCLK_IN.poke(1.U)    
             dut.io.SDATA_IN.poke(0.U)
             dut.clock.step(2)
@@ -99,7 +99,31 @@ class I2S_Periph_spec extends AnyFlatSpec with ChiselScalatestTester {
             dut.clock.step(2)    
             dut.io.BCLK_IN.poke(0.U)
             dut.clock.step(2)
-          }        
+          }   
+          for (i <- 0 until 1) {
+            // Two high cycles
+            dut.io.BCLK_IN.poke(1.U)    
+            dut.io.SDATA_IN.poke(1.U)
+            dut.clock.step(2)
+            dut.io.BCLK_IN.poke(0.U)
+            dut.clock.step(2)
+            dut.io.BCLK_IN.poke(1.U)        
+            dut.clock.step(2)    
+            dut.io.BCLK_IN.poke(0.U)
+            dut.clock.step(2)
+          }           
+          for (i <- 0 until 4) {
+            // 8 low cycles
+            dut.io.BCLK_IN.poke(1.U)    
+            dut.io.SDATA_IN.poke(0.U)
+            dut.clock.step(2)
+            dut.io.BCLK_IN.poke(0.U)
+            dut.clock.step(2)
+            dut.io.BCLK_IN.poke(1.U)        
+            dut.clock.step(2)    
+            dut.io.BCLK_IN.poke(0.U)
+            dut.clock.step(2)
+          }                
 
           println("i: " + i)
         }
@@ -160,6 +184,168 @@ class I2S_Periph_spec extends AnyFlatSpec with ChiselScalatestTester {
 
           println("i: " + i)
         }      
+        dut.io.LRCLK_IN.poke(1.U)
+        for (i <- 0 until 1) {
+          // First frame
+
+          for (i <- 0 until 4) {
+            // Eight high cycles
+            dut.io.BCLK_IN.poke(1.U)    
+            dut.io.SDATA_IN.poke(1.U)
+            dut.clock.step(2)
+            dut.io.BCLK_IN.poke(0.U)
+            dut.clock.step(2)
+            dut.io.BCLK_IN.poke(1.U)        
+            dut.clock.step(2)    
+            dut.io.BCLK_IN.poke(0.U)
+            dut.clock.step(2)    
+          }
+          dut.io.SDATA_IN.poke(0.U)    
+          for (i <- 0 until 2) {
+            // Four low cycles
+            dut.io.BCLK_IN.poke(1.U)    
+            dut.io.SDATA_IN.poke(0.U)
+            dut.clock.step(2)
+            dut.io.BCLK_IN.poke(0.U)
+            dut.clock.step(2)
+            dut.io.BCLK_IN.poke(1.U)        
+            dut.clock.step(2)    
+            dut.io.BCLK_IN.poke(0.U)
+            dut.clock.step(2)
+          }        
+          for (i <- 0 until 4) {
+            // Eight high cycles
+            dut.io.BCLK_IN.poke(1.U)    
+            dut.io.SDATA_IN.poke(1.U)
+            dut.clock.step(2)
+            dut.io.BCLK_IN.poke(0.U)
+            dut.clock.step(2)
+            dut.io.BCLK_IN.poke(1.U)        
+            dut.clock.step(2)    
+            dut.io.BCLK_IN.poke(0.U)
+            dut.clock.step(2)
+          }
+          dut.io.SDATA_IN.poke(0.U)    
+          for (i <- 0 until 1) {
+            // 2 low cycles
+            dut.io.BCLK_IN.poke(1.U)    
+            dut.io.SDATA_IN.poke(0.U)
+            dut.clock.step(2)
+            dut.io.BCLK_IN.poke(0.U)
+            dut.clock.step(2)
+            dut.io.BCLK_IN.poke(1.U)        
+            dut.clock.step(2)    
+            dut.io.BCLK_IN.poke(0.U)
+            dut.clock.step(2)
+          }   
+          for (i <- 0 until 1) {
+            // Two high cycles
+            dut.io.BCLK_IN.poke(1.U)    
+            dut.io.SDATA_IN.poke(1.U)
+            dut.clock.step(2)
+            dut.io.BCLK_IN.poke(0.U)
+            dut.clock.step(2)
+            dut.io.BCLK_IN.poke(1.U)        
+            dut.clock.step(2)    
+            dut.io.BCLK_IN.poke(0.U)
+            dut.clock.step(2)
+          }           
+          for (i <- 0 until 4) {
+            // 8 low cycles
+            dut.io.BCLK_IN.poke(1.U)    
+            dut.io.SDATA_IN.poke(0.U)
+            dut.clock.step(2)
+            dut.io.BCLK_IN.poke(0.U)
+            dut.clock.step(2)
+            dut.io.BCLK_IN.poke(1.U)        
+            dut.clock.step(2)    
+            dut.io.BCLK_IN.poke(0.U)
+            dut.clock.step(2)
+          }                
+
+          println("i: " + i)
+        }        
+        dut.io.LRCLK_IN.poke(0.U)
+        for (i <- 0 until 1) {
+          // First frame
+
+          for (i <- 0 until 4) {
+            // Eight high cycles
+            dut.io.BCLK_IN.poke(1.U)    
+            dut.io.SDATA_IN.poke(1.U)
+            dut.clock.step(2)
+            dut.io.BCLK_IN.poke(0.U)
+            dut.clock.step(2)
+            dut.io.BCLK_IN.poke(1.U)        
+            dut.clock.step(2)    
+            dut.io.BCLK_IN.poke(0.U)
+            dut.clock.step(2)    
+          }
+          dut.io.SDATA_IN.poke(0.U)    
+          for (i <- 0 until 2) {
+            // Four low cycles
+            dut.io.BCLK_IN.poke(1.U)    
+            dut.io.SDATA_IN.poke(0.U)
+            dut.clock.step(2)
+            dut.io.BCLK_IN.poke(0.U)
+            dut.clock.step(2)
+            dut.io.BCLK_IN.poke(1.U)        
+            dut.clock.step(2)    
+            dut.io.BCLK_IN.poke(0.U)
+            dut.clock.step(2)
+          }        
+          for (i <- 0 until 4) {
+            // Eight high cycles
+            dut.io.BCLK_IN.poke(1.U)    
+            dut.io.SDATA_IN.poke(1.U)
+            dut.clock.step(2)
+            dut.io.BCLK_IN.poke(0.U)
+            dut.clock.step(2)
+            dut.io.BCLK_IN.poke(1.U)        
+            dut.clock.step(2)    
+            dut.io.BCLK_IN.poke(0.U)
+            dut.clock.step(2)
+          }
+          dut.io.SDATA_IN.poke(0.U)    
+          for (i <- 0 until 1) {
+            // 2 low cycles
+            dut.io.BCLK_IN.poke(1.U)    
+            dut.io.SDATA_IN.poke(0.U)
+            dut.clock.step(2)
+            dut.io.BCLK_IN.poke(0.U)
+            dut.clock.step(2)
+            dut.io.BCLK_IN.poke(1.U)        
+            dut.clock.step(2)    
+            dut.io.BCLK_IN.poke(0.U)
+            dut.clock.step(2)
+          }   
+          for (i <- 0 until 1) {
+            // Two high cycles
+            dut.io.BCLK_IN.poke(1.U)    
+            dut.io.SDATA_IN.poke(1.U)
+            dut.clock.step(2)
+            dut.io.BCLK_IN.poke(0.U)
+            dut.clock.step(2)
+            dut.io.BCLK_IN.poke(1.U)        
+            dut.clock.step(2)    
+            dut.io.BCLK_IN.poke(0.U)
+            dut.clock.step(2)
+          }           
+          for (i <- 0 until 4) {
+            // 8 low cycles
+            dut.io.BCLK_IN.poke(1.U)    
+            dut.io.SDATA_IN.poke(0.U)
+            dut.clock.step(2)
+            dut.io.BCLK_IN.poke(0.U)
+            dut.clock.step(2)
+            dut.io.BCLK_IN.poke(1.U)        
+            dut.clock.step(2)    
+            dut.io.BCLK_IN.poke(0.U)
+            dut.clock.step(2)
+          }                
+
+          println("i: " + i)
+        }                
       }
     }
   } 

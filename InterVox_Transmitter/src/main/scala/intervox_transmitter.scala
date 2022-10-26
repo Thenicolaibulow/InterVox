@@ -72,17 +72,17 @@ class bi_phase_encoder() extends Module {
           // Append audio data
           when((bitCntr > 7.U)){
             
-            // Up to 64 bits
+            // Up to 2 x 24 bits
             when(bitCntr < 48.U){
 
-              when((stereoData((dataIndex - 4.U)))  === 0.U) {
+              when((stereoData(48.U - (dataIndex - 4.U)))  === 0.U) {
                 // Then don't change for one cycle
                 hasNone := 1.U
               }
             }
             when((bitCntr >= 48.U) & (bitCntr < 96.U)){
-
-              when((stereoData((dataIndex - 4.U  - 8.U)))  === 0.U) {
+              // 48th bit - current bit count - previous 24Bit - 4Bit header
+              when((stereoData((48.U - dataIndex - 24.U)))  === 0.U) {
                 // Then don't change for one cycle
                 hasNone := 1.U
               }              
@@ -163,7 +163,7 @@ class interVox_Encoder(width: UInt) extends Module {
   BFR1.io.enable        := 1.U
   BFR1.io.addr          := 1.U
   BFR1.io.write         := 0.U
-  BFR1.io.dataIn        := 0.U
+  BFR1.io.dataIn        := BFR.io.dataOut
 
   io.NXT_FRAME          := bi_phase_enc.io.TICK
   // Get the bi-phase encoder read
@@ -204,47 +204,46 @@ class interVox_Encoder(width: UInt) extends Module {
 
         when(BiPhase_CLK_CNTR === 7.U){BiPhase_CLK_CNTR := 0.U}
         
-        when(io.BCLK_IN === 1.U){  
+        when(BiPhase_CLK_CNTR % 4.U === 1.U){  // io.BCLK_IN === 1.U
 
           // Count bits
           bitCntr := bitCntr + 1.U
 
           // For each bit, assign it the appropriate bit in DATA_OUT_REG_WIDTH
           // Effectively 'repackaging' the I2S Serial data for use with intervox.          
-          
-          when(bitCntr > 40.U){
-            // Truncate the last 8 bits of a 32 bit word. 
+          when(bitCntr === 0.U){
+            // Clear Buffer. 
+            BFR.io.write      := 1.U
+            BFR.io.dataIn     := 0.U
+          }
+
+
+          when(bitCntr > 31.U){
+            // Truncate the last 8 bits of a 32 bit word. of the second channel data.
             // Limits the incoming data to 24 bit, purposely. 
             
             BFR.io.write      := 1.U
 
             when(io.SDATA_IN === 0.U){             
-              BFR.io.dataIn     := BFR.io.dataOut + (0.U << (bitCntr - 16.U))
+              // 64 - (Reverse MSB/LSB) - Offset by 8 Bit - CurrentBit
+              BFR.io.dataIn     := BFR.io.dataOut + (0.U << (71.U - bitCntr))
             }
 
             when(io.SDATA_IN === 1.U){              
-              BFR.io.dataIn     := BFR.io.dataOut + (1.U << (bitCntr - 16.U))
+              BFR.io.dataIn     := BFR.io.dataOut + (1.U << (71.U  - bitCntr))
             }
           }.otherwise{
-            // We always write to adress 1.
+            // Truncate the last 8 bits of a 32 bit word. of the first channel data.
+            // Limits the incoming data to 24 bit, purposely. 
             BFR.io.write      := 1.U            
 
             when(io.SDATA_IN === 0.U) {
-              BFR.io.dataIn     := BFR.io.dataOut + (0.U << (bitCntr))
+              BFR.io.dataIn     := BFR.io.dataOut + (0.U << (63.U - bitCntr))
             }
 
             when(io.SDATA_IN === 1.U){
-              BFR.io.dataIn     := BFR.io.dataOut + (1.U << (bitCntr))
+              BFR.io.dataIn     := BFR.io.dataOut + (1.U << (63.U - bitCntr))
             }          
-          }
-
-          when(bi_phase_enc.io.NEXT === 1.U){
-            BFR1.io.write   := 1.U
-            BFR1.io.dataIn  := 0.U
-          }
-
-          when(bitCntr === 63.U){
-            bitCntr          := 0.U
           }
 
           when(bitCntr === 63.U){
@@ -254,9 +253,11 @@ class interVox_Encoder(width: UInt) extends Module {
             BFR1.io.write     := 1.U
             BFR1.io.dataIn    := BFR.io.dataOut
 
-            // Clear Buffer. 
-            BFR.io.write      := 1.U
-            BFR.io.dataIn     := 0.U
+            // Clear buffer
+            BFR.io.write   := 1.U
+            BFR.io.dataIn  := 0.U
+
+            bitCntr := 0.U
           }          
           
         }
