@@ -1,24 +1,24 @@
 [*]
 [*] GTKWave Analyzer v3.3.107 (w)1999-2020 BSI
-[*] Tue Oct 25 19:58:04 2022
+[*] Wed Oct 26 08:48:52 2022
 [*]
 [dumpfile] "/Users/nixen/Development/fpga/InterVox/InterVox_Transmitter/test_run_dir/interVox_Encoder_should_pass/interVox_Encoder.vcd"
-[dumpfile_mtime] "Tue Oct 25 19:57:14 2022"
-[dumpfile_size] 317981
+[dumpfile_mtime] "Wed Oct 26 08:44:53 2022"
+[dumpfile_size] 1085537
 [savefile] "/Users/nixen/Development/fpga/InterVox/InterVox_Transmitter/test_run_dir/interVox_Encoder_should_pass/Latest.gtkw"
-[timestart] 617
-[size] 2056 1257
+[timestart] 90
+[size] 1728 1051
 [pos] -1 -1
-*-9.000000 1380 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+*-10.409053 4336 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
 [treeopen] interVox_Encoder.
 [treeopen] interVox_Encoder.BFR.
 [treeopen] interVox_Encoder.BFR.mem.
 [treeopen] interVox_Encoder.BFR1.
 [treeopen] interVox_Encoder.BFR1.mem.
 [sst_width] 193
-[signals_width] 210
+[signals_width] 237
 [sst_expanded] 1
-[sst_vpaned_height] 399
+[sst_vpaned_height] 330
 @28
 interVox_Encoder.clock
 @22
@@ -35,15 +35,17 @@ interVox_Encoder.BFR.io_write
 interVox_Encoder.BFR.mem.rdwrPort_w.data[63:0]
 @28
 interVox_Encoder.BFR1.mem.rdwrPort_r.data[63:0]
-@23
 interVox_Encoder.BFR1.mem.rdwrPort_w.data[63:0]
-@28
+[color] 3
 interVox_Encoder.bi_phase_enc.io_AUDIOINPUT[63:0]
 @24
+[color] 2
 interVox_Encoder.bi_phase_enc.bitCntr[7:0]
 interVox_Encoder.bi_phase_enc.dataIndex[5:0]
 @28
 interVox_Encoder.bi_phase_enc.io_TICK
+@29
+[color] 3
 interVox_Encoder.bi_phase_enc.io_DATA_OUT
 [pattern_trace] 1
 [pattern_trace] 0

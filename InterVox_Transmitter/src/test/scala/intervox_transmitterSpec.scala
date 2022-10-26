@@ -53,10 +53,10 @@ class I2S_Periph_spec extends AnyFlatSpec with ChiselScalatestTester {
           for (i <- 0 until 4) {
             // Eight high cycles
             dut.io.BCLK_IN.poke(1.U)    
-            dut.io.SDATA_IN.poke(1.U)
             dut.clock.step(2)
             dut.io.BCLK_IN.poke(0.U)
             dut.clock.step(2)
+            dut.io.SDATA_IN.poke(1.U)
             dut.io.BCLK_IN.poke(1.U)        
             dut.clock.step(2)    
             dut.io.BCLK_IN.poke(0.U)
@@ -66,10 +66,10 @@ class I2S_Periph_spec extends AnyFlatSpec with ChiselScalatestTester {
           for (i <- 0 until 2) {
             // Four low cycles
             dut.io.BCLK_IN.poke(1.U)    
-            dut.io.SDATA_IN.poke(0.U)
             dut.clock.step(2)
             dut.io.BCLK_IN.poke(0.U)
             dut.clock.step(2)
+            dut.io.SDATA_IN.poke(0.U)
             dut.io.BCLK_IN.poke(1.U)        
             dut.clock.step(2)    
             dut.io.BCLK_IN.poke(0.U)
@@ -78,10 +78,10 @@ class I2S_Periph_spec extends AnyFlatSpec with ChiselScalatestTester {
           for (i <- 0 until 4) {
             // Eight high cycles
             dut.io.BCLK_IN.poke(1.U)    
-            dut.io.SDATA_IN.poke(1.U)
             dut.clock.step(2)
             dut.io.BCLK_IN.poke(0.U)
             dut.clock.step(2)
+            dut.io.SDATA_IN.poke(1.U)
             dut.io.BCLK_IN.poke(1.U)        
             dut.clock.step(2)    
             dut.io.BCLK_IN.poke(0.U)
@@ -91,10 +91,10 @@ class I2S_Periph_spec extends AnyFlatSpec with ChiselScalatestTester {
           for (i <- 0 until 1) {
             // 2 low cycles
             dut.io.BCLK_IN.poke(1.U)    
-            dut.io.SDATA_IN.poke(0.U)
             dut.clock.step(2)
             dut.io.BCLK_IN.poke(0.U)
             dut.clock.step(2)
+            dut.io.SDATA_IN.poke(0.U)
             dut.io.BCLK_IN.poke(1.U)        
             dut.clock.step(2)    
             dut.io.BCLK_IN.poke(0.U)
@@ -103,10 +103,10 @@ class I2S_Periph_spec extends AnyFlatSpec with ChiselScalatestTester {
           for (i <- 0 until 1) {
             // Two high cycles
             dut.io.BCLK_IN.poke(1.U)    
-            dut.io.SDATA_IN.poke(1.U)
             dut.clock.step(2)
             dut.io.BCLK_IN.poke(0.U)
             dut.clock.step(2)
+            dut.io.SDATA_IN.poke(1.U)            
             dut.io.BCLK_IN.poke(1.U)        
             dut.clock.step(2)    
             dut.io.BCLK_IN.poke(0.U)
@@ -115,16 +115,15 @@ class I2S_Periph_spec extends AnyFlatSpec with ChiselScalatestTester {
           for (i <- 0 until 4) {
             // 8 low cycles
             dut.io.BCLK_IN.poke(1.U)    
-            dut.io.SDATA_IN.poke(0.U)
             dut.clock.step(2)
             dut.io.BCLK_IN.poke(0.U)
             dut.clock.step(2)
+            dut.io.SDATA_IN.poke(0.U)            
             dut.io.BCLK_IN.poke(1.U)        
             dut.clock.step(2)    
             dut.io.BCLK_IN.poke(0.U)
             dut.clock.step(2)
           }                
-
           println("i: " + i)
         }
         dut.io.LRCLK_IN.poke(0.U)
@@ -134,10 +133,10 @@ class I2S_Periph_spec extends AnyFlatSpec with ChiselScalatestTester {
           for (i <- 0 until 4) {
             // Eight high cycles
             dut.io.BCLK_IN.poke(1.U)    
-            dut.io.SDATA_IN.poke(1.U)
             dut.clock.step(2)
             dut.io.BCLK_IN.poke(0.U)
             dut.clock.step(2)
+            dut.io.SDATA_IN.poke(1.U)            
             dut.io.BCLK_IN.poke(1.U)        
             dut.clock.step(2)    
             dut.io.BCLK_IN.poke(0.U)
@@ -147,10 +146,10 @@ class I2S_Periph_spec extends AnyFlatSpec with ChiselScalatestTester {
           for (i <- 0 until 2) {
             // Four low cycles
             dut.io.BCLK_IN.poke(1.U)    
-            dut.io.SDATA_IN.poke(0.U)
             dut.clock.step(2)
             dut.io.BCLK_IN.poke(0.U)
             dut.clock.step(2)
+            dut.io.SDATA_IN.poke(0.U) 
             dut.io.BCLK_IN.poke(1.U)        
             dut.clock.step(2)    
             dut.io.BCLK_IN.poke(0.U)
@@ -159,10 +158,10 @@ class I2S_Periph_spec extends AnyFlatSpec with ChiselScalatestTester {
           for (i <- 0 until 2) {
             // Four high cycles
             dut.io.BCLK_IN.poke(1.U)    
-            dut.io.SDATA_IN.poke(1.U)
             dut.clock.step(2)
             dut.io.BCLK_IN.poke(0.U)
             dut.clock.step(2)
+            dut.io.SDATA_IN.poke(1.U)
             dut.io.BCLK_IN.poke(1.U)        
             dut.clock.step(2)    
             dut.io.BCLK_IN.poke(0.U)
@@ -172,10 +171,10 @@ class I2S_Periph_spec extends AnyFlatSpec with ChiselScalatestTester {
           for (i <- 0 until 8) {
             // Sixteen low cycles
             dut.io.BCLK_IN.poke(1.U)    
-            dut.io.SDATA_IN.poke(0.U)
             dut.clock.step(2)
             dut.io.BCLK_IN.poke(0.U)
             dut.clock.step(2)
+            dut.io.SDATA_IN.poke(0.U)
             dut.io.BCLK_IN.poke(1.U)        
             dut.clock.step(2)    
             dut.io.BCLK_IN.poke(0.U)
@@ -191,10 +190,10 @@ class I2S_Periph_spec extends AnyFlatSpec with ChiselScalatestTester {
           for (i <- 0 until 4) {
             // Eight high cycles
             dut.io.BCLK_IN.poke(1.U)    
-            dut.io.SDATA_IN.poke(1.U)
             dut.clock.step(2)
             dut.io.BCLK_IN.poke(0.U)
             dut.clock.step(2)
+            dut.io.SDATA_IN.poke(1.U)
             dut.io.BCLK_IN.poke(1.U)        
             dut.clock.step(2)    
             dut.io.BCLK_IN.poke(0.U)
@@ -204,10 +203,10 @@ class I2S_Periph_spec extends AnyFlatSpec with ChiselScalatestTester {
           for (i <- 0 until 2) {
             // Four low cycles
             dut.io.BCLK_IN.poke(1.U)    
-            dut.io.SDATA_IN.poke(0.U)
             dut.clock.step(2)
             dut.io.BCLK_IN.poke(0.U)
             dut.clock.step(2)
+            dut.io.SDATA_IN.poke(0.U)            
             dut.io.BCLK_IN.poke(1.U)        
             dut.clock.step(2)    
             dut.io.BCLK_IN.poke(0.U)
@@ -216,10 +215,10 @@ class I2S_Periph_spec extends AnyFlatSpec with ChiselScalatestTester {
           for (i <- 0 until 4) {
             // Eight high cycles
             dut.io.BCLK_IN.poke(1.U)    
-            dut.io.SDATA_IN.poke(1.U)
             dut.clock.step(2)
             dut.io.BCLK_IN.poke(0.U)
             dut.clock.step(2)
+            dut.io.SDATA_IN.poke(1.U)            
             dut.io.BCLK_IN.poke(1.U)        
             dut.clock.step(2)    
             dut.io.BCLK_IN.poke(0.U)
@@ -229,10 +228,10 @@ class I2S_Periph_spec extends AnyFlatSpec with ChiselScalatestTester {
           for (i <- 0 until 1) {
             // 2 low cycles
             dut.io.BCLK_IN.poke(1.U)    
-            dut.io.SDATA_IN.poke(0.U)
             dut.clock.step(2)
             dut.io.BCLK_IN.poke(0.U)
             dut.clock.step(2)
+            dut.io.SDATA_IN.poke(0.U)            
             dut.io.BCLK_IN.poke(1.U)        
             dut.clock.step(2)    
             dut.io.BCLK_IN.poke(0.U)
@@ -241,10 +240,10 @@ class I2S_Periph_spec extends AnyFlatSpec with ChiselScalatestTester {
           for (i <- 0 until 1) {
             // Two high cycles
             dut.io.BCLK_IN.poke(1.U)    
-            dut.io.SDATA_IN.poke(1.U)
             dut.clock.step(2)
             dut.io.BCLK_IN.poke(0.U)
             dut.clock.step(2)
+            dut.io.SDATA_IN.poke(1.U)            
             dut.io.BCLK_IN.poke(1.U)        
             dut.clock.step(2)    
             dut.io.BCLK_IN.poke(0.U)
@@ -253,10 +252,10 @@ class I2S_Periph_spec extends AnyFlatSpec with ChiselScalatestTester {
           for (i <- 0 until 4) {
             // 8 low cycles
             dut.io.BCLK_IN.poke(1.U)    
-            dut.io.SDATA_IN.poke(0.U)
             dut.clock.step(2)
             dut.io.BCLK_IN.poke(0.U)
             dut.clock.step(2)
+            dut.io.SDATA_IN.poke(0.U)            
             dut.io.BCLK_IN.poke(1.U)        
             dut.clock.step(2)    
             dut.io.BCLK_IN.poke(0.U)
@@ -272,10 +271,10 @@ class I2S_Periph_spec extends AnyFlatSpec with ChiselScalatestTester {
           for (i <- 0 until 4) {
             // Eight high cycles
             dut.io.BCLK_IN.poke(1.U)    
-            dut.io.SDATA_IN.poke(1.U)
             dut.clock.step(2)
             dut.io.BCLK_IN.poke(0.U)
             dut.clock.step(2)
+            dut.io.SDATA_IN.poke(1.U)
             dut.io.BCLK_IN.poke(1.U)        
             dut.clock.step(2)    
             dut.io.BCLK_IN.poke(0.U)
@@ -285,10 +284,10 @@ class I2S_Periph_spec extends AnyFlatSpec with ChiselScalatestTester {
           for (i <- 0 until 2) {
             // Four low cycles
             dut.io.BCLK_IN.poke(1.U)    
-            dut.io.SDATA_IN.poke(0.U)
             dut.clock.step(2)
             dut.io.BCLK_IN.poke(0.U)
             dut.clock.step(2)
+            dut.io.SDATA_IN.poke(0.U)
             dut.io.BCLK_IN.poke(1.U)        
             dut.clock.step(2)    
             dut.io.BCLK_IN.poke(0.U)
@@ -297,10 +296,10 @@ class I2S_Periph_spec extends AnyFlatSpec with ChiselScalatestTester {
           for (i <- 0 until 4) {
             // Eight high cycles
             dut.io.BCLK_IN.poke(1.U)    
-            dut.io.SDATA_IN.poke(1.U)
             dut.clock.step(2)
             dut.io.BCLK_IN.poke(0.U)
             dut.clock.step(2)
+            dut.io.SDATA_IN.poke(1.U)
             dut.io.BCLK_IN.poke(1.U)        
             dut.clock.step(2)    
             dut.io.BCLK_IN.poke(0.U)
@@ -310,10 +309,10 @@ class I2S_Periph_spec extends AnyFlatSpec with ChiselScalatestTester {
           for (i <- 0 until 1) {
             // 2 low cycles
             dut.io.BCLK_IN.poke(1.U)    
-            dut.io.SDATA_IN.poke(0.U)
             dut.clock.step(2)
             dut.io.BCLK_IN.poke(0.U)
             dut.clock.step(2)
+            dut.io.SDATA_IN.poke(0.U)
             dut.io.BCLK_IN.poke(1.U)        
             dut.clock.step(2)    
             dut.io.BCLK_IN.poke(0.U)
@@ -322,10 +321,10 @@ class I2S_Periph_spec extends AnyFlatSpec with ChiselScalatestTester {
           for (i <- 0 until 1) {
             // Two high cycles
             dut.io.BCLK_IN.poke(1.U)    
-            dut.io.SDATA_IN.poke(1.U)
             dut.clock.step(2)
             dut.io.BCLK_IN.poke(0.U)
             dut.clock.step(2)
+            dut.io.SDATA_IN.poke(1.U)            
             dut.io.BCLK_IN.poke(1.U)        
             dut.clock.step(2)    
             dut.io.BCLK_IN.poke(0.U)
@@ -334,18 +333,17 @@ class I2S_Periph_spec extends AnyFlatSpec with ChiselScalatestTester {
           for (i <- 0 until 4) {
             // 8 low cycles
             dut.io.BCLK_IN.poke(1.U)    
-            dut.io.SDATA_IN.poke(0.U)
             dut.clock.step(2)
             dut.io.BCLK_IN.poke(0.U)
             dut.clock.step(2)
+            dut.io.SDATA_IN.poke(0.U)            
             dut.io.BCLK_IN.poke(1.U)        
             dut.clock.step(2)    
             dut.io.BCLK_IN.poke(0.U)
             dut.clock.step(2)
           }                
-
           println("i: " + i)
-        }                
+        }         
       }
     }
   } 

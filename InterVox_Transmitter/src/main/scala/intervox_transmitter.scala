@@ -116,7 +116,7 @@ class bi_phase_encoder() extends Module {
 
 class interVox_Encoder(width: UInt) extends Module {
   val io = IO(new Bundle {
-    val MCLK_IN   = Input (UInt(1.W))     // 256 x fs
+    val MCLK_IN   = Input (UInt(1.W))   // 256 x fs
     val MCLK_O    = Output(UInt(1.W))  
     val BCLK_IN   = Input (UInt(1.W))   //  64 x fs
     val LRCLK_IN  = Input (UInt(1.W))   //       fs  
@@ -168,7 +168,7 @@ class interVox_Encoder(width: UInt) extends Module {
   io.NXT_FRAME          := bi_phase_enc.io.TICK
   // Get the bi-phase encoder read
   bi_phase_enc.io.TICK        := 0.U
-  // Always pass the buffered audio data to the encoder, adress 2 that is. 
+  // Always feed the bi-phase with the delayed repacked data (BFR1)
   bi_phase_enc.io.AUDIOINPUT  := BFR1.io.dataOut
   bi_phase_enc.io.DSPINPUT    := 0.U
   // Recieve encoded data, and clock it out on data_out
@@ -225,12 +225,12 @@ class interVox_Encoder(width: UInt) extends Module {
             BFR.io.write      := 1.U
 
             when(io.SDATA_IN === 0.U){             
-              // 64 - (Reverse MSB/LSB) - Offset by 8 Bit - CurrentBit
-              BFR.io.dataIn     := BFR.io.dataOut + (0.U << (71.U - bitCntr))
+              // 64 - (Reverse MSB/LSB) - Offset by 8 Bit (64 + 8) - CurrentBit
+              BFR.io.dataIn     := BFR.io.dataOut + (0.U << (72.U - bitCntr))
             }
 
             when(io.SDATA_IN === 1.U){              
-              BFR.io.dataIn     := BFR.io.dataOut + (1.U << (71.U  - bitCntr))
+              BFR.io.dataIn     := BFR.io.dataOut + (1.U << (72.U  - bitCntr))
             }
           }.otherwise{
             // Truncate the last 8 bits of a 32 bit word. of the first channel data.
@@ -238,11 +238,12 @@ class interVox_Encoder(width: UInt) extends Module {
             BFR.io.write      := 1.U            
 
             when(io.SDATA_IN === 0.U) {
-              BFR.io.dataIn     := BFR.io.dataOut + (0.U << (63.U - bitCntr))
+              // 64 - (Reverse MSB/LSB) - CurrentBit
+              BFR.io.dataIn     := BFR.io.dataOut + (0.U << (64.U - bitCntr))
             }
 
             when(io.SDATA_IN === 1.U){
-              BFR.io.dataIn     := BFR.io.dataOut + (1.U << (63.U - bitCntr))
+              BFR.io.dataIn     := BFR.io.dataOut + (1.U << (64.U - bitCntr))
             }          
           }
 
