@@ -16,11 +16,12 @@ class I2S_Periph_spec extends AnyFlatSpec with ChiselScalatestTester {
       println("Testing I2S transmitter!")
       // Init system        
 
-      dut.clock.step(1)
+      //dut.clock.step(1)
 
       dut.io.LRCLK_IN.poke(1.U)
-      for (i <- 0 until 16) {
-        // 32 low cycles
+      for (i <- 0 until 6) {
+        // 12 low cycles - purposely fuck shit up, 
+        // to verify that the clk sync works
         dut.io.BCLK_IN.poke(1.U)    
         dut.clock.step(2)
         dut.io.BCLK_IN.poke(0.U)
