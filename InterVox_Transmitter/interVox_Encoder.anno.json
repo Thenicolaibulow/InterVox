@@ -37,14 +37,7 @@
     "class":"firrtl.transforms.CombinationalPath",
     "sink":"~interVox_Encoder|interVox_Encoder>io_MCLK_O",
     "sources":[
-      "~interVox_Encoder|interVox_Encoder>io_MCLK_IN"
-    ]
-  },
-  {
-    "class":"firrtl.transforms.CombinationalPath",
-    "sink":"~interVox_Encoder|interVox_Encoder>io_NXT_FRAME",
-    "sources":[
-      "~interVox_Encoder|interVox_Encoder>io_MCLK_IN"
+      "~interVox_Encoder|interVox_Encoder>clock"
     ]
   },
   {

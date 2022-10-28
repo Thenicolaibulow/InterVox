@@ -1,7 +1,10 @@
-[0m[[0m[31merror[0m] [0m[0mchisel3.internal.ChiselException: cannot connect interVox_Encoder.io.DATA_O: IO[Clock] and interVox_Encoder.DATA_OUT_REG_1B: Reg[UInt<1>][0m
+[0m[[0m[31merror[0m] [0m[0mchisel3.internal.ChiselException: Connection between sink (interVox_Encoder.io.MCLK_O: IO[UInt<1>]) and source (interVox_Encoder.io.MCLK_IN: IO[Clock]) failed @: Sink (UInt<1>) and Source (Clock) have different types.[0m
 [0m[[0m[31merror[0m] [0m[0m	at ... ()[0m
-[0m[[0m[31merror[0m] [0m[0m	at interVox_Encoder.<init>(intervox_transmitter.scala:146)[0m
-[0m[[0m[31merror[0m] [0m[0m	at HelloMain$.$anonfun$new$114(intervox_transmitter.scala:258)[0m
+[0m[[0m[31merror[0m] [0m[0m	at interVox_Encoder.$anonfun$new$54(intervox_transmitter.scala:161)[0m
+[0m[[0m[31merror[0m] [0m[0m	at scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.java:23)[0m
+[0m[[0m[31merror[0m] [0m[0m	at chisel3.withClock$.apply(MultiClock.scala:47)[0m
+[0m[[0m[31merror[0m] [0m[0m	at interVox_Encoder.<init>(intervox_transmitter.scala:135)[0m
+[0m[[0m[31merror[0m] [0m[0m	at HelloMain$.$anonfun$new$147(intervox_transmitter.scala:290)[0m
 [0m[[0m[31merror[0m] [0m[0m	at ... ()[0m
 [0m[[0m[31merror[0m] [0m[0m	at ... (Stack trace trimmed to user code only. Rerun with --full-stacktrace to see the full stack trace)[0m
-[0m[[0m[31merror[0m] [0m[0m(Compile / [31mrun[0m) chisel3.internal.ChiselException: cannot connect interVox_Encoder.io.DATA_O: IO[Clock] and interVox_Encoder.DATA_OUT_REG_1B: Reg[UInt<1>][0m
+[0m[[0m[31merror[0m] [0m[0m(Compile / [31mrun[0m) chisel3.internal.ChiselException: Connection between sink (interVox_Encoder.io.MCLK_O: IO[UInt<1>]) and source (interVox_Encoder.io.MCLK_IN: IO[Clock]) failed @: Sink (UInt<1>) and Source (Clock) have different types.[0m

@@ -1,13 +1,4 @@
-[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/InterVox_Transmitter/src/main/scala/intervox_transmitter.scala:239:67: value bitCntr is not a member of chisel3.UInt[0m
-[0m[[0m[31merror[0m] [0m[0m              BFR.io.dataIn     := BFR.io.dataOut + (0.U << (48.U bitCntr + 8.U))[0m
-[0m[[0m[31merror[0m] [0m[0m                                                                  ^[0m
-[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/InterVox_Transmitter/src/main/scala/intervox_transmitter.scala:239:75: value unary_+ is not a member of chisel3.UInt[0m
-[0m[[0m[31merror[0m] [0m[0m              BFR.io.dataIn     := BFR.io.dataOut + (0.U << (48.U bitCntr + 8.U))[0m
-[0m[[0m[31merror[0m] [0m[0m                                                                          ^[0m
-[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/InterVox_Transmitter/src/main/scala/intervox_transmitter.scala:243:67: value bitCntr is not a member of chisel3.UInt[0m
-[0m[[0m[31merror[0m] [0m[0m              BFR.io.dataIn     := BFR.io.dataOut + (1.U << (48.U bitCntr + 8.U))[0m
-[0m[[0m[31merror[0m] [0m[0m                                                                  ^[0m
-[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/InterVox_Transmitter/src/main/scala/intervox_transmitter.scala:243:75: value unary_+ is not a member of chisel3.UInt[0m
-[0m[[0m[31merror[0m] [0m[0m              BFR.io.dataIn     := BFR.io.dataOut + (1.U << (48.U bitCntr + 8.U))[0m
-[0m[[0m[31merror[0m] [0m[0m                                                                          ^[0m
-[0m[[0m[31merror[0m] [0m[0mfour errors found[0m
+[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/InterVox_Transmitter/src/main/scala/intervox_transmitter.scala:161:31: value MCLK_IN is not a member of chisel3.Bundle{val MCLK_O: chisel3.Clock; val BCLK_IN: chisel3.UInt; val LRCLK_IN: chisel3.UInt; val SDATA_IN: chisel3.UInt; val DATA_O: chisel3.UInt; val LRCLK_O: chisel3.UInt; val BCLK_O: chisel3.UInt; val SDATA_O: chisel3.UInt; val NXT_FRAME: chisel3.UInt}[0m
+[0m[[0m[31merror[0m] [0m[0m  io.MCLK_O             := io.MCLK_IN[0m
+[0m[[0m[31merror[0m] [0m[0m                              ^[0m
+[0m[[0m[31merror[0m] [0m[0mone error found[0m
