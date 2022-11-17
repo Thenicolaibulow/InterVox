@@ -1,4 +1,4 @@
-[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/src/test/scala/HelloSpec.scala:22:27: value litValue is not a member of Int[0m
-[0m[[0m[31merror[0m] [0m[0m        println("i: " + i.litValue)[0m
-[0m[[0m[31merror[0m] [0m[0m                          ^[0m
+[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/Intervox_Reciever/src/test/scala/HelloSpec.scala:11:14: not found: type intervox_Decoder[0m
+[0m[[0m[31merror[0m] [0m[0m    test(new intervox_Decoder())[0m
+[0m[[0m[31merror[0m] [0m[0m             ^[0m
 [0m[[0m[31merror[0m] [0m[0mone error found[0m

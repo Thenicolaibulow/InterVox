@@ -1,6 +1,4 @@
-[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/src/main/scala/Hello.scala:63:24: type mismatch;[0m
-[0m[[0m[31merror[0m] [0m[0m found   : Boolean[0m
-[0m[[0m[31merror[0m] [0m[0m required: chisel3.Bool[0m
-[0m[[0m[31merror[0m] [0m[0m  when(pll.io.MCLK_48K == 1.U) {[0m
+[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/Intervox_Reciever/src/main/scala/intervox_receiver.scala:64:24: ';' expected but '.' found.[0m
+[0m[[0m[31merror[0m] [0m[0m            dataOut := .U[0m
 [0m[[0m[31merror[0m] [0m[0m                       ^[0m
 [0m[[0m[31merror[0m] [0m[0mone error found[0m

@@ -6,63 +6,103 @@ import chisel3.util._
 import org.scalatest.{Matchers, FlatSpec}
 
 
-class I2S_Periph_spec extends AnyFlatSpec with ChiselScalatestTester {
-  val bitdepth = 32 
-  "I2S_Transmitter" should "pass" in {
-    test(new I2S_Transmitter(bitdepth.U))
+class interVox_Reciever_spec extends AnyFlatSpec with ChiselScalatestTester {
+  "interVox_Reciever" should "pass" in {
+    test(new interVox_Reciever())
       .withAnnotations(Seq(WriteVcdAnnotation)) { dut => 
     
       dut.clock.setTimeout(0)
-      println("Testing I2S transmitter!")
+      println("Testing InterVox receiver!")
 
-      for (i <- 0 until 65540) {
-        //dut.io.sw.poke(((16 + 7) + ((16 + 7) << (bitdepth / 2))).U)
-        dut.io.sw.poke(0.S)
-        dut.clock.step()
+      for (i <- 0 until 4) {
+        /*
+            SyncWord (4Bit) = bxxx0
+        */
+
+        dut.io.INTERVOX_IN.poke(0.U)
+        dut.clock.step(32)  // #0
+        dut.clock.step(32)  // #1
+        dut.clock.step(32)  // #2
+        dut.io.INTERVOX_IN.poke(1.U)
+        dut.clock.step(32)  // #3
+        dut.io.INTERVOX_IN.poke(0.U)
+
+        /*
+            2 x 24Bit Audio Data
+        */  
+
+        // Send 4 Ones
+        for(j <- 0 until 4){
+
+          dut.clock.step(16)
+          dut.io.INTERVOX_IN.poke(1.U)
+          dut.clock.step(16)
+          dut.io.INTERVOX_IN.poke(0.U)
+        }
+        // Send 4 Zeros
+        for(j <- 0 until 2){
+
+          dut.clock.step(32)
+          dut.io.INTERVOX_IN.poke(1.U)
+          dut.clock.step(32)
+          dut.io.INTERVOX_IN.poke(0.U)
+        }    
+        // Send 20 Ones
+        for(j <- 0 until 20){
+
+          dut.clock.step(16)
+          dut.io.INTERVOX_IN.poke(1.U)
+          dut.clock.step(16)
+          dut.io.INTERVOX_IN.poke(0.U)
+        }   
+        // Send 4 Zeros
+        for(j <- 0 until 2){
+
+          dut.clock.step(32)
+          dut.io.INTERVOX_IN.poke(1.U)
+          dut.clock.step(32)
+          dut.io.INTERVOX_IN.poke(0.U)
+        }
+        // Send 10 Ones
+        for(j <- 0 until 10){
+
+          dut.clock.step(16)
+          dut.io.INTERVOX_IN.poke(1.U)
+          dut.clock.step(16)
+          dut.io.INTERVOX_IN.poke(0.U)
+        }  
+        // Send 4 Zeros
+        for(j <- 0 until 2){
+
+          dut.clock.step(32)
+          dut.io.INTERVOX_IN.poke(1.U)
+          dut.clock.step(32)
+          dut.io.INTERVOX_IN.poke(0.U)
+        }   
+        // Send 2 Ones
+        for(j <- 0 until 2){
+
+          dut.clock.step(16)
+          dut.io.INTERVOX_IN.poke(1.U)
+          dut.clock.step(16)
+          dut.io.INTERVOX_IN.poke(0.U)
+        }           
+
+        /*
+            DSP DATA
+        */
+
+        // Send 12 Ones
+        for(j <- 0 until 12){
+
+          dut.clock.step(16)
+          dut.io.INTERVOX_IN.poke(1.U)
+          dut.clock.step(16)
+          dut.io.INTERVOX_IN.poke(0.U)
+        }                                                 
+
         println("i: " + i)
       }
     }
   } 
 }
-/*
-class I2S_trans_spec extends AnyFlatSpec with ChiselScalatestTester {
-  val bitdepth = 32       
-  "I2S_Transmitter" should "pass" in {
-    test(new I2S_Transmitter(bitdepth.U))
-      .withAnnotations(Seq(WriteVcdAnnotation)) { dut =>
-
-      dut.clock.setTimeout(0)
-      println("Testing I2S transmitter!")
-
-
-      for (i <- 0 until (bitdepth*4)) {
-      
-        // Assign arbitrary value to input vector.
-        val state = dut.io.State_o.peek().litValue
-
-        dut.io.tick.poke(1.U)
-
-        if (state === 1){
-          val cntr = (dut.io.BitCntr.peek().litValue).toInt
-
-          dut.io.Tx.poke(((128 + 16 + 7) + ((128 + 16 + 7) << (bitdepth / 2))).U)
-
-          println("BitCntr: " + cntr)
-          println("Data: "+ (dut.io.DATA.peek().litValue))
-        }               
-
-        if ((state === 0)) {
-          println("Reset State")   
-        } 
-        else if ((state === 1)) {
-          println("Transmit State")   
-        }
-        // What about LRCLK?
-        println("WS?: " + dut.io.LRCLK.peek().litValue) 
-        // Next Clock
-        dut.clock.step()
-      }
-    }
-  }
-}
-*/

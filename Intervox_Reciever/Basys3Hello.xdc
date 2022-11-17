@@ -17,14 +17,8 @@ set_property PACKAGE_PIN W3     [get_ports {io_DATA[10]}]
 set_property PACKAGE_PIN U3     [get_ports {io_DATA[11]}]
 set_property PACKAGE_PIN P3     [get_ports {io_DATA[12]}]
 
-set_property PACKAGE_PIN P17    [get_ports {io_bDATA}]
-set_property PACKAGE_PIN N17    [get_ports {io_LRCLK}]
-set_property PACKAGE_PIN P18    [get_ports {io_BCLK}]
-set_property PACKAGE_PIN R18    [get_ports {io_MCLK}]
-
-#set_property PACKAGE_PIN N3    [get_ports {io_bDATA}]
-#set_property PACKAGE_PIN P1    [get_ports {io_LRCLK}]
-#set_property PACKAGE_PIN L1    [get_ports {io_BCLK}]
+set_property PACKAGE_PIN P17    [get_ports {io_INTERVOX_IN}]
+set_property PACKAGE_PIN P18    [get_ports {io_CLK_REC}]
 
 # Switches
 set_property PACKAGE_PIN V17    [get_ports {io_sw[0]}]

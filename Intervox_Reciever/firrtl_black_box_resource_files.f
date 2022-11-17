@@ -1,1 +1,1 @@
-/Users/nixen/Development/fpga/InterVox/clk_wiz_0_clk_wiz.v
+/Users/nixen/Development/fpga/InterVox/Intervox_Reciever/clk_wiz_0_clk_wiz.v
