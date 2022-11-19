@@ -32,28 +32,30 @@ class bi_phase_encoder() extends Module {
     val DATA_OUT   = Output(UInt(1.W))
     val AUDIOINPUT = Input (UInt(64.W))
     val DSPINPUT   = Input (UInt(64.W))
-    val TICK       = Input (UInt(1.W))
+    val ENA       = Input (UInt(1.W))
     val NEXT       = Output(UInt(1.W))
   })
     val outReg        = RegInit(0.U(1.W))
     val next          = RegInit(0.U(1.W))
     val stereoData    = RegInit(0.U(64.W))
     val dspData       = RegInit(0.U(16.W))
+    val dspData2      = RegInit(0.U(64.W))
     val bitCntr_enc   = RegInit(0.U(8.W))
     val hasNone       = RegInit(0.U(1.W))
     val dataIndex     = RegInit(0.U(6.W))
 
     io.DATA_OUT := outReg
     // Every new frame, dump data into the Audio register. 
-    stereoData := io.AUDIOINPUT
-    dspData := io.DSPINPUT
-    io.NEXT := next
+    stereoData  := io.AUDIOINPUT
+    dspData     := io.DSPINPUT
+    dspData2    := 0.U
+    io.NEXT     := next
     // Flip reg. for creating the "data_index".
     val ndexR         = RegInit(0.U(1.W))    
 
       // bitCntr_enc = BCLK x 2
 
-    when(io.TICK === 0.U){
+    when(io.ENA === 1.U){
         // Count bits
         bitCntr_enc := bitCntr_enc + 1.U
 
@@ -106,6 +108,16 @@ class bi_phase_encoder() extends Module {
             }
 
           }
+          when((bitCntr_enc >= 127.U) & (bitCntr_enc < 255.U)){
+              /*
+                  DSP 
+              */
+              when((dspData2((dataIndex - 64.U)))  === 0.U) {
+              // Then don't change for one cycle
+              hasNone := 1.U
+            }
+
+          }          
           when(hasNone === 1.U){
             outReg := outReg
             hasNone := 0.U
@@ -116,7 +128,7 @@ class bi_phase_encoder() extends Module {
           }
         }
 
-        when(bitCntr_enc === 127.U){
+        when(bitCntr_enc === 255.U){
           bitCntr_enc := 0.U
           //next := 1.U
         }
@@ -174,20 +186,15 @@ class interVox_Encoder(width: UInt) extends Module {
   BFR1.io.write         := 0.U
   BFR1.io.dataIn        := BFR.io.dataOut
 
-  // For debugging: output the bi_phase_enc clock signal. 
-  io.NXT_FRAME          := bi_phase_enc.io.TICK
+  // For debugging: output the bi_phase_enc enable signal. 
+  io.NXT_FRAME                := bi_phase_enc.io.ENA
+
   // Get the bi-phase encoder ready
-  bi_phase_enc.io.TICK        := 1.U
+  bi_phase_enc.io.ENA         := 0.U
   // Always feed the bi-phase with the delayed repacked data (BFR1)
   bi_phase_enc.io.AUDIOINPUT  := BFR1.io.dataOut
   // Hardcode DSP data.
   bi_phase_enc.io.DSPINPUT    := 0.U 
-  
-  // 4095.U = All 12 bits high. 
-  // 2730 = every other bit high == 1010 1010 1010
-  // 1365 = every other bit high == 0101 0101 0101
-
-
 
   /*
       Functional overview:
@@ -205,8 +212,9 @@ class interVox_Encoder(width: UInt) extends Module {
   */
 
   when(synced === 0.U){
+
     BiPhase_CLK_CNTR := BiPhase_CLK_CNTR + 1.U
-    
+
     when(BiPhase_CLK_CNTR === 3.U){
       BiPhase_CLK_CNTR := 0.U
 
@@ -245,11 +253,7 @@ class interVox_Encoder(width: UInt) extends Module {
       }
       is(state_Transmit){ 
 
-        bclkR  := ~bclkR
-        // Clock divider for biphase_encoder (MCLK/2)
-        when(bclkR === 0.U){
-          bi_phase_enc.io.TICK := 0.U
-        }
+        bi_phase_enc.io.ENA := 1.U
 
         BiPhase_CLK_CNTR := BiPhase_CLK_CNTR + 1.U
 
@@ -257,7 +261,7 @@ class interVox_Encoder(width: UInt) extends Module {
             I2S "Reciever"
         */
       
-        when(BiPhase_CLK_CNTR === 3.U){
+        when(BiPhase_CLK_CNTR === 1.U){
           BiPhase_CLK_CNTR := 0.U
 
           // Count I2S bits
@@ -302,7 +306,7 @@ class interVox_Encoder(width: UInt) extends Module {
             }          
           }
 
-          when(bitCntr === 63.U){
+          when(bitCntr === 127.U){
             // Allows for one sample delay between input and interVox output. 
             // Dump BFR 0 into BFR 1
             BFR.io.write      := 0.U

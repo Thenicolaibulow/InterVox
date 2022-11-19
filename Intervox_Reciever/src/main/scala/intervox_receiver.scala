@@ -22,105 +22,120 @@ class clock_Recovery() extends Module {
 
     // 100MHz MasterClock / Incoming (upto) 6.144 MHz = 16.27 CLK_CYCLES / Incoming Clock.
     // Ie. 16x oversampling should be possible.    
-    val expected_cycles_syncword = (32.U * 4.U) - 1.U   // Syncword is 4 bit, hence * 4. 
-    val expected_cycles_zero = 64.U - 1.U               // A transmitted zero will be sent @ BCLK = 3072MHz = ~sysclk/32.
-    val expected_cycles_one = 32.U - 1.U                // A transmitted one will be sent @ BCLK*2 = 6144MHz = ~sysclk/16.
+    val expected_cycles_syncword = (16.U * 4.U) - 1.U   // Syncword is 4 bit, hence * 4. 
+    val expected_cycles_zero = 32.U - 1.U               // A transmitted zero will be sent @ BCLK = 3072MHz = ~sysclk/32.
+    val expected_cycles_one = 16.U - 1.U                // A transmitted one will be sent @ BCLK*2 = 6144MHz = ~sysclk/16.
+    val expected_nr_of_incoming_bits = 64.U - 1.U
+    val oversampling_factor = 16.U - 1.U
 
     val clkCntr     = RegInit(0.U(8.W))
+    val clkCntr1    = RegInit(0.U(8.W))
     val pllCntr     = RegInit(0.U(8.W))
-    val inState     = RegInit(0.U(1.W))
-    val prevInState = RegInit(0.U(1.W))
-    val inStateWas  = RegInit(0.U(1.W))
+    val bufCntr     = RegInit(0.U(8.W))
+    val bitIn       = RegInit(0.U(16.W))
+    val bitInBuf    = RegInit(0.U(16.W))
+    val bitCntr     = RegInit(0.U(8.W))
+    
     val outReg      = RegInit(0.U(1.W))
     val dataOut     = RegInit(0.U(1.W)) 
-    val nextFrame   = RegInit(0.U(1.W))
-    val noChange    = RegInit(0.U(1.W))
+    val sync_lo     = RegInit(0.U(1.W))
+    val sync_hi     = RegInit(0.U(1.W))
+    val bitsReady   = RegInit(0.U(1.W))
+    val change      = RegInit(0.U(1.W))
+    val enaBuf      = RegInit(0.U(1.W))
 
     io.CLK_OUT      := outReg
-    io.DATA_OUT     := dataOut
-    io.NEXT_FRAME   := nextFrame
+    io.DATA_OUT     := change
+    io.NEXT_FRAME   := 0.U
 
-    pllCntr := pllCntr + 1.U
-    when(pllCntr === 7.U){      // (pllCntr === 3.U) = PLL_MCLK = 6.143 MHz | (pllCntr === 15.U) = PLL_MCLK = x... | (pllCntr === 7.U) = PLL_MCLK = 3.071 MHz
-        outReg := ~outReg
-        pllCntr := 0.U
+    // PLL Testing: 
+    /*
+        pllCntr := pllCntr + 1.U
+        when(pllCntr === 7.U){      // (pllCntr === 3.U) = PLL_MCLK = 6.143 MHz | (pllCntr === 15.U) = PLL_MCLK = x... | (pllCntr === 7.U) = PLL_MCLK = 3.071 MHz
+            outReg := ~outReg
+            pllCntr := 0.U
+        }
+    */
+    clkCntr := clkCntr + 1.U
+    // Reset clkCntr, as a minimum, whenever a syncword periode (the longest periode) has elapsed.
+    when(clkCntr === expected_cycles_syncword){
+        clkCntr := 0.U
     }
+    // Detect Syncword:
+    when(bitCntr === 0.U){
 
-    // On incoming data
-    switch(io.DATA_IN){
-        // If 0
-        is(0.U){
-            // If incoming was just high
-            when((inState === 1.U)){
-                // Then update state
-                inState := 0.U
+        when(io.DATA_IN === 0.U){
+            clkCntr1 := clkCntr1 + 1.U
+            // When we've been low for three bit-periodes, we must have hit a syncWord.
+            when(clkCntr1 === (expected_cycles_one * 3.U)){
+                sync_lo := 1.U
             }
-            // Else, just increment the clock counter
-            clkCntr := clkCntr + 1.U
         }
-        is(1.U){
-            // If incoming was just low
-            when(inState === 0.U){
-                // Then update state
-                inState := 1.U
-            }          
-            // Else, just increment the clock counter
-            clkCntr := clkCntr + 1.U
+        when(sync_lo === 1.U){
+            clkCntr1 := clkCntr1 + 1.U
+            // When we've been high for 1 bit-periodes, we must have hit the end of the syncWord.
+            when(clkCntr1 === expected_cycles_syncword){
+                sync_hi := 1.U
+                clkCntr1 := 0.U
+            }        
         }
     }
-    // Detect Syncword
-    when(clkCntr >= (expected_cycles_syncword - 16.U)){
-        // Detect the rising edge
-        when(inState === 1.U){
-            // New frame incoming
-            nextFrame := 1.U
-        }   
-        when(clkCntr >= (expected_cycles_syncword)){
-            // Sync Word over, Reset cntr. 
-            clkCntr := 0.U    
-        }
-    }
-    // Detect changes in incoming data 
-    // (Always check in the middle of a cycle (16 | 48), since this is where we'd expect the change.)
-    when(clkCntr === 16.U || clkCntr === 48.U){
-        // If we for 16 cycles didn't see a change:
-        when(inState === io.DATA_IN){
-            // Then flag noChange
-            noChange := 1.U
-        }
-        // If we on the 16th cycle saw a change:
-        when(inState === ~io.DATA_IN){
-            // Then unflag noChange
-            noChange := 0.U
-        }        
-    }
-    // If the counter reaches expected length of a one:
-    when(clkCntr === expected_cycles_one){        
-        // If there was a change within the last 32 cycles (expected length of one)
-        when(noChange === 0.U){
-            // Then note the one, and reset the clock counter.
-            dataOut := 1.U
-            clkCntr := 0.U
-        }
-    }
-    // If the counter reaches beyond the expected length of a one:
-    when(clkCntr > expected_cycles_one){
-        // If there was no change in the last 32 cycles (expected length of one)
-        when(noChange === 1.U){        
-            // Then we must have received a zero. Note that..
-            dataOut := 0.U
-        }
 
-        when(clkCntr === expected_cycles_zero){
-            // Reset counter, when it reaches the length of a zero (64 cycles)
-            clkCntr := 0.U
+    // Wrap the bitCounter, once all expected bits are recieved.
+    when(bitCntr === expected_nr_of_incoming_bits){
+        bitCntr := 0.U
+    }
+
+    // Detect Changes in incoming data:
+    when((sync_lo === 1.U) & (sync_hi === 1.U)){
+        
+        clkCntr1 := clkCntr1 + 1.U
+        
+        // Oversampling time!
+        when(io.DATA_IN === 1.U){
+            bitIn := bitIn | (1.U << (clkCntr1))
         }        
-    }    
-    // Always flip clock
-    /*when((clkCntr === 15.U) || (clkCntr === 31.U) || (clkCntr === 47.U) || (clkCntr === 63.U)){
-        outReg := ~outReg
-    }*/
- 
+
+        // Wrap the counter and enable readout from the buffer.
+        when(clkCntr1 === oversampling_factor){
+            enaBuf      := 1.U
+            clkCntr1    := 0.U
+            // We don't want the buffer to be empty:
+            when((bitIn <= 32512.U) & (bitIn > 0.U)){
+                bitInBuf := bitIn
+            }
+            // Reset the incoming data register:
+            bitIn       := 0.U
+        }
+        
+        // Begin readout of buffer and then start to 
+        // determine changes in the incoming data.
+        when(enaBuf === 1.U){
+            bufCntr := bufCntr + 1.U
+            // Detect change in buffer bits:
+            when(bitInBuf(bufCntr) =/= bitInBuf(bufCntr - 1.U)){
+                outReg := ~outReg
+            }
+            when(bufCntr === expected_cycles_one){
+                bufCntr := 0.U
+
+                // Determine if zero or one: 
+                when(bitIn(3.U) =/= bitIn(12.U)){
+                    change := 1.U
+                }.otherwise{
+                    change := 0.U
+                }
+            }
+        }
+    }
+    
+    // Recovery flow: 
+    /*
+        Detect syncword (DATA_IN for x cycles)
+        Through 8 cycles check for HI/LO on DATA_IN > Store this in a UINT
+        Check for changes in each "bit" > use to determine when to flip the clockBit
+    */
+
 }
 
 

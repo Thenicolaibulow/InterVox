@@ -1,13 +1,4 @@
-[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/Intervox_Reciever/src/main/scala/intervox_receiver.scala:130:5: not found: value clockRec[0m
-[0m[[0m[31merror[0m] [0m[0m    clockRec.io.DATA_IN := io.INTERVOX_IN[0m
-[0m[[0m[31merror[0m] [0m[0m    ^[0m
-[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/Intervox_Reciever/src/main/scala/intervox_receiver.scala:131:28: not found: value clockRec[0m
-[0m[[0m[31merror[0m] [0m[0m    io.DATA_OUT         := clockRec.io.DATA_OUT[0m
+[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/Intervox_Reciever/src/main/scala/intervox_receiver.scala:110:28: ')' expected but integer literal found.[0m
+[0m[[0m[31merror[0m] [0m[0m            bitIn       := 0.U[0m
 [0m[[0m[31merror[0m] [0m[0m                           ^[0m
-[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/Intervox_Reciever/src/main/scala/intervox_receiver.scala:132:28: not found: value clockRec[0m
-[0m[[0m[31merror[0m] [0m[0m    io.NEXT_FRAME       := clockRec.io.NEXT_FRAME[0m
-[0m[[0m[31merror[0m] [0m[0m                           ^[0m
-[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/Intervox_Reciever/src/main/scala/intervox_receiver.scala:140:22: not found: value clockRec[0m
-[0m[[0m[31merror[0m] [0m[0m    pll.io.PLL_IN := clockRec.io.CLK_OUT[0m
-[0m[[0m[31merror[0m] [0m[0m                     ^[0m
-[0m[[0m[31merror[0m] [0m[0mfour errors found[0m
+[0m[[0m[31merror[0m] [0m[0mone error found[0m
