@@ -1,4 +1,4 @@
-[0m[[0m[31merror[0m] [0m[0mfirrtl.passes.CheckInitialization$RefNotInitializedException:  : [module clock_Recovery]  Reference io is not fully initialized.[0m
-[0m[[0m[31merror[0m] [0m[0m   : io.CLK_OUT <= mux(_T_7, _io_CLK_OUT_T, VOID)[0m
-[0m[[0m[31merror[0m] [0m[0m(Compile / [31mrun[0m) firrtl.passes.CheckInitialization$RefNotInitializedException:  : [module clock_Recovery]  Reference io is not fully initialized.[0m
-[0m[[0m[31merror[0m] [0m[0m   : io.CLK_OUT <= mux(_T_7, _io_CLK_OUT_T, VOID)[0m
+[0m[[0m[31merror[0m] [0m[0mfirrtl.transforms.BlackBoxNotFoundException: BlackBox '/clk_wiz_0_clk_wiz.v' not found. Did you misspell it? Is it in src/{main,test}/resources?[0m
+[0m[[0m[31merror[0m] [0m[0msbt.internal.LayeredClassLoader@2c9fb66c/clk_wiz_0_clk_wiz.v[0m
+[0m[[0m[31merror[0m] [0m[0m(Compile / [31mrun[0m) firrtl.transforms.BlackBoxNotFoundException: BlackBox '/clk_wiz_0_clk_wiz.v' not found. Did you misspell it? Is it in src/{main,test}/resources?[0m
+[0m[[0m[31merror[0m] [0m[0msbt.internal.LayeredClassLoader@2c9fb66c/clk_wiz_0_clk_wiz.v[0m

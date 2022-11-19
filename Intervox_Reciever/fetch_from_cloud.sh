@@ -1,2 +1,2 @@
 #! /bin/bash
-scp root@cloud-fpga:/root/Development/f4pga-examples/xc7/interVox_*/build/basys3/*.bit ./target/
+scp nixen@192.168.1.148:/home/nixen/test_prj/test_prj.runs/impl_1/*.bit ./target/

@@ -1,6 +1,17 @@
 import chisel3._
 import chisel3.util._
 
+// Include blackboxed PLL from vivado:
+class clk_wiz_0_clk_wiz extends BlackBox with HasBlackBoxResource {
+  // Class should have same name, as module in blackbox!
+  val io = IO(new Bundle {
+    val PLL_MCLK  = Output(UInt(1.W))
+    val locked    = Output(UInt(1.W))
+    val PLL_IN    = Input (UInt(1.W))
+  })
+  addResource("/clk_wiz_0_clk_wiz.v")
+}
+
 class clock_Recovery() extends Module {
     val io = IO(new Bundle{
         val DATA_IN     = Input (UInt(1.W))
@@ -8,6 +19,7 @@ class clock_Recovery() extends Module {
         val DATA_OUT    = Output (UInt(1.W))
         val NEXT_FRAME  = Output (UInt(1.W))
     })
+
     // 100MHz MasterClock / Incoming (upto) 6.144 MHz = 16.27 CLK_CYCLES / Incoming Clock.
     // Ie. 16x oversampling should be possible.    
     val expected_cycles_syncword = (32.U * 4.U) - 1.U   // Syncword is 4 bit, hence * 4. 
@@ -15,17 +27,24 @@ class clock_Recovery() extends Module {
     val expected_cycles_one = 32.U - 1.U                // A transmitted one will be sent @ BCLK*2 = 6144MHz = ~sysclk/16.
 
     val clkCntr     = RegInit(0.U(8.W))
+    val pllCntr     = RegInit(0.U(8.W))
     val inState     = RegInit(0.U(1.W))
     val prevInState = RegInit(0.U(1.W))
     val inStateWas  = RegInit(0.U(1.W))
     val outReg      = RegInit(0.U(1.W))
     val dataOut     = RegInit(0.U(1.W)) 
     val nextFrame   = RegInit(0.U(1.W))
-    val noChange   = RegInit(0.U(1.W))
+    val noChange    = RegInit(0.U(1.W))
 
     io.CLK_OUT      := outReg
     io.DATA_OUT     := dataOut
     io.NEXT_FRAME   := nextFrame
+
+    pllCntr := pllCntr + 1.U
+    when(pllCntr === 7.U){      // (pllCntr === 3.U) = PLL_MCLK = 6.143 MHz | (pllCntr === 15.U) = PLL_MCLK = x... | (pllCntr === 7.U) = PLL_MCLK = 3.071 MHz
+        outReg := ~outReg
+        pllCntr := 0.U
+    }
 
     // On incoming data
     switch(io.DATA_IN){
@@ -98,9 +117,9 @@ class clock_Recovery() extends Module {
         }        
     }    
     // Always flip clock
-    when((clkCntr === 15.U) || (clkCntr === 31.U) || (clkCntr === 47.U) || (clkCntr === 63.U)){
+    /*when((clkCntr === 15.U) || (clkCntr === 31.U) || (clkCntr === 47.U) || (clkCntr === 63.U)){
         outReg := ~outReg
-    }
+    }*/
  
 }
 
@@ -108,17 +127,35 @@ class clock_Recovery() extends Module {
 class interVox_Reciever() extends Module {
   val io = IO(new Bundle {
     val INTERVOX_IN = Input(UInt(1.W))
-    val CLK_REC = Output (UInt(1.W))
-    val DATA_OUT     = Output (UInt(1.W))
+    val CLK_REC     = Output (UInt(1.W))
+    val DATA_OUT    = Output (UInt(1.W))
     val NEXT_FRAME  = Output (UInt(1.W))
+    val DBUG        = Output (UInt(1.W))
+    val DBUG1       = Output (UInt(1.W))
   })
 
     val clockRec = Module(new clock_Recovery())
 
     clockRec.io.DATA_IN := io.INTERVOX_IN
-    io.CLK_REC      := clockRec.io.CLK_OUT
-    io.DATA_OUT      := clockRec.io.DATA_OUT
-    io.NEXT_FRAME   := clockRec.io.NEXT_FRAME
+    io.DATA_OUT         := clockRec.io.DATA_OUT
+    io.NEXT_FRAME       := clockRec.io.NEXT_FRAME
+    io.DBUG             := clockRec.io.CLK_OUT
+
+    // Instantiate blackboxed PLL.
+    val pll = Module(new clk_wiz_0_clk_wiz)   
+
+    // Connect recovered clock reg to PLL input.
+    pll.io.PLL_IN := clockRec.io.CLK_OUT
+
+    // Once PLL is locked
+    when(pll.io.locked === 1.U){
+        io.CLK_REC := pll.io.PLL_MCLK
+        io.DBUG1   := 1.U
+    }
+    .otherwise{
+        io.CLK_REC := 0.U
+        io.DBUG1   := 0.U
+    }
 
     /*
   // Clock recovery
