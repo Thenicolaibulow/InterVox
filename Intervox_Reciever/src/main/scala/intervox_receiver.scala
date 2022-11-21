@@ -25,15 +25,19 @@ class clock_Recovery() extends Module {
 
     val clkCntr     = RegInit(0.U(2.W))
     val clkCntr1    = RegInit(0.U(8.W))
+    val clkCntr2    = RegInit(0.U(8.W))
     val clkDelta    = RegInit(0.U(8.W))
+    val lastOne     = RegInit(0.U(8.W))
     val pllCntr     = RegInit(0.U(8.W))
     val inBufr      = RegInit(0.U(2.W))
+    val whatChange  = RegInit(0.U(2.W))
  
     val outReg      = RegInit(0.U(1.W))
+    val clkRec      = RegInit(0.U(1.W))
     val change      = RegInit(0.U(1.W))
     val nextFrame   = RegInit(0.U(1.W))
 
-    io.CLK_OUT      := outReg
+    io.CLK_OUT      := clkRec
     io.DATA_OUT     := change
     io.NEXT_FRAME   := nextFrame
 
@@ -70,10 +74,6 @@ class clock_Recovery() extends Module {
             inBufr := inBufr - 1.U
         }
     }    
-    
-    // Detect a syncword
-    when((clkCntr1 > 32.U)){nextFrame := 0.U}    
-
     when(change === 0.U){
         // Look for changes in the logged data:
         when(inBufr(0) =/= inBufr(1)){
@@ -87,11 +87,59 @@ class clock_Recovery() extends Module {
         Change Interpretor
     */
 
+    // Detect a syncword (can be done prior to the buffered data)
+    when((clkCntr1 > 32.U)){nextFrame := 0.U}    
     // Detect a 1
-    when((clkDelta > 0.U) & (clkDelta < 10.U)){nextFrame := 1.U}
+    when((clkDelta > 0.U) & (clkDelta < 10.U)){
+        nextFrame := 1.U
+        // How many cycles were between the last two changes?
+        lastOne := clkDelta
+        /*
+            As a transmitted 1 will be the fastest two transitions
+            the cycles between these two changes (in the single 1-bit)
+            will determine the ratio between the local and incoming clock.
+            This will be used to predict / reconstruct the clock in the 0-bit 
+            periodes, where it switches at half the rate of the wanted clock.
+        */
+    }
     // Detect a 0
-    when((clkDelta > 10.U) & (clkDelta < 32.U)){nextFrame := 0.U}              
+    when((clkDelta > 10.U) & (clkDelta < 32.U)){nextFrame := 0.U}  
+    
+    /*
+        Clock regenerator
+    */
 
+    when(change === 1.U){
+        when(whatChange < 3.U){
+            whatChange := whatChange + 1.U
+        }
+    }
+    when(change === 0.U){
+        when(whatChange > 0.U){
+            whatChange := whatChange - 1.U
+        }
+    }
+    // On trailing edge of 'change'
+    when((whatChange(0) === 1.U) & (whatChange(1) === 0.U)){
+        // Reset counter
+        clkCntr2 := 0.U
+    }
+    when(change === 0.U){
+        clkCntr2 := clkCntr2 + 1.U
+        when(clkCntr2 === lastOne - 1.U){
+            // flip clk
+            clkRec      := ~clkRec
+            clkCntr2    := 0.U
+        }
+    }
+    
+    /*
+    // On rising edge of 'change'
+    when((whatChange(0) === 0.U) & (whatChange(1) === 1.U)){
+        // Reset counter
+        clkRec := ~clkRec
+    }
+    */    
 }
 
 
