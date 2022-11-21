@@ -1,7 +1,4 @@
-[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/Intervox_Reciever/src/main/scala/intervox_receiver.scala:122:142: illegal character '\u00a0'[0m
-[0m[[0m[31merror[0m] [0m[0m            when(((bufCntr) === (deltaCntr/2.U) + 1.U) || ((bufCntr) === (deltaCntr)) || ((bufCntr) === (expected_cycles_one - deltaCntr)) || (bufCntr === 0.U)){[0m
-[0m[[0m[31merror[0m] [0m[0m                                                                                                                                             ^[0m
-[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/Intervox_Reciever/src/main/scala/intervox_receiver.scala:122:160: ';' expected but ')' found.[0m
-[0m[[0m[31merror[0m] [0m[0m            when(((bufCntr) === (deltaCntr/2.U) + 1.U) || ((bufCntr) === (deltaCntr)) || ((bufCntr) === (expected_cycles_one - deltaCntr)) || (bufCntr === 0.U)){[0m
-[0m[[0m[31merror[0m] [0m[0m                                                                                                                                                               ^[0m
-[0m[[0m[31merror[0m] [0m[0mtwo errors found[0m
+[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/Intervox_Reciever/src/main/scala/intervox_receiver.scala:67:27: value && is not a member of chisel3.UInt[0m
+[0m[[0m[31merror[0m] [0m[0m        inBufr  := inBufr && (0.U << (clkCntr))[0m
+[0m[[0m[31merror[0m] [0m[0m                          ^[0m
+[0m[[0m[31merror[0m] [0m[0mone error found[0m
