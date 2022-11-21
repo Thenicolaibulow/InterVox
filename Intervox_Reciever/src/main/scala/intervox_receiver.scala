@@ -132,8 +132,6 @@ class clock_Recovery() extends Module {
             clkCntr2    := 0.U
         }
     }
-    
-    /*
     // On rising edge of 'change'
     when((whatChange(0) === 0.U) & (whatChange(1) === 1.U)){
         // Reset counter
