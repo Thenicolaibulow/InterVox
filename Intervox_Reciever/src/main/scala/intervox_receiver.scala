@@ -17,7 +17,8 @@ class clock_Recovery() extends Module {
         val DATA_IN     = Input (UInt(1.W))
         val CLK_OUT     = Output (UInt(1.W))
         val DATA_OUT    = Output (UInt(1.W))
-        val NEXT_FRAME  = Output (UInt(1.W))
+        val DBUG        = Output (UInt(1.W))
+        val DBUG1       = Output (UInt(1.W))
     })
 
     // 100MHz MasterClock / Incoming (upto) 6.144 MHz = 16.27 CLK_CYCLES / Incoming Clock.
@@ -25,9 +26,10 @@ class clock_Recovery() extends Module {
 
     val clkCntr     = RegInit(0.U(2.W))
     val clkCntr1    = RegInit(0.U(8.W))
-    val clkCntr2    = RegInit(0.U(8.W))
+    val clkCntr2    = RegInit(0.U(4.W))
+    val clkCntr3    = RegInit(0.U(4.W))
     val clkDelta    = RegInit(0.U(8.W))
-    val lastOne     = RegInit(0.U(8.W))
+    val lastOne     = RegInit(7.U(8.W)) // Initially 7 (roughly 100MHz / 6.144MHz) - will be adjusted live, accordingly.
     val pllCntr     = RegInit(0.U(8.W))
     val inBufr      = RegInit(0.U(2.W))
     val whatChange  = RegInit(0.U(2.W))
@@ -35,11 +37,15 @@ class clock_Recovery() extends Module {
     val outReg      = RegInit(0.U(1.W))
     val clkRec      = RegInit(0.U(1.W))
     val change      = RegInit(0.U(1.W))
+    val dataOut     = RegInit(0.U(1.W))
     val nextFrame   = RegInit(0.U(1.W))
+    val zeroPeriode = RegInit(0.U(1.W))
+    val syncWord    = RegInit(0.U(1.W))
 
     io.CLK_OUT      := clkRec
-    io.DATA_OUT     := change
-    io.NEXT_FRAME   := nextFrame
+    io.DATA_OUT     := dataOut
+    io.DBUG         := syncWord
+    io.DBUG1        := change
 
     // PLL Testing: 
     pllCntr := pllCntr + 1.U
@@ -88,10 +94,16 @@ class clock_Recovery() extends Module {
     */
 
     // Detect a syncword (can be done prior to the buffered data)
-    when((clkCntr1 > 32.U)){nextFrame := 0.U}    
+    when((clkCntr1 > (14.U)) & (io.DATA_IN === 0.U)){
+        syncWord := 1.U
+    }    
     // Detect a 1
     when((clkDelta > 0.U) & (clkDelta < 10.U)){
-        nextFrame := 1.U
+        dataOut := 1.U
+        when(zeroPeriode === 0.U){
+            syncWord := 0.U
+        }
+
         // How many cycles were between the last two changes?
         lastOne := clkDelta
         /*
@@ -103,41 +115,82 @@ class clock_Recovery() extends Module {
         */
     }
     // Detect a 0
-    when((clkDelta > 10.U) & (clkDelta < 32.U)){nextFrame := 0.U}  
+    when((clkDelta > 10.U) & (clkDelta < 16.U)){
+        dataOut := 0.U
+        when(zeroPeriode === 0.U){
+            syncWord := 0.U
+        }
+    }  
     
     /*
         Clock regenerator
     */
 
-    when(change === 1.U){
-        when(whatChange < 3.U){
+    switch(change){
+        is(1.U){
+            clkCntr2 := clkCntr2 + 1.U
+            when(whatChange >= 0.U){
+                whatChange := whatChange - 1.U
+            }   
+        }
+        is(0.U){
             whatChange := whatChange + 1.U
+
+            clkCntr2 := clkCntr2 + 1.U
+            when(clkCntr2 === lastOne - 1.U){
+                clkCntr2    := 0.U
+            }
         }
     }
-    when(change === 0.U){
-        when(whatChange > 0.U){
-            whatChange := whatChange - 1.U
-        }
-    }
+
     // On trailing edge of 'change'
     when((whatChange(0) === 1.U) & (whatChange(1) === 0.U)){
         // Reset counter
-        clkCntr2 := 0.U
-    }
-    when(change === 0.U){
-        clkCntr2 := clkCntr2 + 1.U
-        when(clkCntr2 === lastOne - 1.U){
-            // flip clk
-            clkRec      := ~clkRec
+        when(clkCntr1 < lastOne){
             clkCntr2    := 0.U
+            zeroPeriode := 0.U
         }
     }
+
     // On rising edge of 'change'
-    when((whatChange(0) === 0.U) & (whatChange(1) === 1.U)){
-        // Reset counter
-        clkRec := ~clkRec
+    when(clkCntr1 < lastOne){
+        when((whatChange(0) === 0.U) & (whatChange(1) === 1.U)){
+            // Reset counter
+            clkRec := ~clkRec
+            clkCntr3 := 0.U
+            syncWord := 0.U
+        }
     }
-    */    
+
+    when((clkCntr1 > lastOne)){  
+        // As we, in a 'zero-bit' cycle have no rising edge (after about 7 cycles) 
+        // - so we create this manually
+        // Only do this, if we're in a 'zero-bit'..otherwise it causes trouble
+        when((zeroPeriode === 0.U) & (clkCntr2 >= lastOne / 2.U)){
+            clkRec := ~clkRec
+            clkCntr3 := 0.U
+        } 
+        zeroPeriode := 1.U 
+
+        // in the case where we have a zero periode, 
+        // and need to flip the clock for the second time, in that periode. 
+        // ie. when we're halfway through (lastOne), but want the clk hi/lo periode to be lastOne / 2.
+        when(clkCntr1 === ((2.U * lastOne) - (lastOne / 2.U) + 1.U)){
+            clkRec := ~clkRec
+        }
+    }
+
+    // Whenever we reach a syncWord the clock will be.. approximated..
+    when(syncWord === 1.U){
+        clkCntr3 := clkCntr3 + 1.U
+
+        when(clkCntr3 === 0.U){
+            clkRec := ~clkRec
+        }
+        when((clkCntr3 === (lastOne / 2.U))){
+            clkCntr3 := 0.U
+        }
+    }
 }
 
 
@@ -155,7 +208,8 @@ class interVox_Reciever() extends Module {
 
     clockRec.io.DATA_IN := io.INTERVOX_IN
     io.DATA_OUT         := clockRec.io.DATA_OUT
-    io.NEXT_FRAME       := clockRec.io.NEXT_FRAME
+    io.NEXT_FRAME       := clockRec.io.DBUG
+    io.DBUG1            := clockRec.io.DBUG1
     io.DBUG             := clockRec.io.CLK_OUT
 
     // Instantiate blackboxed PLL.
@@ -167,11 +221,9 @@ class interVox_Reciever() extends Module {
     // Once PLL is locked
     when(pll.io.locked === 1.U){
         io.CLK_REC := pll.io.PLL_MCLK
-        io.DBUG1   := 1.U
     }
     .otherwise{
         io.CLK_REC := 0.U
-        io.DBUG1   := 0.U
     }
 
     /*
