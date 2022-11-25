@@ -44,17 +44,8 @@ class clock_Recovery() extends Module {
 
     io.CLK_OUT      := clkRec
     io.DATA_OUT     := dataOut
-    io.DBUG         := syncWord
+    io.DBUG         := zeroPeriode
     io.DBUG1        := change
-
-    // PLL Testing: 
-    pllCntr := pllCntr + 1.U
-    when(pllCntr === 7.U){
-        // PLL_MCLK = 3.071 MHz
-        // Works with both MMCM and PLL. MMCM actually looks to be more stable.      
-        outReg := ~outReg
-        pllCntr := 0.U
-    }
 
     /*
         Rising/Trailing Edge detector.
@@ -94,11 +85,19 @@ class clock_Recovery() extends Module {
     */
 
     // Detect a syncword (can be done prior to the buffered data)
+    /*
     when((clkCntr1 > (14.U)) & (io.DATA_IN === 0.U)){
         syncWord := 1.U
-    }    
+    }
+    */    
+
+    when(clkCntr1 > 16.U){
+        syncWord := 1.U
+    }
+
     // Detect a 1
     when((clkDelta > 0.U) & (clkDelta < 10.U)){
+        zeroPeriode := 0.U
         dataOut := 1.U
         when(zeroPeriode === 0.U){
             syncWord := 0.U
@@ -148,25 +147,27 @@ class clock_Recovery() extends Module {
         // Reset counter
         when(clkCntr1 < lastOne){
             clkCntr2    := 0.U
-            zeroPeriode := 0.U
-        }
+        }            
     }
 
     // On rising edge of 'change'
     when(clkCntr1 < lastOne){
         when((whatChange(0) === 0.U) & (whatChange(1) === 1.U)){
+            // FLip clk reg
+            clkRec := ~clkRec    
             // Reset counter
-            clkRec := ~clkRec
             clkCntr3 := 0.U
             syncWord := 0.U
         }
     }
 
+
+
     when((clkCntr1 > lastOne)){  
         // As we, in a 'zero-bit' cycle have no rising edge (after about 7 cycles) 
         // - so we create this manually
         // Only do this, if we're in a 'zero-bit'..otherwise it causes trouble
-        when((zeroPeriode === 0.U) & (clkCntr2 >= lastOne / 2.U)){
+        when((zeroPeriode === 0.U) & (clkCntr2 >= (lastOne / 2.U) + 1.U)){
             clkRec := ~clkRec
             clkCntr3 := 0.U
         } 
@@ -175,12 +176,13 @@ class clock_Recovery() extends Module {
         // in the case where we have a zero periode, 
         // and need to flip the clock for the second time, in that periode. 
         // ie. when we're halfway through (lastOne), but want the clk hi/lo periode to be lastOne / 2.
-        when(clkCntr1 === ((2.U * lastOne) - (lastOne / 2.U) + 1.U)){
+        /*when(clkCntr1 === ((2.U * lastOne) - (lastOne / 2.U) + 1.U)){
             clkRec := ~clkRec
-        }
+        }*/
     }
 
     // Whenever we reach a syncWord the clock will be.. approximated..
+    /*
     when(syncWord === 1.U){
         clkCntr3 := clkCntr3 + 1.U
 
@@ -191,6 +193,7 @@ class clock_Recovery() extends Module {
             clkCntr3 := 0.U
         }
     }
+    */
 }
 
 
@@ -226,48 +229,6 @@ class interVox_Reciever() extends Module {
         io.CLK_REC := 0.U
     }
 
-    /*
-  // Clock recovery
-
-    // Should be a mux.. : 
-    // Detect syncword
-    when(intervox_in === 0)
-        cycles++
-
-    // Count sys-clk cycles between each rising edge
-    when(intervox_in === 1)
-        cycles++ 
-
-    // When we've exceeded the amount of cycles expected for a syncword
-    when (cycles > expected_periode_syncw)
-        bit_cntr    := 0.U
-        cycles      := 0.U
-
-    // Determine if 1 | 0
-    when(cycles >= expected_periode_0)
-
-        when(cycles <  expected_periode_0){ 
-            decoded_nxt := 1 
-            bit_cntr++
-        }
-        when(cycles >= expected_periode_0){
-            decoded_nxt := 0 
-            bit_cntr++
-        }
-
-    when(bit_cntr === (64-4)) // (absolute framewidth) - (syncword width)
-        ready_process := 1.U
-
-  // Data extraction
-
-    when(ready_process === 1.U){
-
-        // Extract audio left and right data -> I2S transmitter
-        // Extract CTRL_DATA. -> control logic.
-        ready_process := 0.U
-    }
-
-    */
 }
 
 object HelloMain extends App {

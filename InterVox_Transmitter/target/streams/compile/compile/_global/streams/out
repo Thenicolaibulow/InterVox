@@ -1,7 +1,4 @@
-[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/InterVox_Transmitter/src/main/scala/intervox_transmitter.scala:50:5: not found: value dspData2[0m
-[0m[[0m[31merror[0m] [0m[0m    dspData2    := 0.U[0m
-[0m[[0m[31merror[0m] [0m[0m    ^[0m
-[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/InterVox_Transmitter/src/main/scala/intervox_transmitter.scala:114:21: not found: value dspData2[0m
-[0m[[0m[31merror[0m] [0m[0m              when((dspData2((dataIndex - 64.U)))  === 0.U) {[0m
-[0m[[0m[31merror[0m] [0m[0m                    ^[0m
-[0m[[0m[31merror[0m] [0m[0mtwo errors found[0m
+[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/InterVox_Transmitter/src/main/scala/intervox_transmitter.scala:296:69: not found: value bitCnt[0m
+[0m[[0m[31merror[0m] [0m[0m              BFR.io.dataIn     := BFR.io.dataOut + (0.U << (73.U - bitCnt))[0m
+[0m[[0m[31merror[0m] [0m[0m                                                                    ^[0m
+[0m[[0m[31merror[0m] [0m[0mone error found[0m

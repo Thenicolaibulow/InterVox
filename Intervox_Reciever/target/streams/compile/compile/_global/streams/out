@@ -1,4 +1,10 @@
-[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/Intervox_Reciever/src/main/scala/intervox_receiver.scala:182:22: reassignment to val[0m
-[0m[[0m[31merror[0m] [0m[0m            clkCntr3 = clkCntr3 + 1.U[0m
-[0m[[0m[31merror[0m] [0m[0m                     ^[0m
-[0m[[0m[31merror[0m] [0m[0mone error found[0m
+[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/Intervox_Reciever/src/main/scala/intervox_receiver.scala:233:10: not found: value ready_process[0m
+[0m[[0m[31merror[0m] [0m[0m    when(ready_process === 1.U){[0m
+[0m[[0m[31merror[0m] [0m[0m         ^[0m
+[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/Intervox_Reciever/src/main/scala/intervox_receiver.scala:237:9: not found: value ready_process[0m
+[0m[[0m[31merror[0m] [0m[0m        ready_process := 0.U[0m
+[0m[[0m[31merror[0m] [0m[0m        ^[0m
+[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/Intervox_Reciever/src/main/scala/intervox_receiver.scala:240:5: not found: value */[0m
+[0m[[0m[31merror[0m] [0m[0m    */[0m
+[0m[[0m[31merror[0m] [0m[0m    ^[0m
+[0m[[0m[31merror[0m] [0m[0mthree errors found[0m

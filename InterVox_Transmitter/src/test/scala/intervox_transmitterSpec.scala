@@ -12,7 +12,8 @@ class I2S_Periph_spec extends AnyFlatSpec with ChiselScalatestTester {
     test(new interVox_Encoder(bitdepth.U))
       .withAnnotations(Seq(WriteVcdAnnotation)) { dut => 
     
-      dut.clock.setTimeout(0)
+      dut.clock.setTimeout(2)
+
       println("Testing I2S transmitter!")
       // Init system        
 

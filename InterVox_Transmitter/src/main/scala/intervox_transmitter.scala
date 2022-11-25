@@ -29,11 +29,11 @@ class RWSmem extends Module {
 
 class bi_phase_encoder() extends Module {
   val io = IO(new Bundle {
-    val DATA_OUT   = Output(UInt(1.W))
-    val AUDIOINPUT = Input (UInt(64.W))
-    val DSPINPUT   = Input (UInt(64.W))
-    val ENA       = Input (UInt(1.W))
-    val NEXT       = Output(UInt(1.W))
+    val DATA_OUT      = Output(UInt(1.W))
+    val AUDIOINPUT    = Input (UInt(64.W))
+    val DSPINPUT      = Input (UInt(64.W))
+    val ENA           = Input (UInt(1.W))
+    val NEXT          = Output(UInt(1.W))
   })
     val outReg        = RegInit(0.U(1.W))
     val next          = RegInit(0.U(1.W))
@@ -42,6 +42,7 @@ class bi_phase_encoder() extends Module {
     val dspData2      = RegInit(0.U(64.W))
     val bitCntr_enc   = RegInit(0.U(8.W))
     val hasNone       = RegInit(0.U(1.W))
+    val holdState     = RegInit(0.U(1.W))
     val dataIndex     = RegInit(0.U(6.W))
 
     io.DATA_OUT := outReg
@@ -56,53 +57,48 @@ class bi_phase_encoder() extends Module {
       // bitCntr_enc = BCLK x 2
 
     when(io.ENA === 1.U){
-        // Count bits
-        bitCntr_enc := bitCntr_enc + 1.U
 
-        // Count the number of serial data bits. (half rate of bitCntr_enc)
-        ndexR := ~ndexR
-        when(ndexR === 1.U){
-          // Dataindex <-> Bitcount
-          dataIndex := dataIndex + 1.U
+        // Syncword = 0001 < the header bits
+        when(bitCntr_enc === 6.U){  // b4
+          // Set the one
+          outReg := ~outReg
+        }
+        when(bitCntr_enc === 7.U){  // b4
+          outReg := ~outReg
         }
 
-        // Hardcoding the header bits
-        when(bitCntr_enc < 7.U) {
-          //next := 0.U
+          // Append audio data
+          when((bitCntr_enc > 7.U)){
 
-          when(bitCntr_enc < 6.U)
-          {
-            outReg := 0.U
+          // Count the number of serial data bits. (half rate of bitCntr_enc)
+          ndexR := ~ndexR
+          when(ndexR === 1.U){
+            // Dataindex <-> Bitcount
+            dataIndex := dataIndex + 1.U
           }
-          .otherwise{
-            // Otherwise, flip
-            outReg := 1.U
-          }
-        }
-        // Append audio data
-        when((bitCntr_enc > 7.U)){
-          
+
+          holdState := 0.U
           // Up to 2 x 24 bits (offset by the header width (4bit, 8 cycles), hence 56)
-          when(bitCntr_enc < 55.U){
+          when(bitCntr_enc < 56.U){ // b5..29
               // 64th bit - current bit count - 4Bit header
-            when((stereoData(64.U - (dataIndex - 3.U)))  === 0.U) {
+            when((stereoData(64.U - (dataIndex + 1.U)))  === 0.U) {
               // Then don't change for one cycle
               hasNone := 1.U
             }
           }
-          when((bitCntr_enc >= 55.U) & (bitCntr_enc < 103.U)){
+          when((bitCntr_enc >= 56.U) & (bitCntr_enc < 105.U)){
             // 64th bit - current bit count - previous 24Bit - 4Bit header
-            when((stereoData((64.U - (dataIndex - 27.U))))  === 0.U) {
+            when((stereoData((64.U - (dataIndex - 23.U))))  === 0.U) {
               // Then don't change for one cycle
               hasNone := 1.U
             }              
 
           } // Append DSP data
-          when((bitCntr_enc >= 103.U) & (bitCntr_enc < 127.U)){
+          when((bitCntr_enc >= 105.U) & (bitCntr_enc < 129.U)){
               /*
                   DSP 
               */
-              when((dspData((dataIndex - 52.U)))  === 0.U) {
+              when((dspData((dataIndex - 48.U)))  === 0.U) {
               // Then don't change for one cycle
               hasNone := 1.U
             }
@@ -112,7 +108,7 @@ class bi_phase_encoder() extends Module {
               /*
                   DSP 
               */
-              when((dspData2((dataIndex - 64.U)))  === 0.U) {
+              when((dspData2((dataIndex - 60.U)))  === 0.U) {
               // Then don't change for one cycle
               hasNone := 1.U
             }
@@ -130,8 +126,12 @@ class bi_phase_encoder() extends Module {
 
         when(bitCntr_enc === 255.U){
           bitCntr_enc := 0.U
+          dataIndex := 0.U
           //next := 1.U
         }
+
+        // Count bits
+        bitCntr_enc := bitCntr_enc + 1.U
     }
 }
 
@@ -223,6 +223,8 @@ class interVox_Encoder(width: UInt) extends Module {
       }
 
       when(io.LRCLK_IN === 0.U){
+        // Count clock on the low periode of LRCLK, 
+        // inorder to determine when it rises.
         bitCntr := bitCntr + 1.U
         
         when(bitCntr === 31.U){
@@ -238,34 +240,35 @@ class interVox_Encoder(width: UInt) extends Module {
       Receive incoming serial I2S data and repackage it into a buffer, 
       from which the bi-phase mark encoder will read.
   */
+  
 
-  when(synced === 1.U){
-
-    switch(current_state){
-            
-      is(state_Reset){
-        // Todo, reset state.
-        current_state := state_Transmit
-      }
-      is(state_Setup){
-        // Setup state will take care of initializing receiver units, and assigning them unique adresses.
-        current_state := state_Transmit
-      }
-      is(state_Transmit){ 
-
-        bi_phase_enc.io.ENA := 1.U
-
-        BiPhase_CLK_CNTR := BiPhase_CLK_CNTR + 1.U
+  switch(current_state){
+          
+    is(state_Reset){
+      // Todo, reset state.
+      current_state := state_Transmit
+    }
+    is(state_Setup){
+      // Setup state will take care of initializing receiver units, and assigning them unique adresses.
+      current_state := state_Transmit
+    }
+    is(state_Transmit){
+      
+      when(synced === 1.U){ 
 
         /*         
             I2S "Reciever"
         */
-      
-        when(BiPhase_CLK_CNTR === 1.U){
-          BiPhase_CLK_CNTR := 0.U
 
+        // Initialize BiPhase Encoder
+        bi_phase_enc.io.ENA := 1.U
+        BiPhase_CLK_CNTR := BiPhase_CLK_CNTR + 1.U
+
+        when(BiPhase_CLK_CNTR === 3.U){
+          BiPhase_CLK_CNTR := 0.U
+          
           // Count I2S bits
-          bitCntr := bitCntr + 1.U
+          bitCntr := bitCntr + 1.U          
 
           // For each bit, assign it the appropriate bit in the buffer
           // Effectively 'repackaging' the I2S Serial data for use with intervox.          
@@ -274,7 +277,8 @@ class interVox_Encoder(width: UInt) extends Module {
             BFR.io.write      := 1.U
             BFR.io.dataIn     := 0.U
           }
-
+          
+          // Record the incoming bits at f=BCLK          
           when(bitCntr > 31.U){
             // Truncate the last 8 bits of a 32 bit word. of the second audio channel data.
             // Limits the incoming data to 24 bit, purposely. 
@@ -304,9 +308,9 @@ class interVox_Encoder(width: UInt) extends Module {
             when(io.SDATA_IN === 1.U){
               BFR.io.dataIn     := BFR.io.dataOut + (1.U << (64.U - bitCntr))
             }          
-          }
+          }        
 
-          when(bitCntr === 127.U){
+          when(bitCntr === 63.U){
             // Allows for one sample delay between input and interVox output. 
             // Dump BFR 0 into BFR 1
             BFR.io.write      := 0.U
@@ -319,8 +323,8 @@ class interVox_Encoder(width: UInt) extends Module {
 
             bitCntr := 0.U
           }  
-        }        
-      }
+        }
+      }        
     }
   }
 }
