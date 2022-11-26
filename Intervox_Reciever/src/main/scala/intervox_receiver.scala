@@ -41,6 +41,7 @@ class clock_Recovery() extends Module {
     val nextFrame   = RegInit(0.U(1.W))
     val zeroPeriode = RegInit(0.U(1.W))
     val syncWord    = RegInit(0.U(1.W))
+    val zeroClkFlp  = RegInit(0.U(1.W))
 
     io.CLK_OUT      := clkRec
     io.DATA_OUT     := dataOut
@@ -62,64 +63,57 @@ class clock_Recovery() extends Module {
     }
     // Log the changes in the input buffer register:
     when(io.DATA_IN === 1.U){    
-        when(inBufr < 3.U){
+        when(inBufr < 3.U){     // 00 01 10 11
             inBufr := inBufr + 1.U
         }
     }
-    when(io.DATA_IN === 0.U){    
+    when(io.DATA_IN === 0.U){   // 11 10 01 00   
         when(inBufr > 0.U){
             inBufr := inBufr - 1.U
         }
     }    
+
+    /*
+        Data Interpretor
+    */
+
     when(change === 0.U){
         // Look for changes in the logged data:
         when(inBufr(0) =/= inBufr(1)){
+            // Ensure that we don't do this check twice.
             change := 1.U
+            when(clkCntr1 < 9.U){
+                // Data 1
+                lastOne := clkCntr1
+                dataOut := 1.U
+                zeroPeriode := 0.U
+                syncWord := 0.U
+                zeroClkFlp := 0.U
+            }            
             clkCntr1 := 0.U
-            clkDelta := clkCntr1
+            clkDelta := clkCntr1              
         }
     }
-
-    /*
-        Change Interpretor
-    */
-
-    // Detect a syncword (can be done prior to the buffered data)
-    /*
-    when((clkCntr1 > (14.U)) & (io.DATA_IN === 0.U)){
-        syncWord := 1.U
-    }
-    */    
-
-    when(clkCntr1 > 16.U){
-        syncWord := 1.U
-    }
-
-    // Detect a 1
-    when((clkDelta > 0.U) & (clkDelta < 10.U)){
-        zeroPeriode := 0.U
-        dataOut := 1.U
-        when(zeroPeriode === 0.U){
-            syncWord := 0.U
-        }
-
-        // How many cycles were between the last two changes?
-        lastOne := clkDelta
-        /*
-            As a transmitted 1 will be the fastest two transitions
-            the cycles between these two changes (in the single 1-bit)
-            will determine the ratio between the local and incoming clock.
-            This will be used to predict / reconstruct the clock in the 0-bit 
-            periodes, where it switches at half the rate of the wanted clock.
-        */
-    }
-    // Detect a 0
-    when((clkDelta > 10.U) & (clkDelta < 16.U)){
+    when((clkCntr1 >= 9.U) & (clkCntr1 < 16.U)){
+        // Data 0
         dataOut := 0.U
-        when(zeroPeriode === 0.U){
-            syncWord := 0.U
+        zeroPeriode := 1.U 
+        syncWord := 0.U
+        when(zeroClkFlp === 0.U){
+            clkRec := ~clkRec
+            zeroClkFlp := 1.U
         }
-    }  
+    }     
+    when(clkCntr1 > 16.U){
+        // Detect syncword.
+        syncWord := 1.U
+    }
+    // When we're in a zero-periode, we can't rely on rising edges. 
+    // Thus we rely on the last one-cycle cyclecounter to approximate when to flip the clk.
+    when((zeroPeriode === 1.U) & (clkCntr1 === lastOne + 2.U)){
+        // lastOne + 2.U, as we're always trailing 2 cycles behind the incoming data.
+        clkRec := ~clkRec
+    }     
     
     /*
         Clock regenerator
@@ -127,73 +121,22 @@ class clock_Recovery() extends Module {
 
     switch(change){
         is(1.U){
-            clkCntr2 := clkCntr2 + 1.U
             when(whatChange >= 0.U){
                 whatChange := whatChange - 1.U
-            }   
+            }    
         }
         is(0.U){
-            whatChange := whatChange + 1.U
-
-            clkCntr2 := clkCntr2 + 1.U
-            when(clkCntr2 === lastOne - 1.U){
-                clkCntr2    := 0.U
+            when(whatChange < 3.U){
+                whatChange := whatChange + 1.U
             }
         }
     }
-
-    // On trailing edge of 'change'
-    when((whatChange(0) === 1.U) & (whatChange(1) === 0.U)){
-        // Reset counter
-        when(clkCntr1 < lastOne){
-            clkCntr2    := 0.U
-        }            
+    when(whatChange === 1.U){ // 01 < Earliest sign of a rising edge.
+        clkRec := ~clkRec
     }
-
-    // On rising edge of 'change'
-    when(clkCntr1 < lastOne){
-        when((whatChange(0) === 0.U) & (whatChange(1) === 1.U)){
-            // FLip clk reg
-            clkRec := ~clkRec    
-            // Reset counter
-            clkCntr3 := 0.U
-            syncWord := 0.U
-        }
-    }
-
-
-
-    when((clkCntr1 > lastOne)){  
-        // As we, in a 'zero-bit' cycle have no rising edge (after about 7 cycles) 
-        // - so we create this manually
-        // Only do this, if we're in a 'zero-bit'..otherwise it causes trouble
-        when((zeroPeriode === 0.U) & (clkCntr2 >= (lastOne / 2.U) + 1.U)){
-            clkRec := ~clkRec
-            clkCntr3 := 0.U
-        } 
-        zeroPeriode := 1.U 
-
-        // in the case where we have a zero periode, 
-        // and need to flip the clock for the second time, in that periode. 
-        // ie. when we're halfway through (lastOne), but want the clk hi/lo periode to be lastOne / 2.
-        /*when(clkCntr1 === ((2.U * lastOne) - (lastOne / 2.U) + 1.U)){
-            clkRec := ~clkRec
-        }*/
-    }
-
-    // Whenever we reach a syncWord the clock will be.. approximated..
-    /*
-    when(syncWord === 1.U){
-        clkCntr3 := clkCntr3 + 1.U
-
-        when(clkCntr3 === 0.U){
-            clkRec := ~clkRec
-        }
-        when((clkCntr3 === (lastOne / 2.U))){
-            clkCntr3 := 0.U
-        }
-    }
-    */
+    when(whatChange === 2.U){ // 10 < Earliest sign of a trailing edge.
+        //clkRec := ~clkRec
+    }    
 }
 
 
