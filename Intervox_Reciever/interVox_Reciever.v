@@ -48,17 +48,17 @@ module clock_Recovery(
   wire  _GEN_14 = change ? 1'h0 : changed; // @[intervox_receiver.scala 109:25 111:21 34:30]
   wire  _GEN_15 = ~changedOne | changedOne; // @[intervox_receiver.scala 117:33 119:25 35:30]
   wire  _GEN_17 = ~changedOne ? 1'h0 : syncWord; // @[intervox_receiver.scala 117:33 123:25 38:30]
-  wire  _GEN_18 = deltaCntr <= 8'h10 & changedOne | dataOut; // @[intervox_receiver.scala 127:60 132:25 36:30]
-  wire  _GEN_19 = deltaCntr <= 8'h10 & changedOne ? 1'h0 : zeroPeriode; // @[intervox_receiver.scala 127:60 134:25 37:30]
+  wire  _GEN_18 = deltaCntr <= 8'h8 & changedOne | dataOut; // @[intervox_receiver.scala 127:60 132:25 36:30]
+  wire  _GEN_19 = deltaCntr <= 8'h8 & changedOne ? 1'h0 : zeroPeriode; // @[intervox_receiver.scala 127:60 134:25 37:30]
   wire  _GEN_24 = change ? _GEN_17 : syncWord; // @[intervox_receiver.scala 114:25 38:30]
   wire  _GEN_26 = change ? _GEN_19 : zeroPeriode; // @[intervox_receiver.scala 114:25 37:30]
-  wire  _GEN_28 = deltaCntr > 8'h10 | _GEN_26; // @[intervox_receiver.scala 145:34 152:25]
-  wire  _GEN_29 = deltaCntr > 8'h10 ? 1'h0 : _GEN_24; // @[intervox_receiver.scala 145:34 154:25]
-  wire [9:0] _T_22 = 8'h10 * 2'h2; // @[intervox_receiver.scala 159:32]
+  wire  _GEN_28 = deltaCntr > 8'h8 | _GEN_26; // @[intervox_receiver.scala 145:34 152:25]
+  wire  _GEN_29 = deltaCntr > 8'h8 ? 1'h0 : _GEN_24; // @[intervox_receiver.scala 145:34 154:25]
+  wire [9:0] _T_22 = 8'h8 * 2'h2; // @[intervox_receiver.scala 159:32]
   wire [9:0] _GEN_36 = {{2'd0}, deltaCntr}; // @[intervox_receiver.scala 159:21]
   wire  _GEN_31 = _GEN_36 > _T_22 | _GEN_29; // @[intervox_receiver.scala 159:40 161:18]
   wire  _clkRec_T = ~clkRec; // @[intervox_receiver.scala 173:20]
-  wire  _GEN_34 = deltaCntr >= 8'h10 & ~changed & ~change | _GEN_14; // @[intervox_receiver.scala 179:72 181:17]
+  wire  _GEN_34 = deltaCntr >= 8'h8 & ~changed & ~change | _GEN_14; // @[intervox_receiver.scala 179:72 181:17]
   wire [2:0] _GEN_37 = reset ? 3'h0 : _GEN_10; // @[intervox_receiver.scala 27:{30,30}]
   assign io_CLK_OUT = clkRec; // @[intervox_receiver.scala 41:21]
   assign io_DATA_OUT = dataOut; // @[intervox_receiver.scala 42:21]
@@ -68,7 +68,7 @@ module clock_Recovery(
     if (reset) begin // @[intervox_receiver.scala 25:30]
       deltaCntr <= 8'h0; // @[intervox_receiver.scala 25:30]
     end else if (change) begin // @[intervox_receiver.scala 114:25]
-      if (deltaCntr <= 8'h10 & changedOne) begin // @[intervox_receiver.scala 127:60]
+      if (deltaCntr <= 8'h8 & changedOne) begin // @[intervox_receiver.scala 127:60]
         deltaCntr <= 8'h0; // @[intervox_receiver.scala 140:25]
       end else if (~changedOne) begin // @[intervox_receiver.scala 117:33]
         deltaCntr <= 8'h0; // @[intervox_receiver.scala 121:25]
@@ -94,7 +94,7 @@ module clock_Recovery(
     end
     if (reset) begin // @[intervox_receiver.scala 32:30]
       clkRec <= 1'h0; // @[intervox_receiver.scala 32:30]
-    end else if (deltaCntr >= 8'h10 & ~changed & ~change) begin // @[intervox_receiver.scala 179:72]
+    end else if (deltaCntr >= 8'h8 & ~changed & ~change) begin // @[intervox_receiver.scala 179:72]
       clkRec <= _clkRec_T; // @[intervox_receiver.scala 180:17]
     end else if (change) begin // @[intervox_receiver.scala 172:27]
       clkRec <= ~clkRec; // @[intervox_receiver.scala 173:17]
@@ -113,10 +113,10 @@ module clock_Recovery(
     end
     if (reset) begin // @[intervox_receiver.scala 35:30]
       changedOne <= 1'h0; // @[intervox_receiver.scala 35:30]
-    end else if (deltaCntr > 8'h10) begin // @[intervox_receiver.scala 145:34]
+    end else if (deltaCntr > 8'h8) begin // @[intervox_receiver.scala 145:34]
       changedOne <= 1'h0; // @[intervox_receiver.scala 156:25]
     end else if (change) begin // @[intervox_receiver.scala 114:25]
-      if (deltaCntr <= 8'h10 & changedOne) begin // @[intervox_receiver.scala 127:60]
+      if (deltaCntr <= 8'h8 & changedOne) begin // @[intervox_receiver.scala 127:60]
         changedOne <= 1'h0; // @[intervox_receiver.scala 138:25]
       end else begin
         changedOne <= _GEN_15;
@@ -124,7 +124,7 @@ module clock_Recovery(
     end
     if (reset) begin // @[intervox_receiver.scala 36:30]
       dataOut <= 1'h0; // @[intervox_receiver.scala 36:30]
-    end else if (deltaCntr > 8'h10) begin // @[intervox_receiver.scala 145:34]
+    end else if (deltaCntr > 8'h8) begin // @[intervox_receiver.scala 145:34]
       dataOut <= 1'h0; // @[intervox_receiver.scala 150:25]
     end else if (change) begin // @[intervox_receiver.scala 114:25]
       dataOut <= _GEN_18;
@@ -244,7 +244,7 @@ module interVox_Reciever(
   assign io_CLK_DBUG = clockRec_io_CLK_OUT; // @[intervox_receiver.scala 203:25]
   assign io_DBUG = clockRec_io_DBUG; // @[intervox_receiver.scala 205:25]
   assign io_DBUG1 = clockRec_io_DBUG1; // @[intervox_receiver.scala 204:25]
-  assign io_LEDS = 16'h10; // @[intervox_receiver.scala 201:25]
+  assign io_LEDS = 16'h8; // @[intervox_receiver.scala 201:25]
   assign clockRec_clock = clock;
   assign clockRec_reset = reset;
   assign clockRec_io_DATA_IN = io_INTERVOX_IN; // @[intervox_receiver.scala 199:25]

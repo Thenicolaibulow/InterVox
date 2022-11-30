@@ -114,7 +114,7 @@ circuit interVox_Reciever :
     io_DBUG1 <= syncWord @[intervox_receiver.scala 44:21]
     io_LEDS <= pad(lastOne, 16) @[intervox_receiver.scala 45:21]
     deltaCntr <= mux(reset, UInt<8>("h0"), _GEN_23) @[intervox_receiver.scala 25:{30,30}]
-    lastOne <= mux(reset, UInt<8>("h10"), lastOne) @[intervox_receiver.scala 26:{30,30,30}]
+    lastOne <= mux(reset, UInt<8>("h8"), lastOne) @[intervox_receiver.scala 26:{30,30,30}]
     inBufr <= bits(mux(reset, UInt<2>("h0"), _GEN_10), 1, 0) @[intervox_receiver.scala 27:{30,30}]
     inBufrPrev <= mux(reset, UInt<2>("h0"), _GEN_9) @[intervox_receiver.scala 28:{30,30}]
     whatChange <= mux(reset, UInt<2>("h0"), whatChange) @[intervox_receiver.scala 29:{30,30,30}]

@@ -23,7 +23,7 @@ class clock_Recovery() extends Module {
     })
 
     val deltaCntr   = RegInit(0.U(8.W))
-    val lastOne     = RegInit(16.U(8.W)) // Initially 8 (*2) (roughly 100MHz / 12.288MHz) - will be adjusted live, accordingly.
+    val lastOne     = RegInit(8.U(8.W)) // Initially 8 (*2) (roughly 100MHz / 12.288MHz) - will be adjusted live, accordingly.
     val inBufr      = RegInit(0.U(2.W))
     val inBufrPrev  = RegInit(0.U(2.W))
     val whatChange  = RegInit(0.U(2.W))
@@ -133,7 +133,7 @@ class clock_Recovery() extends Module {
             // Expect it to be a 1
             zeroPeriode := 0.U            
             // Store the number of cycles since last change (live adjust expected cycles of a 1)
-            //lastOne     := deltaCntr
+            // lastOne     := deltaCntr
             // Get ready for next 1
             changedOne  := 0.U     
             // Reset delta counter   

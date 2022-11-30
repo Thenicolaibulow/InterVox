@@ -7,7 +7,7 @@ circuit interVox_Reciever :
     reg deltaCntr : UInt<8>, clock with :
       reset => (reset, UInt<8>("h0")) @[intervox_receiver.scala 25:30]
     reg lastOne : UInt<8>, clock with :
-      reset => (reset, UInt<8>("h10")) @[intervox_receiver.scala 26:30]
+      reset => (reset, UInt<8>("h8")) @[intervox_receiver.scala 26:30]
     reg inBufr : UInt<2>, clock with :
       reset => (reset, UInt<2>("h0")) @[intervox_receiver.scala 27:30]
     reg inBufrPrev : UInt<2>, clock with :
