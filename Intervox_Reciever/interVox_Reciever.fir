@@ -92,6 +92,7 @@ circuit interVox_Reciever :
       when _T_20 : @[intervox_receiver.scala 127:60]
         dataOut <= UInt<1>("h1") @[intervox_receiver.scala 132:25]
         zeroPeriode <= UInt<1>("h0") @[intervox_receiver.scala 134:25]
+        lastOne <= deltaCntr @[intervox_receiver.scala 136:25]
         changedOne <= UInt<1>("h0") @[intervox_receiver.scala 138:25]
         deltaCntr <= UInt<1>("h0") @[intervox_receiver.scala 140:25]
     node _T_21 = gt(deltaCntr, lastOne) @[intervox_receiver.scala 145:21]

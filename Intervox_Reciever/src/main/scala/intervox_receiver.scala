@@ -133,7 +133,7 @@ class clock_Recovery() extends Module {
             // Expect it to be a 1
             zeroPeriode := 0.U            
             // Store the number of cycles since last change (live adjust expected cycles of a 1)
-            // lastOne     := deltaCntr
+            lastOne     := deltaCntr
             // Get ready for next 1
             changedOne  := 0.U     
             // Reset delta counter   
