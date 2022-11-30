@@ -16,15 +16,13 @@ class interVox_Reciever_spec extends AnyFlatSpec with ChiselScalatestTester {
 
       for (i <- 0 until 4) {
         /*
-            SyncWord (4Bit) = bxxx0
+            SyncWord (2Bit) = b"_1", where _ is no switching.
         */
 
         dut.io.INTERVOX_IN.poke(0.U)
-        dut.clock.step(16)  // #0
-        dut.clock.step(16)  // #1
-        dut.clock.step(16)  // #2
+        dut.clock.step(32)  // #L
         dut.io.INTERVOX_IN.poke(1.U)
-        dut.clock.step(16)  // #3
+        dut.clock.step(16)  // #1
         dut.io.INTERVOX_IN.poke(0.U)
 
         /*
@@ -34,57 +32,57 @@ class interVox_Reciever_spec extends AnyFlatSpec with ChiselScalatestTester {
         // Send 4 Ones
         for(j <- 0 until 4){
 
-          dut.clock.step(8)
+          dut.clock.step(16)
           dut.io.INTERVOX_IN.poke(1.U)
-          dut.clock.step(8)
+          dut.clock.step(16)
           dut.io.INTERVOX_IN.poke(0.U)
         }
         // Send 4 Zeros
         for(j <- 0 until 2){
 
-          dut.clock.step(16)
+          dut.clock.step(32)
           dut.io.INTERVOX_IN.poke(1.U)
-          dut.clock.step(16)
+          dut.clock.step(32)
           dut.io.INTERVOX_IN.poke(0.U)
         }    
         // Send 20 Ones
         for(j <- 0 until 20){
 
-          dut.clock.step(8)
+          dut.clock.step(16)
           dut.io.INTERVOX_IN.poke(1.U)
-          dut.clock.step(8)
+          dut.clock.step(16)
           dut.io.INTERVOX_IN.poke(0.U)
         }   
         // Send 4 Zeros
         for(j <- 0 until 2){
 
-          dut.clock.step(16)
+          dut.clock.step(32)
           dut.io.INTERVOX_IN.poke(1.U)
-          dut.clock.step(16)
+          dut.clock.step(32)
           dut.io.INTERVOX_IN.poke(0.U)
         }
         // Send 10 Ones
         for(j <- 0 until 10){
 
-          dut.clock.step(8)
+          dut.clock.step(16)
           dut.io.INTERVOX_IN.poke(1.U)
-          dut.clock.step(8)
+          dut.clock.step(16)
           dut.io.INTERVOX_IN.poke(0.U)
         }  
         // Send 4 Zeros
         for(j <- 0 until 2){
 
-          dut.clock.step(16)
+          dut.clock.step(32)
           dut.io.INTERVOX_IN.poke(1.U)
-          dut.clock.step(16)
+          dut.clock.step(32)
           dut.io.INTERVOX_IN.poke(0.U)
         }   
         // Send 2 Ones
         for(j <- 0 until 2){
 
-          dut.clock.step(8)
+          dut.clock.step(16)
           dut.io.INTERVOX_IN.poke(1.U)
-          dut.clock.step(8)
+          dut.clock.step(16)
           dut.io.INTERVOX_IN.poke(0.U)
         }           
 
@@ -95,9 +93,9 @@ class interVox_Reciever_spec extends AnyFlatSpec with ChiselScalatestTester {
         // Send 12 Ones
         for(j <- 0 until 12){
 
-          dut.clock.step(8)
+          dut.clock.step(16)
           dut.io.INTERVOX_IN.poke(1.U)
-          dut.clock.step(8)
+          dut.clock.step(16)
           dut.io.INTERVOX_IN.poke(0.U)
         }                                                 
 

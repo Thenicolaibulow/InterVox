@@ -4,14 +4,30 @@ set_property -dict {IOSTANDARD LVCMOS33}                    [get_ports {clock}]
 
 
 set_property -dict {PACKAGE_PIN L17 IOSTANDARD LVCMOS33}    [get_ports {io_INTERVOX_IN}]
-#set_property CLOCK_DEDICATED_ROUTE_FALSE                    [get_nets {pll/PLL_IN_clk_wiz_0}]
-
 set_property -dict {PACKAGE_PIN P18 IOSTANDARD LVCMOS33}    [get_ports {io_CLK_REC}]
 set_property -dict {PACKAGE_PIN M18 IOSTANDARD LVCMOS33}    [get_ports {io_DATA_OUT}]
-set_property -dict {PACKAGE_PIN M19 IOSTANDARD LVCMOS33}    [get_ports {io_NEXT_FRAME}]
+set_property -dict {PACKAGE_PIN N17 IOSTANDARD LVCMOS33}    [get_ports {io_CLK_DBUG}]
 set_property -dict {PACKAGE_PIN P17 IOSTANDARD LVCMOS33}    [get_ports {io_DBUG}]
 set_property -dict {PACKAGE_PIN R18 IOSTANDARD LVCMOS33}    [get_ports {io_DBUG1}]
 set_property -dict {PACKAGE_PIN T17 IOSTANDARD LVCMOS33}    [get_ports reset]
+
+## LEDs
+set_property -dict {PACKAGE_PIN U16 IOSTANDARD LVCMOS33}    [get_ports {io_LEDS[0]}]					
+set_property -dict {PACKAGE_PIN E19 IOSTANDARD LVCMOS33}    [get_ports {io_LEDS[1]}]					
+set_property -dict {PACKAGE_PIN U19 IOSTANDARD LVCMOS33}    [get_ports {io_LEDS[2]}]					
+set_property -dict {PACKAGE_PIN V19 IOSTANDARD LVCMOS33}    [get_ports {io_LEDS[3]}]					
+set_property -dict {PACKAGE_PIN W18 IOSTANDARD LVCMOS33}    [get_ports {io_LEDS[4]}]					
+set_property -dict {PACKAGE_PIN U15 IOSTANDARD LVCMOS33}    [get_ports {io_LEDS[5]}]					
+set_property -dict {PACKAGE_PIN U14 IOSTANDARD LVCMOS33}    [get_ports {io_LEDS[6]}]					
+set_property -dict {PACKAGE_PIN V14 IOSTANDARD LVCMOS33}    [get_ports {io_LEDS[7]}]					
+set_property -dict {PACKAGE_PIN V13 IOSTANDARD LVCMOS33}    [get_ports {io_LEDS[8]}]					
+set_property -dict {PACKAGE_PIN V3  IOSTANDARD LVCMOS33}    [get_ports {io_LEDS[9]}]					
+set_property -dict {PACKAGE_PIN W3  IOSTANDARD LVCMOS33}    [get_ports {io_LEDS[10]}]					
+set_property -dict {PACKAGE_PIN U3  IOSTANDARD LVCMOS33}    [get_ports {io_LEDS[11]}]					
+set_property -dict {PACKAGE_PIN P3  IOSTANDARD LVCMOS33}    [get_ports {io_LEDS[12]}]					
+set_property -dict {PACKAGE_PIN N3  IOSTANDARD LVCMOS33}    [get_ports {io_LEDS[13]}]					
+set_property -dict {PACKAGE_PIN P1  IOSTANDARD LVCMOS33}    [get_ports {io_LEDS[14]}]					
+set_property -dict {PACKAGE_PIN L1  IOSTANDARD LVCMOS33}    [get_ports {io_LEDS[15]}]	
 
 # Clock constraints
 create_clock -add -name sys_clk_pin -period 10.00 -waveform {0 5} [get_ports clock]
