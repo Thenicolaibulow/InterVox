@@ -23,8 +23,8 @@ class clock_Recovery() extends Module {
     })
 
     val deltaCntr   = RegInit(0.U(8.W))
-    val lastOne     = RegInit(8.U(8.W)) // Initially 8 (*2) (roughly 100MHz / 12.288MHz) - will be adjusted live, accordingly.
     val inBufr      = RegInit(0.U(2.W))
+    val lastOne     = RegInit(9.U(8.W)) // Will typically land at 7 (roughly 100MHz / 6.144MHz) - will be adjusted live, accordingly.
     val inBufrPrev  = RegInit(0.U(2.W))
     val whatChange  = RegInit(0.U(2.W))
  
@@ -54,29 +54,29 @@ class clock_Recovery() extends Module {
         when(inBufr === 0.U){           
             inBufr := 1.U
         }
-        // Now signal is high, bitshift such that := 10
+        // Now signal is high, bitshift such that := 0b10
         when((inBufr < 2.U) & (inBufr > 0.U)){
             // And store previous state := 01
             inBufrPrev := inBufr
             inBufr := inBufr << 1.U
         }
         when(inBufr === 2.U){
-            // Store previous when max value 10 has been reached.
+            // Store previous when max value 0b10 has been reached.
             inBufrPrev := inBufr
         }
 
     }
     when(io.DATA_IN === 0.U){
         
-        // Now in low periode, if > 0
+        // Now in low periode, if > 0.
         when(inBufr > 0.U){
             // Save current to previous state
             inBufrPrev := inBufr
-            // Bitshit, such that:  10 > 01
+            // Bitshift, such that:  10 > 01
             inBufr := inBufr >> 1.U
         }
         when(inBufr === 0.U){
-            // Store previous when min≤ value 00 has been reached.
+            // Store previous when min value 00 has been reached.
             inBufrPrev := inBufr
         }
     }    
@@ -124,7 +124,7 @@ class clock_Recovery() extends Module {
         } 
 
         // Detect a one, if it's been x < LastOne cycles since last change.
-        when((deltaCntr <= lastOne) & (changedOne === 1.U)){
+        when((deltaCntr <= lastOne)){ // & (changedOne === 1.U)
             /*
                 DATA DETECT 1
             */
@@ -176,9 +176,10 @@ class clock_Recovery() extends Module {
     // Whenever we're in a zero-periode, we can't rely on rising/trailing edges. 
     // Thus we rely on the last one-cycle cyclecounter, and incoming changes, 
     // to approximate when to flip the clk-register.
-    when((deltaCntr >= lastOne) & (changed === 0.U) & (change =/= 1.U)){
+    when(((deltaCntr >= lastOne) & (changed === 0.U) & (change =/= 1.U)) | ((deltaCntr >= lastOne) & (zeroPeriode === 1.U) & (changed === 0.U))){
         clkRec  := ~clkRec
         changed := 1.U
+        //deltaCntr := 0.U
     }
 }
 

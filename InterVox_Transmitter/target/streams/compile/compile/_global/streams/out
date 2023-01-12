@@ -1,4 +1,7 @@
-[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/InterVox_Transmitter/src/main/scala/intervox_transmitter.scala:296:69: not found: value bitCnt[0m
-[0m[[0m[31merror[0m] [0m[0m              BFR.io.dataIn     := BFR.io.dataOut + (0.U << (73.U - bitCnt))[0m
-[0m[[0m[31merror[0m] [0m[0m                                                                    ^[0m
-[0m[[0m[31merror[0m] [0m[0mone error found[0m
+[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/InterVox_Transmitter/src/main/scala/intervox_transmitter.scala:196:40: identifier expected but integer literal found.[0m
+[0m[[0m[31merror[0m] [0m[0m  bi_phase_enc.io.DSPINPUT    := io.SW[1][0m
+[0m[[0m[31merror[0m] [0m[0m                                       ^[0m
+[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/InterVox_Transmitter/src/main/scala/intervox_transmitter.scala:213:1: ']' expected.[0m
+[0m[[0m[31merror[0m] [0m[0m  when(synced === 0.U){[0m
+[0m[[0m[31merror[0m] [0m[0m^[0m
+[0m[[0m[31merror[0m] [0m[0mtwo errors found[0m

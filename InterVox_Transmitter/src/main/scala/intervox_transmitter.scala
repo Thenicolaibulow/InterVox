@@ -33,105 +33,101 @@ class bi_phase_encoder() extends Module {
     val AUDIOINPUT    = Input (UInt(64.W))
     val DSPINPUT      = Input (UInt(64.W))
     val ENA           = Input (UInt(1.W))
-    val NEXT          = Output(UInt(1.W))
+    val TICK          = Input (UInt(1.W))
   })
     val outReg        = RegInit(0.U(1.W))
-    val next          = RegInit(0.U(1.W))
     val stereoData    = RegInit(0.U(64.W))
     val dspData       = RegInit(0.U(16.W))
-    val dspData2      = RegInit(0.U(64.W))
     val bitCntr_enc   = RegInit(0.U(8.W))
     val hasNone       = RegInit(0.U(1.W))
-    val holdState     = RegInit(0.U(1.W))
     val dataIndex     = RegInit(0.U(6.W))
 
     io.DATA_OUT := outReg
     // Every new frame, dump data into the Audio register. 
     stereoData  := io.AUDIOINPUT
     dspData     := io.DSPINPUT
-    dspData2    := 0.U
-    io.NEXT     := next
     // Flip reg. for creating the "data_index".
     val ndexR         = RegInit(0.U(1.W))    
 
-      // bitCntr_enc = BCLK x 2
-
     when(io.ENA === 1.U){
 
-        // Syncword = 0001 < the header bits
-        when(bitCntr_enc === 6.U){  // b4
-          // Set the one
-          outReg := ~outReg
-        }
-        when(bitCntr_enc === 7.U){  // b4
-          outReg := ~outReg
-        }
+      // Clocked at BCLK x 2, or MCLK / 2
 
-          // Append audio data
-          when((bitCntr_enc > 7.U)){
+      when(io.TICK === 1.U){
 
-          // Count the number of serial data bits. (half rate of bitCntr_enc)
-          ndexR := ~ndexR
-          when(ndexR === 1.U){
-            // Dataindex <-> Bitcount
-            dataIndex := dataIndex + 1.U
-          }
+          // Syncword = 001 < the header bits
 
-          holdState := 0.U
-          // Up to 2 x 24 bits (offset by the header width (4bit, 8 cycles), hence 56)
-          when(bitCntr_enc < 56.U){ // b5..29
-              // 64th bit - current bit count - 4Bit header
-            when((stereoData(64.U - (dataIndex + 1.U)))  === 0.U) {
-              // Then don't change for one cycle
-              hasNone := 1.U
-            }
-          }
-          when((bitCntr_enc >= 56.U) & (bitCntr_enc < 105.U)){
-            // 64th bit - current bit count - previous 24Bit - 4Bit header
-            when((stereoData((64.U - (dataIndex - 23.U))))  === 0.U) {
-              // Then don't change for one cycle
-              hasNone := 1.U
-            }              
-
-          } // Append DSP data
-          when((bitCntr_enc >= 105.U) & (bitCntr_enc < 129.U)){
-              /*
-                  DSP 
-              */
-              when((dspData((dataIndex - 48.U)))  === 0.U) {
-              // Then don't change for one cycle
-              hasNone := 1.U
-            }
-
-          }
-          when((bitCntr_enc >= 127.U) & (bitCntr_enc < 255.U)){
-              /*
-                  DSP 
-              */
-              when((dspData2((dataIndex - 60.U)))  === 0.U) {
-              // Then don't change for one cycle
-              hasNone := 1.U
-            }
-
-          }          
-          when(hasNone === 1.U){
-            outReg := outReg
-            hasNone := 0.U
-          }
-          .otherwise{
-            // Otherwise, flip
+          // Bit 1:2
+          when(bitCntr_enc === 3.U){          
             outReg := ~outReg
           }
-        }
+          // Bit 3
+          when(bitCntr_enc === 4.U){          
+            outReg := ~outReg
+            // Reset hasNone for future use.
+            hasNone := 0.U
+          }
 
-        when(bitCntr_enc === 255.U){
-          bitCntr_enc := 0.U
-          dataIndex := 0.U
-          //next := 1.U
-        }
+          // Audio data
+          when((bitCntr_enc > 4.U)){
 
-        // Count bits
-        bitCntr_enc := bitCntr_enc + 1.U
+
+            // Count the number of serial data bits. (half rate of bitCntr_enc)
+            ndexR := ~ndexR
+            when(ndexR === 0.U){
+              // Dataindex <-> Bitcount
+              dataIndex := dataIndex + 1.U
+            }
+
+            // Left 24 bit channel data:
+            // Bit 3:27
+            when(bitCntr_enc < 53.U){         
+                // 64th bit - current bit count
+              when((stereoData(64.U - (dataIndex + 1.U))) === 0.U) {
+                // If buffer bit is zero, then don't change for one cycle
+                hasNone := 1.U
+              }
+            }
+            // Right 24 bit channel data:
+            // Bit 27:52
+            when((bitCntr_enc >= 53.U) & (bitCntr_enc < 101.U)){
+              // 64th bit - current bit count - previous 24Bit
+              when((stereoData((64.U - (dataIndex - 23.U)))) === 0.U) {
+                hasNone := 1.U               
+              }
+              
+            } 
+            
+            // Append DSP data
+            // Bit 52:64
+            when((bitCntr_enc >= 101.U) & (bitCntr_enc <= 127.U)){
+              /*when((dspData((dataIndex - 47.U)))  === 0.U) {
+                hasNone := 1.U
+              }*/
+              hasNone := 1.U
+            } 
+
+            // Flip the output register, according to encoding scheme:
+            when(hasNone === 1.U){
+              // If a zero is encoded, don't change state.
+              outReg := outReg
+              hasNone := 0.U
+            }
+            .otherwise{
+              // Otherwise, when a one is encoded, change state every cycle.
+              outReg := ~outReg
+            }
+          }
+
+          // Count bits
+          bitCntr_enc := bitCntr_enc + 1.U
+          
+          // Reset bitcounter
+          when(bitCntr_enc === 127.U){
+            bitCntr_enc := 0.U
+            dataIndex := 0.U
+          }          
+      }      
     }
 }
 
@@ -145,7 +141,7 @@ class interVox_Encoder(width: UInt) extends Module {
     val LRCLK_O   = Output(UInt(1.W))    
     val BCLK_O    = Output(UInt(1.W))  
     val SDATA_O   = Output(UInt(1.W))
-    val NXT_FRAME = Output(UInt(1.W))      
+    val NXT_FRAME = Output(UInt(1.W))  
   })
 
   // Define state enum.. case sentitive!
@@ -163,6 +159,8 @@ class interVox_Encoder(width: UInt) extends Module {
   val bclkR             = RegInit(1.U(1.W))      
   // Instantiate bi-phase encoder
   val bi_phase_enc      = Module(new bi_phase_encoder())
+  // Clock divider register for encoder
+  val encoderClk        = RegInit(0.U(1.W))  
   // Define the bitcounter
   val bitCntr           = RegInit(0.U(8.W))
   // Define the buffers
@@ -188,13 +186,13 @@ class interVox_Encoder(width: UInt) extends Module {
 
   // For debugging: output the bi_phase_enc enable signal. 
   io.NXT_FRAME                := bi_phase_enc.io.ENA
-
   // Get the bi-phase encoder ready
+  bi_phase_enc.io.TICK        := 0.U
   bi_phase_enc.io.ENA         := 0.U
   // Always feed the bi-phase with the delayed repacked data (BFR1)
   bi_phase_enc.io.AUDIOINPUT  := BFR1.io.dataOut
   // Hardcode DSP data.
-  bi_phase_enc.io.DSPINPUT    := 0.U 
+  bi_phase_enc.io.DSPINPUT    := 0.U
 
   /*
       Functional overview:
@@ -262,8 +260,15 @@ class interVox_Encoder(width: UInt) extends Module {
 
         // Initialize BiPhase Encoder
         bi_phase_enc.io.ENA := 1.U
-        BiPhase_CLK_CNTR := BiPhase_CLK_CNTR + 1.U
+        
+        // Clock the BiPhase Encoder at MCLK/2, or BCLK x2
+        encoderClk := ~encoderClk
+        when(encoderClk === 1.U){
+          bi_phase_enc.io.TICK  := 1.U
+        }
 
+        BiPhase_CLK_CNTR := BiPhase_CLK_CNTR + 1.U
+        // Clock the incoming i2s data at MCLK / 4 = BCLK
         when(BiPhase_CLK_CNTR === 3.U){
           BiPhase_CLK_CNTR := 0.U
           

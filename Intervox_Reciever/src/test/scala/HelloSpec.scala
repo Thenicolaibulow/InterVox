@@ -29,6 +29,7 @@ class interVox_Reciever_spec extends AnyFlatSpec with ChiselScalatestTester {
             2 x 24Bit Audio Data
         */  
 
+        /*
         // Send 4 Ones
         for(j <- 0 until 4){
 
@@ -36,7 +37,17 @@ class interVox_Reciever_spec extends AnyFlatSpec with ChiselScalatestTester {
           dut.io.INTERVOX_IN.poke(1.U)
           dut.clock.step(8)
           dut.io.INTERVOX_IN.poke(0.U)
-        }
+        }*/
+
+        // Send 4 Zeros
+        for(j <- 0 until 2){
+
+          dut.clock.step(16)
+          dut.io.INTERVOX_IN.poke(1.U)
+          dut.clock.step(16)
+          dut.io.INTERVOX_IN.poke(0.U)
+        }    
+
         // Send 4 Zeros
         for(j <- 0 until 2){
 
