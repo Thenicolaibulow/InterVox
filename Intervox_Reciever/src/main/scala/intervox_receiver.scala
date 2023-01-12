@@ -5,9 +5,9 @@ import chisel3.util._
 class clk_wiz_0_clk_wiz extends BlackBox with HasBlackBoxResource {
   // Class should have same name, as module in blackbox!
   val io = IO(new Bundle {
-    val PLL_MCLK  = Output(UInt(1.W))
+    val CLK_OUT  = Output(UInt(1.W))
     val locked    = Output(UInt(1.W))
-    val PLL_IN    = Input (UInt(1.W))
+    val CLK_IN    = Input (UInt(1.W))
   })
   addResource("/clk_wiz_0_clk_wiz.v")
 }
@@ -24,14 +24,14 @@ class clock_Recovery() extends Module {
 
     val deltaCntr   = RegInit(0.U(8.W))
     val inBufr      = RegInit(0.U(2.W))
-    val lastOne     = RegInit(9.U(8.W)) // Will typically land at 7 (roughly 100MHz / 6.144MHz) - will be adjusted live, accordingly.
+    val lastOne     = RegInit(31.U(8.W)) // Will typically land at 7 (roughly 100MHz / 6.144MHz) - will be adjusted live, accordingly.
     val inBufrPrev  = RegInit(0.U(2.W))
     val whatChange  = RegInit(0.U(2.W))
  
     val outReg      = RegInit(0.U(1.W))
     val clkRec      = RegInit(0.U(1.W))
     val change      = RegInit(0.U(1.W))
-    val changed     = RegInit(0.U(1.W))
+    val changed     = RegInit(0.U(1.W)) 
     val changedOne  = RegInit(0.U(1.W))
     val dataOut     = RegInit(0.U(1.W))
     val zeroPeriode = RegInit(0.U(1.W))
@@ -92,17 +92,15 @@ class clock_Recovery() extends Module {
     when((inBufrPrev === 0.U) & (inBufr === 1.U)){
         // On rising edge
         change      := 1.U
-        //deltaCntr   := 0.U                
     }
 
     /* Detect trailing as: 
-        Previous    :  10
-        Current     :    01
+        Previous    :  11
+        Current     :    10
     */    
     when((inBufrPrev === 2.U) & (inBufr === 1.U)){
         // On trailing edge
         change      := 1.U
-        //deltaCntr   := 0.U
 
     }
     // Slam change reg back to zero, such that it is just a pulse.
@@ -124,7 +122,7 @@ class clock_Recovery() extends Module {
         } 
 
         // Detect a one, if it's been x < LastOne cycles since last change.
-        when((deltaCntr <= lastOne)){ // & (changedOne === 1.U)
+        when((deltaCntr <= lastOne + 2.U)){ // & (changedOne === 1.U)
             /*
                 DATA DETECT 1
             */
@@ -132,8 +130,10 @@ class clock_Recovery() extends Module {
             dataOut     := 1.U            
             // Expect it to be a 1
             zeroPeriode := 0.U            
+
             // Store the number of cycles since last change (live adjust expected cycles of a 1)
             lastOne     := deltaCntr
+
             // Get ready for next 1
             changedOne  := 0.U     
             // Reset delta counter   
@@ -142,7 +142,7 @@ class clock_Recovery() extends Module {
     }
 
     // If the delta clock counter is above what is expected of a 1:
-    when((deltaCntr > (lastOne))){
+    when((deltaCntr > (lastOne + 2.U))){
         /*
             DATA DETECT 0
         */
@@ -156,16 +156,18 @@ class clock_Recovery() extends Module {
         changedOne      := 0.U
     }
 
+    /*
     when((deltaCntr > (lastOne * 2.U))){
         // Detect syncword.
         syncWord := 1.U
-    }
+    }*/
 
 
     /*
         Clock Regeneration
     */
 
+    
 
     // Whenever we're receiving ones, flip the clock-register
     //  on every change, as these are aligned to the wanted clock:
@@ -179,8 +181,8 @@ class clock_Recovery() extends Module {
     when(((deltaCntr >= lastOne) & (changed === 0.U) & (change =/= 1.U)) | ((deltaCntr >= lastOne) & (zeroPeriode === 1.U) & (changed === 0.U))){
         clkRec  := ~clkRec
         changed := 1.U
-        //deltaCntr := 0.U
     }
+
 }
 
 
@@ -205,19 +207,25 @@ class interVox_Reciever() extends Module {
     io.DBUG1            := clockRec.io.DBUG1
     io.DBUG             := clockRec.io.DBUG
 
-    // Instantiate blackboxed PLL.
+
+    io.CLK_REC := 0.U
+
+    // Instantiate blackboxed MMCM.
+    // Input: 3.072 MHz, Output 6.144MHz, but configured as: 12.288MHz and 24.576 MHz.
+    
+    /*
     val pll = Module(new clk_wiz_0_clk_wiz)   
 
     // Connect recovered clock reg to PLL input.
-    pll.io.PLL_IN := clockRec.io.CLK_OUT
+    pll.io.CLK_IN := clockRec.io.CLK_OUT
 
     // Once PLL is locked
     when(pll.io.locked === 1.U){
-        io.CLK_REC := pll.io.PLL_MCLK
+        io.CLK_REC := pll.io.CLK_OUT
     }
     .otherwise{
         io.CLK_REC := 0.U
-    }
+    }*/
 
 }
 

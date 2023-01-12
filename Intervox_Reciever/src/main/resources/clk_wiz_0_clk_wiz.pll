@@ -56,12 +56,12 @@
 //  Output     Output      Phase    Duty Cycle   Pk-to-Pk     Phase
 //   Clock     Freq (MHz)  (degrees)    (%)     Jitter (ps)  Error (ps)
 //----------------------------------------------------------------------------
-// PLL_MCLK__12.28283______0.000______50.0______332.366____346.178
+// PLL_MCLK__12.28448______0.000______50.0______258.835____218.817
 //
 //----------------------------------------------------------------------------
 // Input Clock   Freq (MHz)    Input Jitter (UI)
 //----------------------------------------------------------------------------
-// __primary__________19.000____________0.010
+// __primary______________25____________0.010
 
 `timescale 1ps/1ps
 
@@ -71,6 +71,7 @@ module clk_wiz_0_clk_wiz
   // Clock out ports
   output        PLL_MCLK,
   // Status and control signals
+  input         reset,
   output        locked,
   input         PLL_IN
  );
@@ -115,6 +116,7 @@ wire clk_in2_clk_wiz_0;
   wire        clkout6_unused;
   wire        clkfbstopped_unused;
   wire        clkinstopped_unused;
+  wire        reset_high;
   (* KEEP = "TRUE" *) 
   (* ASYNC_REG = "TRUE" *)
   reg  [7 :0] seq_reg1 = 0;
@@ -124,12 +126,12 @@ wire clk_in2_clk_wiz_0;
     .COMPENSATION         ("BUF_IN"),
     .STARTUP_WAIT         ("FALSE"),
     .DIVCLK_DIVIDE        (1),
-    .CLKFBOUT_MULT        (64),
+    .CLKFBOUT_MULT        (57),
     .CLKFBOUT_PHASE       (0.000),
-    .CLKOUT0_DIVIDE       (99),
+    .CLKOUT0_DIVIDE       (116),
     .CLKOUT0_PHASE        (0.000),
     .CLKOUT0_DUTY_CYCLE   (0.500),
-    .CLKIN1_PERIOD        (52.631))
+    .CLKIN1_PERIOD        (40.000))
   plle2_adv_inst
     // Output clocks
    (
@@ -157,7 +159,8 @@ wire clk_in2_clk_wiz_0;
     // Other control and status signals
     .LOCKED              (locked_int),
     .PWRDWN              (1'b0),
-    .RST                 (1'b0));
+    .RST                 (reset_high));
+  assign reset_high = reset; 
 
   assign locked = locked_int;
 // Clock Monitor clock assigning
@@ -183,8 +186,15 @@ wire clk_in2_clk_wiz_0;
   BUFH clkout1_buf_en
    (.O   (PLL_MCLK_clk_wiz_0_en_clk),
     .I   (PLL_MCLK_clk_wiz_0));
-  always @(posedge PLL_MCLK_clk_wiz_0_en_clk)
+  always @(posedge PLL_MCLK_clk_wiz_0_en_clk or posedge reset_high) begin
+    if(reset_high == 1'b1) begin
+	    seq_reg1 <= 8'h00;
+    end
+    else begin
         seq_reg1 <= {seq_reg1[6:0],locked_int};
+  
+    end
+  end
 
 
 

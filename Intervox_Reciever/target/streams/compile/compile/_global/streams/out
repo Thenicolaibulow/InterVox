@@ -1,6 +1,13 @@
-[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/Intervox_Reciever/src/main/scala/intervox_receiver.scala:179:102: type mismatch;[0m
-[0m[[0m[31merror[0m] [0m[0m found   : chisel3.UInt[0m
-[0m[[0m[31merror[0m] [0m[0m required: chisel3.Bool[0m
-[0m[[0m[31merror[0m] [0m[0m    when(((deltaCntr >= lastOne) & (!changed) & (!change)) | ((deltaCntr >= lastOne) & (zeroPeriode) & (changed))){[0m
-[0m[[0m[31merror[0m] [0m[0m                                                                                                     ^[0m
-[0m[[0m[31merror[0m] [0m[0mone error found[0m
+[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/Intervox_Reciever/src/main/scala/intervox_receiver.scala:108:9: not found: value changed[0m
+[0m[[0m[31merror[0m] [0m[0m        changed     := 0.U[0m
+[0m[[0m[31merror[0m] [0m[0m        ^[0m
+[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/Intervox_Reciever/src/main/scala/intervox_receiver.scala:177:37: not found: value changed[0m
+[0m[[0m[31merror[0m] [0m[0m    when(((deltaCntr >= lastOne) & (changed === 0.U) & (change =/= 1.U)) | ((deltaCntr >= lastOne) & (zeroPeriode === 1.U) & (changed === 0.U))){[0m
+[0m[[0m[31merror[0m] [0m[0m                                    ^[0m
+[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/Intervox_Reciever/src/main/scala/intervox_receiver.scala:177:127: not found: value changed[0m
+[0m[[0m[31merror[0m] [0m[0m    when(((deltaCntr >= lastOne) & (changed === 0.U) & (change =/= 1.U)) | ((deltaCntr >= lastOne) & (zeroPeriode === 1.U) & (changed === 0.U))){[0m
+[0m[[0m[31merror[0m] [0m[0m                                                                                                                              ^[0m
+[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/Intervox_Reciever/src/main/scala/intervox_receiver.scala:179:9: not found: value changed[0m
+[0m[[0m[31merror[0m] [0m[0m        changed := 1.U[0m
+[0m[[0m[31merror[0m] [0m[0m        ^[0m
+[0m[[0m[31merror[0m] [0m[0mfour errors found[0m

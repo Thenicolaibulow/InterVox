@@ -1,0 +1,33 @@
+[*]
+[*] GTKWave Analyzer v3.3.107 (w)1999-2020 BSI
+[*] Thu Jan 12 13:34:12 2023
+[*]
+[dumpfile] "/Users/nixen/Development/fpga/InterVox/InterVox_Transmitter/test_run_dir/interVox_Encoder_should_pass/interVox_Encoder.vcd"
+[dumpfile_mtime] "Thu Jan 12 12:13:27 2023"
+[dumpfile_size] 1001886
+[savefile] "/Users/nixen/Development/fpga/InterVox/InterVox_Transmitter/test_run_dir/interVox_Encoder_should_pass/Woking_2x24Bit_3072MHz.gtkw"
+[timestart] 4037
+[size] 3840 817
+[pos] -2 -1
+*-8.000000 8371 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] interVox_Encoder.
+[sst_width] 193
+[signals_width] 207
+[sst_expanded] 1
+[sst_vpaned_height] 234
+@28
+interVox_Encoder.io_BCLK_IN
+interVox_Encoder.io_LRCLK_IN
+interVox_Encoder.io_SDATA_IN
+interVox_Encoder.bi_phase_enc.io_ENA
+interVox_Encoder.bi_phase_enc.stereoData[63:0]
+interVox_Encoder.bi_phase_enc.io_TICK
+@24
+[color] 2
+interVox_Encoder.bitCntr[7:0]
+interVox_Encoder.bi_phase_enc.bitCntr_enc[7:0]
+@28
+interVox_Encoder.bi_phase_enc.hasNone
+interVox_Encoder.bi_phase_enc.io_DATA_OUT
+[pattern_trace] 1
+[pattern_trace] 0
