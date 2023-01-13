@@ -24,7 +24,7 @@ class clock_Recovery() extends Module {
 
     val deltaCntr   = RegInit(0.U(8.W))
     val inBufr      = RegInit(0.U(2.W))
-    val lastOne     = RegInit(31.U(8.W)) // Will typically land at 7 (roughly 100MHz / 6.144MHz) - will be adjusted live, accordingly.
+    val lastOne     = RegInit(15.U(8.W))
     val inBufrPrev  = RegInit(0.U(2.W))
  
     val clkRec      = RegInit(0.U(1.W))
@@ -87,24 +87,10 @@ class clock_Recovery() extends Module {
         Current     :    01
         Previous    :  00
     */
-    when((inBufrPrev === 0.U) & (inBufr === 1.U)){
-        // On rising edge
-        change      := 1.U
-    }
-
-    /* Detect trailing as: 
-        Previous    :  11
-        Current     :    10
-    */    
-    when((inBufrPrev === 2.U) & (inBufr === 1.U)){
-        // On trailing edge
-        change      := 1.U
-
-    }
     
-    when(change === 1.U){    
+    when(((inBufrPrev === 0.U) & (inBufr === 1.U)) | ((inBufrPrev === 2.U) & (inBufr === 1.U))){    
         // Slam change reg back to zero, such that it is just a pulse.
-        change      := 0.U
+        change      := ~change
         // Reset 0-bit clock regenerator
         changed     := 0.U
         // Always flip clock register on change.
@@ -116,8 +102,9 @@ class clock_Recovery() extends Module {
         // Reset delta counter
         deltaCntr   := 0.U
 
-        // Detect a one, if it's been x < LastOne cycles since last change.
-        when((deltaCntr <= lastOne + 1.U)){
+        // A one will only occur, when two changes happens with 'lastOne' number of cycles inbetween.
+        // Detect a one, if it's been 'lastOne' cycles since last change.
+        when((deltaCntr > ((lastOne + 1.U)/2.U)) & (deltaCntr < (lastOne + 2.U)) ){ // Give it some slack for live-updating the 'lastOne'
             /*
                 DATA DETECT 1
             */
@@ -127,12 +114,12 @@ class clock_Recovery() extends Module {
             zeroPeriode := 0.U            
             // Store the number of cycles since last change (live adjust expected cycles of a 1)
             lastOne     := deltaCntr
-        }
-
+        } 
     }
+   
 
     // If the delta clock counter is above what is expected of a 1, and below what is expected from a syncword:
-    when((deltaCntr > (lastOne + 1.U)) & (deltaCntr < ((lastOne + 1.U) * 2.U))){
+    when((deltaCntr >= (lastOne + 2.U)) & (deltaCntr < ((lastOne * 2.U)) + 2.U)){
         /*
             DATA DETECT 0
         */
@@ -144,21 +131,23 @@ class clock_Recovery() extends Module {
         syncWord        := 0.U
     }
 
-    
-    when((deltaCntr >= ((lastOne + 1.U) * 2.U))){
+    when((deltaCntr >= ((lastOne * 2.U) + 2.U))){
         // Detect syncword.
         syncWord := 1.U
+    
         when(syncFlipped === 0.U){
             // Flip clock register
             clkRec  := ~clkRec
             syncFlipped := 1.U
         }
-        when((deltaCntr >= ((lastOne + 1.U) * 3.U)) & (syncFlipped1 === 0.U)){
+
+        when((deltaCntr >= ((lastOne * 3.U) + 1.U)) & (syncFlipped1 === 0.U)){
             // Flip clock register
             clkRec  := ~clkRec
             syncFlipped1 := 1.U
         }
     }
+
 
 
     /*
