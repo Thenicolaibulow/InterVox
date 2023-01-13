@@ -22,11 +22,11 @@ class clock_Recovery() extends Module {
         val LEDS        = Output (UInt(16.W))
     })
 
+    val trail :: puls :: rise :: Nil = Enum(3)
+
+    val edgeState   = RegInit(trail)
     val deltaCntr   = RegInit(0.U(8.W))
-    val inBufr      = RegInit(0.U(2.W))
     val lastOne     = RegInit(15.U(8.W))
-    val inBufrPrev  = RegInit(0.U(2.W))
- 
     val clkRec      = RegInit(0.U(1.W))
     val change      = RegInit(0.U(1.W))
     val changed     = RegInit(0.U(1.W)) 
@@ -34,7 +34,7 @@ class clock_Recovery() extends Module {
     val zeroPeriode = RegInit(0.U(1.W))
     val syncWord    = RegInit(0.U(1.W))
     val syncFlipped = RegInit(0.U(1.W))
-    val syncFlipped1 = RegInit(0.U(1.W))
+    val syncFlipped1= RegInit(0.U(1.W))
 
     io.CLK_OUT      := clkRec
     io.DATA_OUT     := dataOut
@@ -44,53 +44,32 @@ class clock_Recovery() extends Module {
 
     // Increment clock counter
     deltaCntr    := deltaCntr + 1.U    
-
-    // Log the changes in the input buffer register:
-    when(io.DATA_IN === 1.U){
-        
-        // On first rising edge := 01
-        when(inBufr === 0.U){           
-            inBufr := 1.U
-        }
-        // Now signal is high, bitshift such that := 0b10
-        when((inBufr < 2.U) & (inBufr > 0.U)){
-            // And store previous state := 01
-            inBufrPrev := inBufr
-            inBufr := inBufr << 1.U
-        }
-        when(inBufr === 2.U){
-            // Store previous when max value 0b10 has been reached.
-            inBufrPrev := inBufr
-        }
-
-    }
-    when(io.DATA_IN === 0.U){
-        
-        // Now in low periode, if > 0.
-        when(inBufr > 0.U){
-            // Save current to previous state
-            inBufrPrev := inBufr
-            // Bitshift, such that:  10 > 01
-            inBufr := inBufr >> 1.U
-        }
-        when(inBufr === 0.U){
-            // Store previous when min value 00 has been reached.
-            inBufrPrev := inBufr
-        }
-    }    
-
-    /*
-        Rising/Trailing Edge detector.
-    */
-
-    /* Detect rising as: 
-        Current     :    01
-        Previous    :  00
-    */
     
-    when(((inBufrPrev === 0.U) & (inBufr === 1.U)) | ((inBufrPrev === 2.U) & (inBufr === 1.U))){    
-        // Slam change reg back to zero, such that it is just a pulse.
-        change      := ~change
+    // Moore FSM edge detection:
+    switch(edgeState){
+        is(trail){
+            when(io.DATA_IN === 1.U){
+                edgeState := puls             
+            }
+        }
+        is(puls){
+            when(io.DATA_IN === 1.U){
+                edgeState := rise
+                change := 1.U
+            }.otherwise{
+                edgeState := trail
+                change := 1.U                
+            }
+        }
+        is(rise){
+            when(io.DATA_IN === 0.U){
+                edgeState := puls
+            }
+        }
+    }
+
+    when(change === 1.U){    
+        change := RegNext(RegNext(0.U, 0.U(1.W)), 0.U(1.W))
         // Reset 0-bit clock regenerator
         changed     := 0.U
         // Always flip clock register on change.
@@ -148,18 +127,8 @@ class clock_Recovery() extends Module {
         }
     }
 
-
-
     /*
         Clock Regeneration
-    */
-
-    /*
-        // Whenever we're receiving ones, flip the clock-register
-        //  on every change, as these are aligned to the wanted clock:
-        when((change === 1.U) & (deltaCntr >= ((lastOne * 2.U) - 5.U))){
-            clkRec  := ~clkRec
-        }
     */
 
     // Whenever we're in a zero-periode, we can't rely on rising/trailing edges. 
