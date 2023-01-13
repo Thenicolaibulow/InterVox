@@ -51,7 +51,7 @@ module clock_Recovery(
   wire  _GEN_11 = inBufrPrev == 2'h0 & inBufr == 2'h1 | change; // @[intervox_receiver.scala 90:50 92:21 31:30]
   wire  _GEN_12 = inBufrPrev == 2'h2 & _T_10 | _GEN_11; // @[intervox_receiver.scala 101:21 99:50]
   wire  _clkRec_T = ~clkRec; // @[intervox_receiver.scala 111:24]
-  wire [7:0] _T_17 = lastOne + 8'h2; // @[intervox_receiver.scala 120:36]
+  wire [7:0] _T_17 = lastOne + 8'h1; // @[intervox_receiver.scala 120:36]
   wire  _GEN_13 = deltaCntr <= _T_17 | dataOut; // @[intervox_receiver.scala 120:43 125:25 33:30]
   wire  _GEN_14 = deltaCntr <= _T_17 ? 1'h0 : zeroPeriode; // @[intervox_receiver.scala 120:43 127:25 34:30]
   wire  _GEN_17 = change ? 1'h0 : changed; // @[intervox_receiver.scala 105:25 109:21 32:30]
@@ -70,11 +70,11 @@ module clock_Recovery(
   wire [9:0] _T_34 = _T_17 * 2'h3; // @[intervox_receiver.scala 156:45]
   wire  _GEN_32 = _GEN_40 >= _T_34 & ~syncFlipped1 | _GEN_21; // @[intervox_receiver.scala 156:78 159:26]
   wire  _GEN_33 = _GEN_40 >= _T_24 | _GEN_28; // @[intervox_receiver.scala 148:49 150:18]
-  wire  _GEN_38 = _T_21 & ~changed & ~change | _T_21 & zeroPeriode & ~changed | _GEN_17; // @[intervox_receiver.scala 182:155 184:17]
+  wire  _GEN_38 = _T_21 & ~changed & ~change | _T_21 & zeroPeriode & ~changed | _GEN_17; // @[intervox_receiver.scala 179:155 181:17]
   wire [2:0] _GEN_43 = reset ? 3'h0 : _GEN_10; // @[intervox_receiver.scala 26:{30,30}]
   assign io_CLK_OUT = clkRec; // @[intervox_receiver.scala 39:21]
   assign io_DATA_OUT = dataOut; // @[intervox_receiver.scala 40:21]
-  assign io_DBUG = zeroPeriode; // @[intervox_receiver.scala 41:21]
+  assign io_DBUG = change; // @[intervox_receiver.scala 41:21]
   assign io_DBUG1 = syncWord; // @[intervox_receiver.scala 42:21]
   assign io_LEDS = {{8'd0}, lastOne}; // @[intervox_receiver.scala 43:21]
   always @(posedge clock) begin
@@ -108,8 +108,8 @@ module clock_Recovery(
     end
     if (reset) begin // @[intervox_receiver.scala 30:30]
       clkRec <= 1'h0; // @[intervox_receiver.scala 30:30]
-    end else if (_T_21 & ~changed & ~change | _T_21 & zeroPeriode & ~changed) begin // @[intervox_receiver.scala 182:155]
-      clkRec <= _clkRec_T; // @[intervox_receiver.scala 183:17]
+    end else if (_T_21 & ~changed & ~change | _T_21 & zeroPeriode & ~changed) begin // @[intervox_receiver.scala 179:155]
+      clkRec <= _clkRec_T; // @[intervox_receiver.scala 180:17]
     end else if (_GEN_40 >= _T_24) begin // @[intervox_receiver.scala 148:49]
       if (_GEN_40 >= _T_34 & ~syncFlipped1) begin // @[intervox_receiver.scala 156:78]
         clkRec <= _clkRec_T; // @[intervox_receiver.scala 158:21]
@@ -242,18 +242,18 @@ module interVox_Reciever(
   output        io_DBUG1,
   output [15:0] io_LEDS
 );
-  wire  clockRec_clock; // @[intervox_receiver.scala 201:26]
-  wire  clockRec_reset; // @[intervox_receiver.scala 201:26]
-  wire  clockRec_io_DATA_IN; // @[intervox_receiver.scala 201:26]
-  wire  clockRec_io_CLK_OUT; // @[intervox_receiver.scala 201:26]
-  wire  clockRec_io_DATA_OUT; // @[intervox_receiver.scala 201:26]
-  wire  clockRec_io_DBUG; // @[intervox_receiver.scala 201:26]
-  wire  clockRec_io_DBUG1; // @[intervox_receiver.scala 201:26]
-  wire [15:0] clockRec_io_LEDS; // @[intervox_receiver.scala 201:26]
-  wire  pll_CLK_OUT; // @[intervox_receiver.scala 217:21]
-  wire  pll_locked; // @[intervox_receiver.scala 217:21]
-  wire  pll_CLK_IN; // @[intervox_receiver.scala 217:21]
-  clock_Recovery clockRec ( // @[intervox_receiver.scala 201:26]
+  wire  clockRec_clock; // @[intervox_receiver.scala 198:26]
+  wire  clockRec_reset; // @[intervox_receiver.scala 198:26]
+  wire  clockRec_io_DATA_IN; // @[intervox_receiver.scala 198:26]
+  wire  clockRec_io_CLK_OUT; // @[intervox_receiver.scala 198:26]
+  wire  clockRec_io_DATA_OUT; // @[intervox_receiver.scala 198:26]
+  wire  clockRec_io_DBUG; // @[intervox_receiver.scala 198:26]
+  wire  clockRec_io_DBUG1; // @[intervox_receiver.scala 198:26]
+  wire [15:0] clockRec_io_LEDS; // @[intervox_receiver.scala 198:26]
+  wire  pll_CLK_OUT; // @[intervox_receiver.scala 214:21]
+  wire  pll_locked; // @[intervox_receiver.scala 214:21]
+  wire  pll_CLK_IN; // @[intervox_receiver.scala 214:21]
+  clock_Recovery clockRec ( // @[intervox_receiver.scala 198:26]
     .clock(clockRec_clock),
     .reset(clockRec_reset),
     .io_DATA_IN(clockRec_io_DATA_IN),
@@ -263,19 +263,19 @@ module interVox_Reciever(
     .io_DBUG1(clockRec_io_DBUG1),
     .io_LEDS(clockRec_io_LEDS)
   );
-  clk_wiz_0_clk_wiz pll ( // @[intervox_receiver.scala 217:21]
+  clk_wiz_0_clk_wiz pll ( // @[intervox_receiver.scala 214:21]
     .CLK_OUT(pll_CLK_OUT),
     .locked(pll_locked),
     .CLK_IN(pll_CLK_IN)
   );
-  assign io_CLK_REC = pll_locked & pll_CLK_OUT; // @[intervox_receiver.scala 223:32 224:20 227:20]
-  assign io_DATA_OUT = clockRec_io_DATA_OUT; // @[intervox_receiver.scala 206:25]
-  assign io_CLK_DBUG = clockRec_io_CLK_OUT; // @[intervox_receiver.scala 207:25]
-  assign io_DBUG = clockRec_io_DBUG; // @[intervox_receiver.scala 209:25]
-  assign io_DBUG1 = clockRec_io_DBUG1; // @[intervox_receiver.scala 208:25]
-  assign io_LEDS = clockRec_io_LEDS; // @[intervox_receiver.scala 205:25]
+  assign io_CLK_REC = pll_locked & pll_CLK_OUT; // @[intervox_receiver.scala 220:32 221:20 224:20]
+  assign io_DATA_OUT = clockRec_io_DATA_OUT; // @[intervox_receiver.scala 203:25]
+  assign io_CLK_DBUG = clockRec_io_CLK_OUT; // @[intervox_receiver.scala 204:25]
+  assign io_DBUG = clockRec_io_DBUG; // @[intervox_receiver.scala 206:25]
+  assign io_DBUG1 = clockRec_io_DBUG1; // @[intervox_receiver.scala 205:25]
+  assign io_LEDS = clockRec_io_LEDS; // @[intervox_receiver.scala 202:25]
   assign clockRec_clock = clock;
   assign clockRec_reset = reset;
-  assign clockRec_io_DATA_IN = io_INTERVOX_IN; // @[intervox_receiver.scala 203:25]
-  assign pll_CLK_IN = clockRec_io_CLK_OUT; // @[intervox_receiver.scala 220:19]
+  assign clockRec_io_DATA_IN = io_INTERVOX_IN; // @[intervox_receiver.scala 200:25]
+  assign pll_CLK_IN = clockRec_io_CLK_OUT; // @[intervox_receiver.scala 217:19]
 endmodule

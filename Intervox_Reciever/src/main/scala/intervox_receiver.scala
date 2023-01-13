@@ -38,7 +38,7 @@ class clock_Recovery() extends Module {
 
     io.CLK_OUT      := clkRec
     io.DATA_OUT     := dataOut
-    io.DBUG         := zeroPeriode
+    io.DBUG         := change
     io.DBUG1        := syncWord
     io.LEDS         := lastOne
 
@@ -117,7 +117,7 @@ class clock_Recovery() extends Module {
         deltaCntr   := 0.U
 
         // Detect a one, if it's been x < LastOne cycles since last change.
-        when((deltaCntr <= lastOne + 2.U)){
+        when((deltaCntr <= lastOne + 1.U)){
             /*
                 DATA DETECT 1
             */
@@ -132,7 +132,7 @@ class clock_Recovery() extends Module {
     }
 
     // If the delta clock counter is above what is expected of a 1, and below what is expected from a syncword:
-    when((deltaCntr > (lastOne + 2.U)) & (deltaCntr < ((lastOne + 2.U) * 2.U))){
+    when((deltaCntr > (lastOne + 1.U)) & (deltaCntr < ((lastOne + 1.U) * 2.U))){
         /*
             DATA DETECT 0
         */
@@ -145,7 +145,7 @@ class clock_Recovery() extends Module {
     }
 
     
-    when((deltaCntr >= ((lastOne + 2.U) * 2.U))){
+    when((deltaCntr >= ((lastOne + 1.U) * 2.U))){
         // Detect syncword.
         syncWord := 1.U
         when(syncFlipped === 0.U){
@@ -153,13 +153,10 @@ class clock_Recovery() extends Module {
             clkRec  := ~clkRec
             syncFlipped := 1.U
         }
-        when((deltaCntr >= ((lastOne + 2.U) * 3.U)) & (syncFlipped1 === 0.U)){
+        when((deltaCntr >= ((lastOne + 1.U) * 3.U)) & (syncFlipped1 === 0.U)){
             // Flip clock register
             clkRec  := ~clkRec
             syncFlipped1 := 1.U
-        }
-        when(deltaCntr >= ((lastOne + 2.U) * 4.U)){
-            //deltaCntr := 0.U 
         }
     }
 
@@ -179,7 +176,7 @@ class clock_Recovery() extends Module {
     // Whenever we're in a zero-periode, we can't rely on rising/trailing edges. 
     // Thus we rely on the last one-cycle cyclecounter, and incoming changes, 
     // to approximate when to flip the clk-register.
-    when(((deltaCntr > lastOne + 2.U) & (changed === 0.U) & (change =/= 1.U)) | ((deltaCntr > lastOne + 2.U) & (zeroPeriode === 1.U) & (changed === 0.U))){
+    when(((deltaCntr > lastOne + 1.U) & (changed === 0.U) & (change =/= 1.U)) | ((deltaCntr > lastOne + 1.U) & (zeroPeriode === 1.U) & (changed === 0.U))){
         clkRec  := ~clkRec
         changed := 1.U
     }
