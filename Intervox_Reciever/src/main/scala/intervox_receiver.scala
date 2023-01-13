@@ -26,17 +26,15 @@ class clock_Recovery() extends Module {
     val inBufr      = RegInit(0.U(2.W))
     val lastOne     = RegInit(31.U(8.W)) // Will typically land at 7 (roughly 100MHz / 6.144MHz) - will be adjusted live, accordingly.
     val inBufrPrev  = RegInit(0.U(2.W))
-    val whatChange  = RegInit(0.U(2.W))
  
-    val outReg      = RegInit(0.U(1.W))
     val clkRec      = RegInit(0.U(1.W))
     val change      = RegInit(0.U(1.W))
     val changed     = RegInit(0.U(1.W)) 
-    val changedOne  = RegInit(0.U(1.W))
     val dataOut     = RegInit(0.U(1.W))
     val zeroPeriode = RegInit(0.U(1.W))
     val syncWord    = RegInit(0.U(1.W))
-    val zeroClkFlp  = RegInit(0.U(1.W))
+    val syncFlipped = RegInit(0.U(1.W))
+    val syncFlipped1 = RegInit(0.U(1.W))
 
     io.CLK_OUT      := clkRec
     io.DATA_OUT     := dataOut
@@ -103,26 +101,23 @@ class clock_Recovery() extends Module {
         change      := 1.U
 
     }
-    // Slam change reg back to zero, such that it is just a pulse.
-    when(change === 1.U){
+    
+    when(change === 1.U){    
+        // Slam change reg back to zero, such that it is just a pulse.
         change      := 0.U
+        // Reset 0-bit clock regenerator
         changed     := 0.U
-    }
-
-    when(change === 1.U){
-        
-        // On first change
-        when(changedOne === 0.U){
-            // Ensure this only happens once, for every 0 | 1
-            changedOne  := 1.U
-            // Reset delta counter
-            deltaCntr   := 0.U
-            // Reset syncWord detection
-            syncWord    := 0.U                        
-        } 
+        // Always flip clock register on change.
+        clkRec      := ~clkRec
+        // Reset syncWord detection
+        syncWord    := 0.U         
+        syncFlipped := 0.U           
+        syncFlipped1:= 0.U           
+        // Reset delta counter
+        deltaCntr   := 0.U
 
         // Detect a one, if it's been x < LastOne cycles since last change.
-        when((deltaCntr <= lastOne + 2.U)){ // & (changedOne === 1.U)
+        when((deltaCntr <= lastOne + 2.U)){
             /*
                 DATA DETECT 1
             */
@@ -130,19 +125,14 @@ class clock_Recovery() extends Module {
             dataOut     := 1.U            
             // Expect it to be a 1
             zeroPeriode := 0.U            
-
             // Store the number of cycles since last change (live adjust expected cycles of a 1)
             lastOne     := deltaCntr
-
-            // Get ready for next 1
-            changedOne  := 0.U     
-            // Reset delta counter   
-            deltaCntr   := 0.U
         }
+
     }
 
-    // If the delta clock counter is above what is expected of a 1:
-    when((deltaCntr > (lastOne + 2.U))){
+    // If the delta clock counter is above what is expected of a 1, and below what is expected from a syncword:
+    when((deltaCntr > (lastOne + 2.U)) & (deltaCntr < ((lastOne + 2.U) * 2.U))){
         /*
             DATA DETECT 0
         */
@@ -152,33 +142,44 @@ class clock_Recovery() extends Module {
         zeroPeriode     := 1.U
         // We're not in a syncWord
         syncWord        := 0.U
-        // Get ready for next 0 | 1
-        changedOne      := 0.U
     }
 
-    /*
-    when((deltaCntr > (lastOne * 2.U))){
+    
+    when((deltaCntr >= ((lastOne + 2.U) * 2.U))){
         // Detect syncword.
         syncWord := 1.U
-    }*/
+        when(syncFlipped === 0.U){
+            // Flip clock register
+            clkRec  := ~clkRec
+            syncFlipped := 1.U
+        }
+        when((deltaCntr >= ((lastOne + 2.U) * 3.U)) & (syncFlipped1 === 0.U)){
+            // Flip clock register
+            clkRec  := ~clkRec
+            syncFlipped1 := 1.U
+        }
+        when(deltaCntr >= ((lastOne + 2.U) * 4.U)){
+            //deltaCntr := 0.U 
+        }
+    }
 
 
     /*
         Clock Regeneration
     */
 
-    
-
-    // Whenever we're receiving ones, flip the clock-register
-    //  on every change, as these are aligned to the wanted clock:
-    when((change === 1.U)){
-        clkRec  := ~clkRec
-    }
+    /*
+        // Whenever we're receiving ones, flip the clock-register
+        //  on every change, as these are aligned to the wanted clock:
+        when((change === 1.U) & (deltaCntr >= ((lastOne * 2.U) - 5.U))){
+            clkRec  := ~clkRec
+        }
+    */
 
     // Whenever we're in a zero-periode, we can't rely on rising/trailing edges. 
     // Thus we rely on the last one-cycle cyclecounter, and incoming changes, 
     // to approximate when to flip the clk-register.
-    when(((deltaCntr >= lastOne) & (changed === 0.U) & (change =/= 1.U)) | ((deltaCntr >= lastOne) & (zeroPeriode === 1.U) & (changed === 0.U))){
+    when(((deltaCntr > lastOne + 2.U) & (changed === 0.U) & (change =/= 1.U)) | ((deltaCntr > lastOne + 2.U) & (zeroPeriode === 1.U) & (changed === 0.U))){
         clkRec  := ~clkRec
         changed := 1.U
     }
@@ -213,7 +214,6 @@ class interVox_Reciever() extends Module {
     // Instantiate blackboxed MMCM.
     // Input: 3.072 MHz, Output 6.144MHz, but configured as: 12.288MHz and 24.576 MHz.
     
-    /*
     val pll = Module(new clk_wiz_0_clk_wiz)   
 
     // Connect recovered clock reg to PLL input.
@@ -225,8 +225,7 @@ class interVox_Reciever() extends Module {
     }
     .otherwise{
         io.CLK_REC := 0.U
-    }*/
-
+    }
 }
 
 object HelloMain extends App {

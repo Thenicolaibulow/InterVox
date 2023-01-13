@@ -1,13 +1,10 @@
-[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/Intervox_Reciever/src/main/scala/intervox_receiver.scala:108:9: not found: value changed[0m
-[0m[[0m[31merror[0m] [0m[0m        changed     := 0.U[0m
+[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/Intervox_Reciever/src/main/scala/intervox_receiver.scala:116:9: not found: value syncFlipped[0m
+[0m[[0m[31merror[0m] [0m[0m        syncFlipped := 0.U           [0m
 [0m[[0m[31merror[0m] [0m[0m        ^[0m
-[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/Intervox_Reciever/src/main/scala/intervox_receiver.scala:177:37: not found: value changed[0m
-[0m[[0m[31merror[0m] [0m[0m    when(((deltaCntr >= lastOne) & (changed === 0.U) & (change =/= 1.U)) | ((deltaCntr >= lastOne) & (zeroPeriode === 1.U) & (changed === 0.U))){[0m
-[0m[[0m[31merror[0m] [0m[0m                                    ^[0m
-[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/Intervox_Reciever/src/main/scala/intervox_receiver.scala:177:127: not found: value changed[0m
-[0m[[0m[31merror[0m] [0m[0m    when(((deltaCntr >= lastOne) & (changed === 0.U) & (change =/= 1.U)) | ((deltaCntr >= lastOne) & (zeroPeriode === 1.U) & (changed === 0.U))){[0m
-[0m[[0m[31merror[0m] [0m[0m                                                                                                                              ^[0m
-[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/Intervox_Reciever/src/main/scala/intervox_receiver.scala:179:9: not found: value changed[0m
-[0m[[0m[31merror[0m] [0m[0m        changed := 1.U[0m
-[0m[[0m[31merror[0m] [0m[0m        ^[0m
-[0m[[0m[31merror[0m] [0m[0mfour errors found[0m
+[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/Intervox_Reciever/src/main/scala/intervox_receiver.scala:164:14: not found: value syncFlipped[0m
+[0m[[0m[31merror[0m] [0m[0m        when(syncFlipped === 0.U){[0m
+[0m[[0m[31merror[0m] [0m[0m             ^[0m
+[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/Intervox_Reciever/src/main/scala/intervox_receiver.scala:167:13: not found: value syncFlipped[0m
+[0m[[0m[31merror[0m] [0m[0m            syncFlipped := 1.U[0m
+[0m[[0m[31merror[0m] [0m[0m            ^[0m
+[0m[[0m[31merror[0m] [0m[0mthree errors found[0m
