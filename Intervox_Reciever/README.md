@@ -4,3 +4,7 @@ The interVox receiver intends to decode interVox encoded data, transmitted over 
   * Clock recovery circuit
   * Data Decoder
   * I2S Transmitter
+
+![plot](./doc/intervox_receiver_internals.png)
+
+Current the interVox-Receiver is under rapid development, and as such is not particularly functional.
