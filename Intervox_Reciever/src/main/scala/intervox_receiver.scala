@@ -48,72 +48,110 @@ class clock_Recovery() extends Module {
 
     deltaCntr    := deltaCntr + 1.U    
 
-    // Edge detection.
-
+    /*
+        EDGE DETECTION
+    */  
     switch(io.DATA_IN){
-        is(0.U){
-            when(inBufr > 0.U){ // Trailing  \_ = inBufr b10 -> b00
-                inBufr := inBufr - 1.U
-            }
-        }
         is(1.U){
             when(inBufr < 3.U){ // Rising  _/ = inBufr b01 -> b11
+                // When rising, incriment inBufr.. looks like: 00 [Rising] 01
                 inBufr := inBufr + 1.U
             }
         }
+        is(0.U){
+            when(inBufr > 0.U){ // Trailing  \_ = inBufr b10 -> b00
+                // When trailing, decrment inBufr.. looks like: 11 [Trailing] 10
+                inBufr := inBufr - 1.U
+            }
+        }        
     }
-    when((inBufr(0)) ^ (inBufr(1))){    // Difference in bits? - Must be change. 
+    when((inBufr(0)) ^ (inBufr(1))){    // Difference in input buffer? - Must be change. 
         change := 1.U
     }
 
-
+    /*
+        WHENEVER A CHANGE IS REGISTERED:
+    */
     when(change === 1.U){
+        // Ensure that 'change' will go low, two cycles from now.
         change := RegNext(RegNext(0.U, 0.U(1.W)), 0.U(1.W))
+        // FLip the clock recovery register
         clkRec      := ~clkRec
+        // Reset the delta counter (cycles since last change)
         deltaCntr   := 0.U        
+        // Prepare for clock recovery during the coming zeros, and syncwords:
         zeroFlipped := 0.U
         syncFlipped := 0.U
         syncFlipped1:= 0.U
+        syncWord := 0.U
     }
     
-    // Data 1 Detect:
-    when((deltaCntr <= (lastOne + 2.U))){
-        syncWord := 0.U
+    /*
+        DETECT A INCOMING 1
+    */
+    when((deltaCntr <= (lastOne + 1.U))){
+        // We always assume the in coming data to be a 1 bit.
+        // We are only sure if in incoming bit is infact a 1,
         when(change === 1.U){
+            // If a change is present, whilst the deltacounter is smaller than
+            // or equal to, our expected 1 cycles (lastOne) + 1.U (slack)
             dataOut := 1.U
+            
+            // Bring back lastOne := deltaCntr? ie. Dynamic 1 bit reference.
+            //lastOne := deltaCntr
         }
     }
 
-    // Data 0 Detect:
-    when((deltaCntr > (lastOne + 2.U)) & (deltaCntr < (lastOne * 2.U))){
+    /*
+        DETECT A INCOMING 0
+    */
+    when((deltaCntr > (lastOne + 1.U)) & (deltaCntr < ((lastOne * 2.U) + 2.U))){
+        // If the deltaCounter has surpassed the reference for a 1 bit.
+        // Then we must have a zero.
         when(zeroFlipped === 0.U){
-            // Flip clk and latch
+        // And will have to flip the clockregister by an approximation.
+            // Flip Clock register, only once for this bit.   
             clkRec := ~clkRec
             zeroFlipped := 1.U
         }
+        // Change data output.
         dataOut := 0.U
-    }        
+    }
 
+    /*
+        DETECT A SYNCWORD (header-bits)
+          \ __ __ /\ _ /
+    */
+    when(change === 0.U){
 
+        when(deltaCntr === ((lastOne * 2.U) + 2.U)){ // Add some slack: +2.U
+            
+            // \ __|__ /\ _ /          , where | is time at which the above is true.
 
-    // Syncword detection:
-    when(change === 0.U){ // \ __ __ /\_/
-        // Syncword clockRec edge-case
-        when((deltaCntr > ((lastOne * 2.U) + 2.U)) & (deltaCntr < ((lastOne * 3.U) - 2.U))){
+            // If this is true, the deltaCounter has surpassed the reference
+            // of an incoming zero. As such it must be a syncword:
+            
             when(syncFlipped === 0.U){
-                // Flip clk and latch
+                // Flip clk once
                 clkRec := ~clkRec
                 syncFlipped := 1.U
-            }
-        }
-        when(deltaCntr > (lastOne * 3.U)){
+            }                    
+        }    
+        when(deltaCntr === ((lastOne * 3.U))){ // Add some slack: -4.U
+
+            // \ __ _|_ /\ _ /          , where | is time at which the above is true.
+
+            // One more clock reg flip is necessary inbetweeen syncWord detect,
+            // and the incoming hardcoded 1 bit, in the syncWord / header-bits.
+
             syncWord := 1.U
+
             when(syncFlipped1 === 0.U){
-                // Flip clk and latch
+                // Flip clk once
                 clkRec := ~clkRec
                 syncFlipped1 := 1.U
             }
-        }
+        }            
     }
 }
 
@@ -140,13 +178,12 @@ class interVox_Reciever() extends Module {
     io.DBUG             := clockRec.io.DBUG
 
     // Instantiate blackboxed MMCM.
-    // Input: 3.072 MHz, Output 6.144MHz, but configured as: 12.288MHz and 24.576 MHz.
+    // Input: 3.072 MHz, Output 6.144MHz, but configured as: 12.288MHz and 24.576 MHz... Doesn't seem to work, unfortunately.
     
     val pll = Module(new clk_wiz_0_clk_wiz)   
 
     // Connect recovered clock reg to PLL input.
     pll.io.CLK_IN := clockRec.io.CLK_OUT
-
     io.CLK_REC := pll.io.CLK_OUT 
 }
 
