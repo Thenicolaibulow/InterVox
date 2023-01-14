@@ -73,13 +73,8 @@ class bi_phase_encoder() extends Module {
             hasNone := 0.U
           }
 
-          /*
-              AUDIO DATA
-              __   ^^   _^   _^   __   ^_   __ 
-              67   89  1011 1213 1415 1617 1819
-          */
           
-          when((bitCntr_enc >= 5.U)){
+          when((bitCntr_enc > 5.U)){
 
             // Count the number of serial data bits. (half rate of bitCntr_enc)
             ndexR := ~ndexR
@@ -89,9 +84,11 @@ class bi_phase_encoder() extends Module {
             }
 
             /*
-              LEFT 24 bit DATA:
-              Bit 3:27
+                LEFT AUDIO DATA bit: 4:27
+                _ _   ^ ^   _ ^   _ ^   _ _   ^ _   _ _  ...  _ _   _ ^   _ ^ 
+                6 7   8 9  10 11 12 13 14 15 16 17 18 19     48 49 50 51 52 53
             */
+
             when(bitCntr_enc <= 53.U){         
                 // 64th bit - current bit count
               when((stereoData(64.U - (dataIndex + 1.U))) === 0.U) {
@@ -102,7 +99,7 @@ class bi_phase_encoder() extends Module {
 
             /*
               RIGHT 24 bit DATA:
-              Bit 27:52
+              Bit 28:52
             */
             when((bitCntr_enc > 53.U) & (bitCntr_enc <= 101.U)){
               // 64th bit - current bit count - previous 24Bit
@@ -116,7 +113,7 @@ class bi_phase_encoder() extends Module {
               Append DSP data
               Bit 52:64
             */
-            when((bitCntr_enc > 101.U) & (bitCntr_enc < 127.U)){
+            when((bitCntr_enc > 101.U) & (bitCntr_enc <= 127.U)){
               /*when((dspData((dataIndex - 47.U)))  === 0.U) {
                 hasNone := 1.U
               }*/
@@ -370,11 +367,11 @@ class interVox_Encoder(width: UInt) extends Module {
 
             when(io.SDATA_IN === 0.U){             
               // 64 (Reverse MSB/LSB) - Offset by the truncated 8 Bits (64 + 8) - CurrentBit
-              BFR.io.dataIn     := BFR.io.dataOut + (0.U << (72.U - bitCntr))
+              BFR.io.dataIn     := BFR.io.dataOut + (0.U << (71.U - bitCntr))
             }
 
             when(io.SDATA_IN === 1.U){              
-              BFR.io.dataIn     := BFR.io.dataOut + (1.U << (72.U  - bitCntr))
+              BFR.io.dataIn     := BFR.io.dataOut + (1.U << (71.U  - bitCntr))
             }
           }.otherwise{
             // Truncate the last 8 bits of a 32 bit word. of the first audio channel data.
@@ -384,51 +381,50 @@ class interVox_Encoder(width: UInt) extends Module {
 
             when(io.SDATA_IN === 0.U) {
               // 64 - (Reverse MSB/LSB) - CurrentBit
-              BFR.io.dataIn     := BFR.io.dataOut + (0.U << (64.U - bitCntr))
+              BFR.io.dataIn     := BFR.io.dataOut + (0.U << (63.U - bitCntr))
             }
 
             when(io.SDATA_IN === 1.U){
-              BFR.io.dataIn     := BFR.io.dataOut + (1.U << (64.U - bitCntr))
+              BFR.io.dataIn     := BFR.io.dataOut + (1.U << (63.U - bitCntr))
             }          
           }        
 
-
-          // when(bitCntr === 63.U){
-          //   // Allows for one sample delay between input and interVox output. 
-          //   // Dump BFR 0 into BFR 1
-          //   BFR.io.write      := 0.U
-          //   BFR1.io.write     := 1.U
-          //   BFR1.io.dataIn    := BFR.io.dataOut
-
-          //   // Clear buffer
-          //   BFR.io.write   := 1.U
-          //   BFR.io.dataIn  := 0.U
-
-          //   bitCntr := 0.U
-          // } 
-
-          when((bitCntr === 63.U)){
-            // Allows for one sample delay between input and interVox output.
+          when(bitCntr === 63.U){
+            // Allows for one sample delay between input and interVox output. 
             // Dump BFR 0 into BFR 1
             BFR.io.write      := 0.U
             BFR1.io.write     := 1.U
-
-            fuckyou := ~fuckyou
-
-            when(fuckyou === 1.U){
-              BFR1.io.dataIn    := (43690.U << 48.U)
-            }.otherwise{
-              BFR1.io.dataIn    := (43691.U << 48.U)
-            }
-            
-            //BFR.io.dataOut
+            BFR1.io.dataIn    := BFR.io.dataOut
 
             // Clear buffer
             BFR.io.write   := 1.U
             BFR.io.dataIn  := 0.U
 
             bitCntr := 0.U
-          }  
+          } 
+
+          // when((bitCntr === 63.U)){
+          //   // Allows for one sample delay between input and interVox output.
+          //   // Dump BFR 0 into BFR 1
+          //   BFR.io.write      := 0.U
+          //   BFR1.io.write     := 1.U
+
+          //   fuckyou := ~fuckyou
+
+          //   when(fuckyou === 1.U){
+          //     BFR1.io.dataIn    := (65535.U << 48.U)
+          //   }.otherwise{
+          //     BFR1.io.dataIn    := (65534.U << 48.U)
+          //   }
+            
+          //   //BFR.io.dataOut
+
+          //   // Clear buffer
+          //   BFR.io.write   := 1.U
+          //   BFR.io.dataIn  := 0.U
+
+          //   bitCntr := 0.U
+          // }  
         }
       }        
     }

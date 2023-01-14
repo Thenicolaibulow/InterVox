@@ -1,22 +1,12 @@
-[0m[[0m[31merror[0m] [0m[0mchisel3.internal.ChiselException: Cannot reassign to read-only clock_Recovery.?: OpResult[Bool][0m
+[0m[[0m[31merror[0m] [0m[0mchisel3.internal.ChiselException: Connection between sink (i2s_Transmitter.io.BCLK: IO[UInt<1>]) and source (i2s_Transmitter.io.CLK_IN: IO[Clock]) failed @: Sink (UInt<1>) and Source (Clock) have different types.[0m
 [0m[[0m[31merror[0m] [0m[0m	at ... ()[0m
-[0m[[0m[31merror[0m] [0m[0m	at clock_Recovery.$anonfun$new$10(intervox_receiver.scala:54)[0m
-[0m[[0m[31merror[0m] [0m[0m	at scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.java:23)[0m
-[0m[[0m[31merror[0m] [0m[0m	at chisel3.WhenContext.<init>(When.scala:143)[0m
-[0m[[0m[31merror[0m] [0m[0m	at chisel3.when$.apply(When.scala:38)[0m
-[0m[[0m[31merror[0m] [0m[0m	at clock_Recovery.$anonfun$new$8(intervox_receiver.scala:53)[0m
-[0m[[0m[31merror[0m] [0m[0m	at scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.java:23)[0m
-[0m[[0m[31merror[0m] [0m[0m	at chisel3.WhenContext.<init>(When.scala:143)[0m
-[0m[[0m[31merror[0m] [0m[0m	at chisel3.when$.apply(When.scala:38)[0m
-[0m[[0m[31merror[0m] [0m[0m	at chisel3.util.SwitchContext.is(Conditional.scala:38)[0m
-[0m[[0m[31merror[0m] [0m[0m	at chisel3.util.SwitchContext.is(Conditional.scala:45)[0m
-[0m[[0m[31merror[0m] [0m[0m	at clock_Recovery.<init>(intervox_receiver.scala:51)[0m
-[0m[[0m[31merror[0m] [0m[0m	at interVox_Reciever.$anonfun$clockRec$2(intervox_receiver.scala:180)[0m
+[0m[[0m[31merror[0m] [0m[0m	at i2s_Transmitter.<init>(intervox_receiver.scala:245)[0m
+[0m[[0m[31merror[0m] [0m[0m	at interVox_Reciever.$anonfun$I2STrans$2(intervox_receiver.scala:301)[0m
 [0m[[0m[31merror[0m] [0m[0m	at chisel3.Module$.do_apply(Module.scala:53)[0m
-[0m[[0m[31merror[0m] [0m[0m	at interVox_Reciever.$anonfun$clockRec$1(intervox_receiver.scala:180)[0m
+[0m[[0m[31merror[0m] [0m[0m	at interVox_Reciever.$anonfun$I2STrans$1(intervox_receiver.scala:301)[0m
 [0m[[0m[31merror[0m] [0m[0m	at chisel3.internal.plugin.package$.autoNameRecursively(package.scala:33)[0m
-[0m[[0m[31merror[0m] [0m[0m	at interVox_Reciever.<init>(intervox_receiver.scala:180)[0m
-[0m[[0m[31merror[0m] [0m[0m	at HelloMain$.$anonfun$new$78(intervox_receiver.scala:203)[0m
+[0m[[0m[31merror[0m] [0m[0m	at interVox_Reciever.<init>(intervox_receiver.scala:301)[0m
+[0m[[0m[31merror[0m] [0m[0m	at HelloMain$.$anonfun$new$135(intervox_receiver.scala:312)[0m
 [0m[[0m[31merror[0m] [0m[0m	at ... ()[0m
 [0m[[0m[31merror[0m] [0m[0m	at ... (Stack trace trimmed to user code only. Rerun with --full-stacktrace to see the full stack trace)[0m
-[0m[[0m[31merror[0m] [0m[0m(Compile / [31mrun[0m) chisel3.internal.ChiselException: Cannot reassign to read-only clock_Recovery.?: OpResult[Bool][0m
+[0m[[0m[31merror[0m] [0m[0m(Compile / [31mrun[0m) chisel3.internal.ChiselException: Connection between sink (i2s_Transmitter.io.BCLK: IO[UInt<1>]) and source (i2s_Transmitter.io.CLK_IN: IO[Clock]) failed @: Sink (UInt<1>) and Source (Clock) have different types.[0m

@@ -1,13 +1,4 @@
-[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/Intervox_Reciever/src/main/scala/intervox_receiver.scala:89:9: missing argument list for method apply in object when[0m
-[0m[[0m[31merror[0m] [0m[0mUnapplied methods are only converted to functions when a function type is expected.[0m
-[0m[[0m[31merror[0m] [0m[0mYou can make this conversion explicit by writing `apply _` or `apply(_)(_)(_,_)` instead of `apply`.[0m
-[0m[[0m[31merror[0m] [0m[0m    when(deltaCntr > (lastOne + 2.U)) & (deltaCntr <= (lastOne * 2.U)){[0m
+[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/Intervox_Reciever/src/main/scala/intervox_receiver.scala:273:9: Unmatched closing brace '}' ignored here[0m
+[0m[[0m[31merror[0m] [0m[0m        }[0m
 [0m[[0m[31merror[0m] [0m[0m        ^[0m
-[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/Intervox_Reciever/src/main/scala/intervox_receiver.scala:89:52: overloaded method value apply with alternatives:[0m
-[0m[[0m[31merror[0m] [0m[0m  (x: chisel3.UInt)chisel3.Bool <and>[0m
-[0m[[0m[31merror[0m] [0m[0m  (x: Int)chisel3.Bool <and>[0m
-[0m[[0m[31merror[0m] [0m[0m  (x: BigInt)chisel3.Bool[0m
-[0m[[0m[31merror[0m] [0m[0m cannot be applied to (Unit)[0m
-[0m[[0m[31merror[0m] [0m[0m    when(deltaCntr > (lastOne + 2.U)) & (deltaCntr <= (lastOne * 2.U)){[0m
-[0m[[0m[31merror[0m] [0m[0m                                                   ^[0m
-[0m[[0m[31merror[0m] [0m[0mtwo errors found[0m
+[0m[[0m[31merror[0m] [0m[0mone error found[0m

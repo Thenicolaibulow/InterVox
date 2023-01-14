@@ -5,15 +5,23 @@ set_property -dict {IOSTANDARD LVCMOS33}                    [get_ports {clock}]
 # InterVox input
 set_property -dict {PACKAGE_PIN L17 IOSTANDARD LVCMOS33}    [get_ports {io_INTERVOX_IN}]
 # PLL Output
-set_property -dict {PACKAGE_PIN P18 IOSTANDARD LVCMOS33}    [get_ports {io_CLK_REC}]
+set_property -dict {PACKAGE_PIN A17 IOSTANDARD LVCMOS33}    [get_ports {io_CLK_REC}]
 # Data Output
 set_property -dict {PACKAGE_PIN M18 IOSTANDARD LVCMOS33}    [get_ports {io_DATA_OUT}]
 # CLK REC, Pre. PLL
-set_property -dict {PACKAGE_PIN N17 IOSTANDARD LVCMOS33}    [get_ports {io_CLK_DBUG}]
+set_property -dict {PACKAGE_PIN C15 IOSTANDARD LVCMOS33}    [get_ports {io_CLK_DBUG}]
 # Zero Periode
-set_property -dict {PACKAGE_PIN P17 IOSTANDARD LVCMOS33}    [get_ports {io_DBUG}]
+set_property -dict {PACKAGE_PIN A15 IOSTANDARD LVCMOS33}    [get_ports {io_DBUG}]
 # Syncword Detect
 set_property -dict {PACKAGE_PIN R18 IOSTANDARD LVCMOS33}    [get_ports {io_DBUG1}]
+
+
+# I2S Pins
+set_property -dict {PACKAGE_PIN P18 IOSTANDARD LVCMOS33}    [get_ports {io_BCLK}]
+set_property -dict {PACKAGE_PIN N17 IOSTANDARD LVCMOS33}    [get_ports {io_LRCLK}]
+set_property -dict {PACKAGE_PIN P17 IOSTANDARD LVCMOS33}    [get_ports {io_SDATA}]
+
+
 # Rst.
 set_property -dict {PACKAGE_PIN T17 IOSTANDARD LVCMOS33}    [get_ports reset]
 
