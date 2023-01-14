@@ -55,7 +55,11 @@ class bi_phase_encoder() extends Module {
 
       when(io.TICK === 1.U){
 
-          // Syncword = 001 < the header bits
+          /* 
+              SYNCWORD
+              __ __ /\
+              01 23 45            
+          */
 
           // Bit 1:2
           when(bitCntr_enc === 3.U){          
@@ -68,9 +72,13 @@ class bi_phase_encoder() extends Module {
             hasNone := 0.U
           }
 
-          // Audio data
-          when((bitCntr_enc > 4.U)){
-
+          /*
+              AUDIO DATA
+              __   ^^   _^   _^   __   ^^   __ 
+              67   89  1011 1213 1415 1617 1819
+          */
+          
+          when((bitCntr_enc >= 5.U)){
 
             // Count the number of serial data bits. (half rate of bitCntr_enc)
             ndexR := ~ndexR
@@ -79,35 +87,45 @@ class bi_phase_encoder() extends Module {
               dataIndex := dataIndex + 1.U
             }
 
-            // Left 24 bit channel data:
-            // Bit 3:27
-            when(bitCntr_enc < 53.U){         
+            /*
+              LEFT 24 bit DATA:
+              Bit 3:27
+            */
+            when(bitCntr_enc <= 53.U){         
                 // 64th bit - current bit count
               when((stereoData(64.U - (dataIndex + 1.U))) === 0.U) {
                 // If buffer bit is zero, then don't change for one cycle
                 hasNone := 1.U
               }
             }
-            // Right 24 bit channel data:
-            // Bit 27:52
-            when((bitCntr_enc >= 53.U) & (bitCntr_enc < 101.U)){
+
+            /*
+              RIGHT 24 bit DATA:
+              Bit 27:52
+            */
+            when((bitCntr_enc > 53.U) & (bitCntr_enc <= 101.U)){
               // 64th bit - current bit count - previous 24Bit
               when((stereoData((64.U - (dataIndex - 23.U)))) === 0.U) {
                 hasNone := 1.U               
               }
               
             } 
-            
-            // Append DSP data
-            // Bit 52:64
-            when((bitCntr_enc >= 101.U) & (bitCntr_enc <= 127.U)){
+
+            /*
+              Append DSP data
+              Bit 52:64
+            */
+            when((bitCntr_enc > 101.U) & (bitCntr_enc < 127.U)){
               /*when((dspData((dataIndex - 47.U)))  === 0.U) {
                 hasNone := 1.U
               }*/
               hasNone := 1.U
             } 
 
-            // Flip the output register, according to encoding scheme:
+            /*
+              BIPHASE ENCODING
+            */
+            
             when(hasNone === 1.U){
               // If a zero is encoded, don't change state.
               outReg := outReg
@@ -147,13 +165,7 @@ class interVox_Encoder(width: UInt) extends Module {
   // Define state enum.. case sentitive!
   val state_Reset :: state_Setup :: state_Transmit :: Nil = Enum(3)
   val current_state     = RegInit(state_Reset)  
-  // Bi-phase clock counter register.
-  val BiPhase_CLK_CNTR  = RegInit(0.U(8.W))
-  // Output register
-  val DATA_OUT_REG_1B   = RegInit(0.U(1.W)) 
-  // Frame register. Notifies the Bi_phase_encoder
-  val FirstFrame        = RegInit(0.U(1.W))   
-  // Synchronisatoin register. Ensure that we start switching on rising LRCLK
+  // Synchronisation register. Ensure that we start switching on rising LRCLK
   val synced            = RegInit(0.U(1.W))    
   // Flip reg. for creating the bi-phase encoder clock
   val bclkR             = RegInit(1.U(1.W))      
@@ -166,6 +178,10 @@ class interVox_Encoder(width: UInt) extends Module {
   // Define the buffers
   val BFR               = Module(new RWSmem())
   val BFR1              = Module(new RWSmem())
+
+  val inBufr            = RegInit(0.U(2.W))
+  val trailing          = RegInit(0.U(1.W))  
+  val rising            = RegInit(0.U(1.W))  
 
   // Assign pins. 
   io.DATA_O             := bi_phase_enc.io.DATA_OUT
@@ -187,7 +203,7 @@ class interVox_Encoder(width: UInt) extends Module {
   // For debugging: output the bi_phase_enc enable signal. 
   io.NXT_FRAME                := bi_phase_enc.io.ENA
   // Get the bi-phase encoder ready
-  bi_phase_enc.io.TICK        := 0.U
+  bi_phase_enc.io.TICK        := encoderClk
   bi_phase_enc.io.ENA         := 0.U
   // Always feed the bi-phase with the delayed repacked data (BFR1)
   bi_phase_enc.io.AUDIOINPUT  := BFR1.io.dataOut
@@ -211,24 +227,42 @@ class interVox_Encoder(width: UInt) extends Module {
 
   when(synced === 0.U){
 
-    BiPhase_CLK_CNTR := BiPhase_CLK_CNTR + 1.U
 
-    when(BiPhase_CLK_CNTR === 3.U){
-      BiPhase_CLK_CNTR := 0.U
-
-      when(io.LRCLK_IN === 1.U){
-        bitCntr := 0.U
-      }
-
-      when(io.LRCLK_IN === 0.U){
-        // Count clock on the low periode of LRCLK, 
-        // inorder to determine when it rises.
-        bitCntr := bitCntr + 1.U
-        
-        when(bitCntr === 31.U){
-          bitCntr := 0.U
-          synced := 1.U
+    /*
+        EDGE DETECTION
+    */  
+    switch(io.LRCLK_IN){
+        is(1.U){
+            when(inBufr < 3.U){ // Rising  _/ = inBufr b01 -> b11
+                // When rising, incriment inBufr.. looks like: 00 [Rising] 01
+                inBufr := inBufr + 1.U
+            }
         }
+        is(0.U){
+            when(inBufr > 0.U){ // Trailing  \_ = inBufr b10 -> b00
+                // When trailing, decrment inBufr.. looks like: 11 [Trailing] 10
+                inBufr := inBufr - 1.U
+            }
+        }        
+    }
+
+    when((inBufr(0) === 0.U) & (inBufr(1) === 1.U)){ // Rising
+      rising    := 1.U
+      trailing  := 0.U
+    }    
+
+    when((inBufr(0) === 1.U) & (inBufr(1) === 0.U)){ // Trailing
+      trailing  := 1.U
+      rising    := 0.U
+    }
+    
+    when(trailing === 1.U){
+      
+      bitCntr     := bitCntr + 1.U
+
+      when(bitCntr === 126.U){
+        synced    := 1.U
+        bitCntr   := 0.U
       }
     }
   }
@@ -263,14 +297,13 @@ class interVox_Encoder(width: UInt) extends Module {
         
         // Clock the BiPhase Encoder at MCLK/2, or BCLK x2
         encoderClk := ~encoderClk
-        when(encoderClk === 1.U){
-          bi_phase_enc.io.TICK  := 1.U
+
+        when(io.BCLK_IN === 1.U){
+          bclkR := ~bclkR
         }
 
-        BiPhase_CLK_CNTR := BiPhase_CLK_CNTR + 1.U
-        // Clock the incoming i2s data at MCLK / 4 = BCLK
-        when(BiPhase_CLK_CNTR === 3.U){
-          BiPhase_CLK_CNTR := 0.U
+
+        when(bclkR === 1.U){
           
           // Count I2S bits
           bitCntr := bitCntr + 1.U          

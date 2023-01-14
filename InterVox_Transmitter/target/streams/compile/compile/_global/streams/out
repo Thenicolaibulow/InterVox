@@ -1,7 +1,4 @@
-[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/InterVox_Transmitter/src/main/scala/intervox_transmitter.scala:196:40: identifier expected but integer literal found.[0m
-[0m[[0m[31merror[0m] [0m[0m  bi_phase_enc.io.DSPINPUT    := io.SW[1][0m
-[0m[[0m[31merror[0m] [0m[0m                                       ^[0m
-[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/InterVox_Transmitter/src/main/scala/intervox_transmitter.scala:213:1: ']' expected.[0m
-[0m[[0m[31merror[0m] [0m[0m  when(synced === 0.U){[0m
-[0m[[0m[31merror[0m] [0m[0m^[0m
-[0m[[0m[31merror[0m] [0m[0mtwo errors found[0m
+[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/InterVox_Transmitter/src/main/scala/intervox_transmitter.scala:308:17: value BCLK is not a member of chisel3.Bundle{val MCLK_O: chisel3.Clock; val BCLK_IN: chisel3.UInt; val LRCLK_IN: chisel3.UInt; val SDATA_IN: chisel3.UInt; val DATA_O: chisel3.UInt; val LRCLK_O: chisel3.UInt; val BCLK_O: chisel3.UInt; val SDATA_O: chisel3.UInt; val NXT_FRAME: chisel3.UInt}[0m
+[0m[[0m[31merror[0m] [0m[0m        when(io.BCLK === 1.U){[0m
+[0m[[0m[31merror[0m] [0m[0m                ^[0m
+[0m[[0m[31merror[0m] [0m[0mone error found[0m
