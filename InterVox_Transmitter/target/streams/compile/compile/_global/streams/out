@@ -1,4 +1,16 @@
-[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/InterVox_Transmitter/src/main/scala/intervox_transmitter.scala:308:17: value BCLK is not a member of chisel3.Bundle{val MCLK_O: chisel3.Clock; val BCLK_IN: chisel3.UInt; val LRCLK_IN: chisel3.UInt; val SDATA_IN: chisel3.UInt; val DATA_O: chisel3.UInt; val LRCLK_O: chisel3.UInt; val BCLK_O: chisel3.UInt; val SDATA_O: chisel3.UInt; val NXT_FRAME: chisel3.UInt}[0m
-[0m[[0m[31merror[0m] [0m[0m        when(io.BCLK === 1.U){[0m
-[0m[[0m[31merror[0m] [0m[0m                ^[0m
-[0m[[0m[31merror[0m] [0m[0mone error found[0m
+[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/InterVox_Transmitter/src/main/scala/intervox_transmitter.scala:347:9: not found: value clkCntr1[0m
+[0m[[0m[31merror[0m] [0m[0m        clkCntr1 := clkCntr1 + 1.U[0m
+[0m[[0m[31merror[0m] [0m[0m        ^[0m
+[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/InterVox_Transmitter/src/main/scala/intervox_transmitter.scala:347:21: not found: value clkCntr1[0m
+[0m[[0m[31merror[0m] [0m[0m        clkCntr1 := clkCntr1 + 1.U[0m
+[0m[[0m[31merror[0m] [0m[0m                    ^[0m
+[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/InterVox_Transmitter/src/main/scala/intervox_transmitter.scala:348:14: not found: value clkCntr1[0m
+[0m[[0m[31merror[0m] [0m[0m        when(clkCntr1 === 3.U){clkCntr1 := 0.U}[0m
+[0m[[0m[31merror[0m] [0m[0m             ^[0m
+[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/InterVox_Transmitter/src/main/scala/intervox_transmitter.scala:348:32: not found: value clkCntr1[0m
+[0m[[0m[31merror[0m] [0m[0m        when(clkCntr1 === 3.U){clkCntr1 := 0.U}[0m
+[0m[[0m[31merror[0m] [0m[0m                               ^[0m
+[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/InterVox_Transmitter/src/main/scala/intervox_transmitter.scala:350:14: not found: value clkCntr1[0m
+[0m[[0m[31merror[0m] [0m[0m        when(clkCntr1 === 1.U){[0m
+[0m[[0m[31merror[0m] [0m[0m             ^[0m
+[0m[[0m[31merror[0m] [0m[0m5 errors found[0m

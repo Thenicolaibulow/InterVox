@@ -3,13 +3,25 @@
     "class":"firrtl.transforms.DedupedResult",
     "original":"~interVox_Encoder|RWSmem",
     "duplicate":"~interVox_Encoder|interVox_Encoder/BFR:RWSmem",
-    "index":0.3333333333333333
+    "index":0.2
   },
   {
     "class":"firrtl.transforms.DedupedResult",
     "original":"~interVox_Encoder|RWSmem_1",
     "duplicate":"~interVox_Encoder|interVox_Encoder/BFR1:RWSmem",
-    "index":0.6666666666666666
+    "index":0.4
+  },
+  {
+    "class":"firrtl.transforms.DedupedResult",
+    "original":"~interVox_Encoder|edgeDetector",
+    "duplicate":"~interVox_Encoder|interVox_Encoder/LREDGE:edgeDetector",
+    "index":0.6
+  },
+  {
+    "class":"firrtl.transforms.DedupedResult",
+    "original":"~interVox_Encoder|edgeDetector_1",
+    "duplicate":"~interVox_Encoder|interVox_Encoder/BCLKEDGE:edgeDetector",
+    "index":0.8
   },
   {
     "class":"firrtl.EmitCircuitAnnotation",

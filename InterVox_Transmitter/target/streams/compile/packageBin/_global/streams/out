@@ -2,12 +2,16 @@
 [0m[[0m[0mdebug[0m] [0m[0mInput file mappings:[0m
 [0m[[0m[0mdebug[0m] [0m[0m	bi_phase_encoder$$anon$2.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	  /Users/nixen/Development/fpga/InterVox/InterVox_Transmitter/target/scala-2.12/classes/bi_phase_encoder$$anon$2.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	interVox_Encoder$$anon$3.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	  /Users/nixen/Development/fpga/InterVox/InterVox_Transmitter/target/scala-2.12/classes/interVox_Encoder$$anon$3.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	RWSmem.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	  /Users/nixen/Development/fpga/InterVox/InterVox_Transmitter/target/scala-2.12/classes/RWSmem.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	edgeDetector$$anon$3.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/nixen/Development/fpga/InterVox/InterVox_Transmitter/target/scala-2.12/classes/edgeDetector$$anon$3.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	edgeDetector.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/nixen/Development/fpga/InterVox/InterVox_Transmitter/target/scala-2.12/classes/edgeDetector.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	HelloMain.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	  /Users/nixen/Development/fpga/InterVox/InterVox_Transmitter/target/scala-2.12/classes/HelloMain.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	interVox_Encoder$$anon$4.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	  /Users/nixen/Development/fpga/InterVox/InterVox_Transmitter/target/scala-2.12/classes/interVox_Encoder$$anon$4.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	interVox_Encoder.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	  /Users/nixen/Development/fpga/InterVox/InterVox_Transmitter/target/scala-2.12/classes/interVox_Encoder.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	bi_phase_encoder.class[0m

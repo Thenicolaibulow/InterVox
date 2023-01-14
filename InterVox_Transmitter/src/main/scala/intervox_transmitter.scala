@@ -33,7 +33,8 @@ class bi_phase_encoder() extends Module {
     val AUDIOINPUT    = Input (UInt(64.W))
     val DSPINPUT      = Input (UInt(64.W))
     val ENA           = Input (UInt(1.W))
-    val TICK          = Input (UInt(1.W))
+    val CLK           = Input (UInt(1.W))
+    val TRIG          =  Input (UInt(1.W))
   })
     val outReg        = RegInit(0.U(1.W))
     val stereoData    = RegInit(0.U(64.W))
@@ -53,7 +54,7 @@ class bi_phase_encoder() extends Module {
 
       // Clocked at BCLK x 2, or MCLK / 2
 
-      when(io.TICK === 1.U){
+      when(io.CLK === 1.U){
 
           /* 
               SYNCWORD
@@ -74,7 +75,7 @@ class bi_phase_encoder() extends Module {
 
           /*
               AUDIO DATA
-              __   ^^   _^   _^   __   ^^   __ 
+              __   ^^   _^   _^   __   ^_   __ 
               67   89  1011 1213 1415 1617 1819
           */
           
@@ -125,7 +126,7 @@ class bi_phase_encoder() extends Module {
             /*
               BIPHASE ENCODING
             */
-            
+
             when(hasNone === 1.U){
               // If a zero is encoded, don't change state.
               outReg := outReg
@@ -133,10 +134,9 @@ class bi_phase_encoder() extends Module {
             }
             .otherwise{
               // Otherwise, when a one is encoded, change state every cycle.
-              outReg := ~outReg
+                outReg := ~outReg
             }
           }
-
           // Count bits
           bitCntr_enc := bitCntr_enc + 1.U
           
@@ -147,6 +147,69 @@ class bi_phase_encoder() extends Module {
           }          
       }      
     }
+}
+
+class edgeDetector() extends Module {
+  val io = IO(new Bundle{
+    val INPUT   = Input(UInt(1.W))
+    val TRAIL   = Output(UInt(1.W))
+    val RISE    = Output(UInt(1.W))
+    val CHANGE  = Output(UInt(1.W))
+  })
+
+  val inBufr            = RegInit(0.U(2.W))
+  val inBufrPrev        = RegInit(0.U(2.W))
+  val trailing          = RegInit(0.U(1.W))  
+  val rising            = RegInit(0.U(1.W))
+  val change            = RegInit(0.U(1.W))
+  val changed           = RegInit(0.U(1.W))
+
+    /*
+        EDGE DETECTION
+    */  
+    switch(io.INPUT){
+      is(1.U){
+        when(inBufr < 2.U){ // Rising  _/ = inBufr b01 -> b11
+            // When rising, incriment inBufr.. looks like: 00 [Rising] 01
+            inBufr      := inBufr + 1.U
+            inBufrPrev  := inBufr
+        }
+      }
+      is(0.U){
+        when(inBufr > 0.U){ // Trailing  \_ = inBufr b10 -> b00
+            // When trailing, decrment inBufr.. looks like: 11 [Trailing] 10
+            inBufr      := inBufr - 1.U
+            inBufrPrev  := inBufr
+        }
+      }        
+    }
+
+    when((rising === 1.U) | (trailing === 1.U)){ // Change
+      change    := 1.U
+    }    
+
+    when((inBufrPrev === 0.U) & (inBufr === 1.U)){ // Rising
+      trailing  := 0.U
+      rising    := 1.U
+      change    := 1.U
+    }
+
+    when((inBufrPrev === 2.U) & (inBufr === 1.U)){ // Trailing
+      trailing  := 1.U
+      rising    := 0.U
+      change    := 1.U
+    }
+
+    when(trailing === 1.U){trailing := 0.U}
+    when(rising === 1.U)  {rising   := 0.U}  
+    
+    when(change === 1.U){
+      change   := RegNext(0.U)
+    }
+
+  io.CHANGE := change
+  io.TRAIL  := trailing
+  io.RISE   := rising
 }
 
 class interVox_Encoder(width: UInt) extends Module {
@@ -166,7 +229,15 @@ class interVox_Encoder(width: UInt) extends Module {
   val state_Reset :: state_Setup :: state_Transmit :: Nil = Enum(3)
   val current_state     = RegInit(state_Reset)  
   // Synchronisation register. Ensure that we start switching on rising LRCLK
-  val synced            = RegInit(0.U(1.W))    
+  val syncing           = RegInit(0.U(1.W))    
+  val synced            = RegInit(0.U(1.W))
+  
+
+
+  val clkCntr1           = RegInit(0.U(4.W))
+  val fuckyou            = RegInit(0.U(1.W))
+
+
   // Flip reg. for creating the bi-phase encoder clock
   val bclkR             = RegInit(1.U(1.W))      
   // Instantiate bi-phase encoder
@@ -177,11 +248,12 @@ class interVox_Encoder(width: UInt) extends Module {
   val bitCntr           = RegInit(0.U(8.W))
   // Define the buffers
   val BFR               = Module(new RWSmem())
-  val BFR1              = Module(new RWSmem())
-
-  val inBufr            = RegInit(0.U(2.W))
-  val trailing          = RegInit(0.U(1.W))  
-  val rising            = RegInit(0.U(1.W))  
+  val BFR1              = Module(new RWSmem()) 
+  // Define the edge detectors.
+  val LREDGE            = Module(new edgeDetector())
+    LREDGE.io.INPUT     := io.LRCLK_IN
+  val BCLKEDGE          = Module(new edgeDetector())
+    BCLKEDGE.io.INPUT   := io.BCLK_IN    
 
   // Assign pins. 
   io.DATA_O             := bi_phase_enc.io.DATA_OUT
@@ -201,10 +273,11 @@ class interVox_Encoder(width: UInt) extends Module {
   BFR1.io.dataIn        := BFR.io.dataOut
 
   // For debugging: output the bi_phase_enc enable signal. 
-  io.NXT_FRAME                := bi_phase_enc.io.ENA
+  io.NXT_FRAME                := bi_phase_enc.io.TRIG
   // Get the bi-phase encoder ready
-  bi_phase_enc.io.TICK        := encoderClk
+  bi_phase_enc.io.CLK         := encoderClk
   bi_phase_enc.io.ENA         := 0.U
+  bi_phase_enc.io.TRIG        := BCLKEDGE.io.CHANGE
   // Always feed the bi-phase with the delayed repacked data (BFR1)
   bi_phase_enc.io.AUDIOINPUT  := BFR1.io.dataOut
   // Hardcode DSP data.
@@ -226,41 +299,14 @@ class interVox_Encoder(width: UInt) extends Module {
   */
 
   when(synced === 0.U){
-
-
-    /*
-        EDGE DETECTION
-    */  
-    switch(io.LRCLK_IN){
-        is(1.U){
-            when(inBufr < 3.U){ // Rising  _/ = inBufr b01 -> b11
-                // When rising, incriment inBufr.. looks like: 00 [Rising] 01
-                inBufr := inBufr + 1.U
-            }
-        }
-        is(0.U){
-            when(inBufr > 0.U){ // Trailing  \_ = inBufr b10 -> b00
-                // When trailing, decrment inBufr.. looks like: 11 [Trailing] 10
-                inBufr := inBufr - 1.U
-            }
-        }        
-    }
-
-    when((inBufr(0) === 0.U) & (inBufr(1) === 1.U)){ // Rising
-      rising    := 1.U
-      trailing  := 0.U
-    }    
-
-    when((inBufr(0) === 1.U) & (inBufr(1) === 0.U)){ // Trailing
-      trailing  := 1.U
-      rising    := 0.U
-    }
     
-    when(trailing === 1.U){
-      
+    when(LREDGE.io.TRAIL === 1.U){
+      syncing := 1.U
+    }  
+    when(syncing  === 1.U){
       bitCntr     := bitCntr + 1.U
 
-      when(bitCntr === 126.U){
+      when(bitCntr === 124.U){
         synced    := 1.U
         bitCntr   := 0.U
       }
@@ -298,12 +344,10 @@ class interVox_Encoder(width: UInt) extends Module {
         // Clock the BiPhase Encoder at MCLK/2, or BCLK x2
         encoderClk := ~encoderClk
 
-        when(io.BCLK_IN === 1.U){
-          bclkR := ~bclkR
-        }
+        clkCntr1 := clkCntr1 + 1.U
+        when(clkCntr1 === 3.U){clkCntr1 := 0.U}
 
-
-        when(bclkR === 1.U){
+        when(clkCntr1 === 1.U){
           
           // Count I2S bits
           bitCntr := bitCntr + 1.U          
@@ -315,7 +359,7 @@ class interVox_Encoder(width: UInt) extends Module {
             BFR.io.write      := 1.U
             BFR.io.dataIn     := 0.U
           }
-          
+
           // Record the incoming bits at f=BCLK          
           when(bitCntr > 31.U){
             // Truncate the last 8 bits of a 32 bit word. of the second audio channel data.
@@ -348,12 +392,36 @@ class interVox_Encoder(width: UInt) extends Module {
             }          
           }        
 
-          when(bitCntr === 63.U){
-            // Allows for one sample delay between input and interVox output. 
+
+          // when(bitCntr === 63.U){
+          //   // Allows for one sample delay between input and interVox output. 
+          //   // Dump BFR 0 into BFR 1
+          //   BFR.io.write      := 0.U
+          //   BFR1.io.write     := 1.U
+          //   BFR1.io.dataIn    := BFR.io.dataOut
+
+          //   // Clear buffer
+          //   BFR.io.write   := 1.U
+          //   BFR.io.dataIn  := 0.U
+
+          //   bitCntr := 0.U
+          // } 
+
+          when((bitCntr === 63.U)){
+            // Allows for one sample delay between input and interVox output.
             // Dump BFR 0 into BFR 1
             BFR.io.write      := 0.U
             BFR1.io.write     := 1.U
-            BFR1.io.dataIn    := BFR.io.dataOut
+
+            fuckyou := ~fuckyou
+
+            when(fuckyou === 1.U){
+              BFR1.io.dataIn    := (43690.U << 48.U)
+            }.otherwise{
+              BFR1.io.dataIn    := (43691.U << 48.U)
+            }
+            
+            //BFR.io.dataOut
 
             // Clear buffer
             BFR.io.write   := 1.U
