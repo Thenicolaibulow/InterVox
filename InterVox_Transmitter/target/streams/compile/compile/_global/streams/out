@@ -1,16 +1,4 @@
-[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/InterVox_Transmitter/src/main/scala/intervox_transmitter.scala:347:9: not found: value clkCntr1[0m
-[0m[[0m[31merror[0m] [0m[0m        clkCntr1 := clkCntr1 + 1.U[0m
-[0m[[0m[31merror[0m] [0m[0m        ^[0m
-[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/InterVox_Transmitter/src/main/scala/intervox_transmitter.scala:347:21: not found: value clkCntr1[0m
-[0m[[0m[31merror[0m] [0m[0m        clkCntr1 := clkCntr1 + 1.U[0m
-[0m[[0m[31merror[0m] [0m[0m                    ^[0m
-[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/InterVox_Transmitter/src/main/scala/intervox_transmitter.scala:348:14: not found: value clkCntr1[0m
-[0m[[0m[31merror[0m] [0m[0m        when(clkCntr1 === 3.U){clkCntr1 := 0.U}[0m
-[0m[[0m[31merror[0m] [0m[0m             ^[0m
-[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/InterVox_Transmitter/src/main/scala/intervox_transmitter.scala:348:32: not found: value clkCntr1[0m
-[0m[[0m[31merror[0m] [0m[0m        when(clkCntr1 === 3.U){clkCntr1 := 0.U}[0m
-[0m[[0m[31merror[0m] [0m[0m                               ^[0m
-[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/InterVox_Transmitter/src/main/scala/intervox_transmitter.scala:350:14: not found: value clkCntr1[0m
-[0m[[0m[31merror[0m] [0m[0m        when(clkCntr1 === 1.U){[0m
-[0m[[0m[31merror[0m] [0m[0m             ^[0m
-[0m[[0m[31merror[0m] [0m[0m5 errors found[0m
+[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/InterVox_Transmitter/src/main/scala/intervox_transmitter.scala:323:7: not found: value current_state[0m
+[0m[[0m[31merror[0m] [0m[0m      current_state := stateTransmit[0m
+[0m[[0m[31merror[0m] [0m[0m      ^[0m
+[0m[[0m[31merror[0m] [0m[0mone error found[0m

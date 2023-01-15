@@ -3,13 +3,13 @@
     "class":"firrtl.transforms.DedupedResult",
     "original":"~interVox_Encoder|RWSmem",
     "duplicate":"~interVox_Encoder|interVox_Encoder/BFR:RWSmem",
-    "index":0.2
+    "index":0.0
   },
   {
     "class":"firrtl.transforms.DedupedResult",
     "original":"~interVox_Encoder|RWSmem_1",
     "duplicate":"~interVox_Encoder|interVox_Encoder/BFR1:RWSmem",
-    "index":0.4
+    "index":0.2
   },
   {
     "class":"firrtl.transforms.DedupedResult",

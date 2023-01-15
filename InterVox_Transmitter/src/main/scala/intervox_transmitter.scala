@@ -27,7 +27,7 @@ class RWSmem extends Module {
   }
 }
 
-class bi_phase_encoder() extends Module {
+class biPhaseEncoder() extends Module {
   val io = IO(new Bundle {
     val DATA_OUT      = Output(UInt(1.W))
     val AUDIOINPUT    = Input (UInt(64.W))
@@ -219,39 +219,44 @@ class interVox_Encoder(width: UInt) extends Module {
     val LRCLK_O   = Output(UInt(1.W))    
     val BCLK_O    = Output(UInt(1.W))  
     val SDATA_O   = Output(UInt(1.W))
-    val NXT_FRAME = Output(UInt(1.W))  
+    val NXT_FRAME = Output(UInt(1.W))
+    val SW        = Input (UInt(16.W))  
+    val LED       = Output(UInt(16.W))
   })
 
   // Define state enum.. case sentitive!
-  val state_Reset :: state_Setup :: state_Transmit :: Nil = Enum(3)
-  val current_state     = RegInit(state_Reset)  
+  val stateReset :: stateSetup :: stateTransmit :: Nil = Enum(3)
+  val currentState     = RegInit(stateReset)  
   // Synchronisation register. Ensure that we start switching on rising LRCLK
   val syncing           = RegInit(0.U(1.W))    
   val synced            = RegInit(0.U(1.W))
 
+  // Debug:
+  val leds              = RegInit(0.U(16.W))
   // Flip reg. for creating the bi-phase encoder clock
   val bclkR             = RegInit(1.U(1.W))      
-  // Instantiate bi-phase encoder
-  val bi_phase_enc      = Module(new bi_phase_encoder())
   // Clock divider register for encoder
   val encoderClk        = RegInit(0.U(1.W))  
   // Define the bitcounter
   val bitCntr           = RegInit(0.U(8.W))
-  // Define the buffers
+  // Instantiate buffers
   val BFR               = Module(new RWSmem())
   val BFR1              = Module(new RWSmem()) 
-  // Define the edge detectors.
+  // Instantiate bi-phase encoder
+  val biPhaseEncoder      = Module(new biPhaseEncoder())  
+  // Instatiate the edge detectors.
   val LREDGE            = Module(new edgeDetector())
     LREDGE.io.INPUT     := io.LRCLK_IN
   val BCLKEDGE          = Module(new edgeDetector())
     BCLKEDGE.io.INPUT   := io.BCLK_IN    
 
   // Assign pins. 
-  io.DATA_O             := bi_phase_enc.io.DATA_OUT
+  io.DATA_O             := biPhaseEncoder.io.DATA_OUT
   io.MCLK_O             := clock
   io.BCLK_O             := io.BCLK_IN 
   io.LRCLK_O            := io.LRCLK_IN 
   io.SDATA_O            := io.SDATA_IN
+  io.LED                := leds
 
   // Define buffer default behaviour.
   BFR.io.enable         := 1.U
@@ -263,16 +268,16 @@ class interVox_Encoder(width: UInt) extends Module {
   BFR1.io.write         := 0.U
   BFR1.io.dataIn        := BFR.io.dataOut
 
-  // For debugging: output the bi_phase_enc enable signal. 
-  io.NXT_FRAME                := bi_phase_enc.io.TRIG
+  // For debugging: output the biPhaseEncoder trigger signal. 
+  io.NXT_FRAME                := biPhaseEncoder.io.TRIG
   // Get the bi-phase encoder ready
-  bi_phase_enc.io.CLK         := encoderClk
-  bi_phase_enc.io.ENA         := 0.U
-  bi_phase_enc.io.TRIG        := BCLKEDGE.io.CHANGE
+  biPhaseEncoder.io.CLK         := encoderClk
+  biPhaseEncoder.io.ENA         := 0.U
+  biPhaseEncoder.io.TRIG        := BCLKEDGE.io.CHANGE
   // Always feed the bi-phase with the delayed repacked data (BFR1)
-  bi_phase_enc.io.AUDIOINPUT  := BFR1.io.dataOut
+  biPhaseEncoder.io.AUDIOINPUT  := BFR1.io.dataOut
   // Hardcode DSP data.
-  bi_phase_enc.io.DSPINPUT    := 0.U
+  biPhaseEncoder.io.DSPINPUT    := 0.U
 
   /*
       Functional overview:
@@ -297,7 +302,7 @@ class interVox_Encoder(width: UInt) extends Module {
     when(syncing  === 1.U){
       bitCntr     := bitCntr + 1.U
 
-      when(bitCntr === 124.U){
+      when(bitCntr === 125.U){
         synced    := 1.U
         bitCntr   := 0.U
       }
@@ -311,91 +316,100 @@ class interVox_Encoder(width: UInt) extends Module {
   */
   
 
-  switch(current_state){
+  switch(currentState){
           
-    is(state_Reset){
+    is(stateReset){
       // Todo, reset state.
-      current_state := state_Transmit
+      currentState := stateTransmit
     }
-    is(state_Setup){
+    is(stateSetup){
       // Setup state will take care of initializing receiver units, and assigning them unique adresses.
-      current_state := state_Transmit
+      currentState := stateTransmit
     }
-    is(state_Transmit){
+    is(stateTransmit){
       
       when(synced === 1.U){ 
 
         /*         
-            I2S "Reciever"
+            PLAYBACK MODE
         */
 
         // Initialize BiPhase Encoder
-        bi_phase_enc.io.ENA := 1.U
+        biPhaseEncoder.io.ENA := 1.U
         
         // Clock the BiPhase Encoder at MCLK/2, or BCLK x2
         encoderClk := ~encoderClk
 
-        clkCntr1 := clkCntr1 + 1.U
-        when(clkCntr1 === 3.U){clkCntr1 := 0.U}
-
-        when(clkCntr1 === 1.U){
+        // On rising edge of BCLK:
+        when(BCLKEDGE.io.RISE === 1.U){
           
-          // Count I2S bits
+          // Count incoming I2S bits
           bitCntr := bitCntr + 1.U          
 
-          // For each bit, assign it the appropriate bit in the buffer
-          // Effectively 'repackaging' the I2S Serial data for use with intervox.          
-          when(bitCntr === 0.U){
-            // Clear Buffer. 
-            BFR.io.write      := 1.U
-            BFR.io.dataIn     := 0.U
-          }
-
-          // Record the incoming bits at f=BCLK          
-          when(bitCntr > 31.U){
-            // Truncate the last 8 bits of a 32 bit word. of the second audio channel data.
-            // Limits the incoming data to 24 bit, purposely. 
+          /*
             
-            // Enable buffer write
-            BFR.io.write      := 1.U
+            AUDIO BUFFERING         MSB           LSB MSB            LSB
+            [Buffer = 64 bits] === [63, 62, 61... 39] [38, 37, 36... 14] [13, 12... 0]
+                                      LEFT 24 Bits      Right 24 Bits       Don't care
+          */  
 
-            when(io.SDATA_IN === 0.U){             
-              // 64 (Reverse MSB/LSB) - Offset by the truncated 8 Bits (64 + 8) - CurrentBit
-              BFR.io.dataIn     := BFR.io.dataOut + (0.U << (71.U - bitCntr))
-            }
+          // If not hardcoded sample is set
+          when(io.SW === 0.U){
+            // Record the incoming bits at f=BCLK          
+            when(bitCntr > 31.U){
+              
+              // Enable buffer write
+              BFR.io.write      := 1.U
 
-            when(io.SDATA_IN === 1.U){              
-              BFR.io.dataIn     := BFR.io.dataOut + (1.U << (71.U  - bitCntr))
-            }
+              when(io.SDATA_IN === 0.U){             
+                // (63rd position - 24(Left bits)) - (current bit - the 32 left bits)
+                // Truncate the last 8 bits of a 32 bit word (start at position 39, not 31). of the left audio channel data.
+                // Limits the incoming data to 24 bit pr. channel, purposely. 
+                BFR.io.dataIn     := BFR.io.dataOut + (0.U << (39.U - (bitCntr - 31.U)  + 9.U))
+              }
+              when(io.SDATA_IN === 1.U){              
+                BFR.io.dataIn     := BFR.io.dataOut + (1.U << (39.U  - (bitCntr - 31.U) + 9.U))
+              }
+            }.otherwise{ 
+
+              BFR.io.write      := 1.U            
+
+              when(io.SDATA_IN === 0.U) {
+                // 63 (Most Left position in BFR) - current bit.
+                // Left channel first.
+                BFR.io.dataIn     := BFR.io.dataOut + (0.U << (63.U - (bitCntr) + 9.U))
+              }
+              when(io.SDATA_IN === 1.U){
+                BFR.io.dataIn     := BFR.io.dataOut + (1.U << (63.U - (bitCntr) + 9.U))
+              }          
+            }        
+
+ 
           }.otherwise{
-            // Truncate the last 8 bits of a 32 bit word. of the first audio channel data.
-            // Limits the incoming data to 24 bit, purposely.             
+            BFR.io.write  := 1.U
+            // Create a sample with custom data, based off the hardware switches on the basys3.
+            // Repeat that 16bit uint for both left and right channel 
+            BFR.io.dataIn := (io.SW << (63.U + 9.U)) + (io.SW << (39.U + 9.U))
+          }
+ 
+          when(bitCntr === 63.U){ 
+            // ^^ Should probably be triggered on LRCLK rising, but I'm unsure with the delay of the rising detect.
 
-            BFR.io.write      := 1.U            
-
-            when(io.SDATA_IN === 0.U) {
-              // 64 - (Reverse MSB/LSB) - CurrentBit
-              BFR.io.dataIn     := BFR.io.dataOut + (0.U << (63.U - bitCntr))
-            }
-
-            when(io.SDATA_IN === 1.U){
-              BFR.io.dataIn     := BFR.io.dataOut + (1.U << (63.U - bitCntr))
-            }          
-          }        
-
-          when(bitCntr === 63.U){
-            // Allows for one sample delay between input and interVox output. 
-            // Dump BFR 0 into BFR 1
+            // Dump buffer 0 into buffer 1
             BFR.io.write      := 0.U
             BFR1.io.write     := 1.U
-            BFR1.io.dataIn    := BFR.io.dataOut
+            BFR1.io.dataIn    := BFR.io.dataOut            
 
-            // Clear buffer
+            // Clear buffer 0.
             BFR.io.write   := 1.U
             BFR.io.dataIn  := 0.U
 
+            // Assign leds to the buffer output.
+            // We have to do some conversion, for it to show up properly.
+            leds := (BFR1.io.dataOut >> 48.U) & (65535.U)
+
             bitCntr := 0.U
-          } 
+          }          
         }
       }        
     }

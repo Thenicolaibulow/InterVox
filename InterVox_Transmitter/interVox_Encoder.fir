@@ -1,5 +1,33 @@
 circuit interVox_Encoder :
-  module bi_phase_encoder :
+  module RWSmem :
+    input clock : Clock
+    input reset : Reset
+    output io : { flip enable : UInt<1>, flip write : UInt<1>, flip addr : UInt<1>, flip dataIn : UInt<64>, dataOut : UInt<64>}
+
+    smem mem : UInt<64> [1] @[intervox_transmitter.scala 19:24]
+    io.dataOut is invalid @[intervox_transmitter.scala 21:14]
+    when io.enable : @[intervox_transmitter.scala 23:19]
+      infer mport rdwrPort = mem[UInt<1>("h0")], clock @[intervox_transmitter.scala 24:23]
+      when io.write : @[intervox_transmitter.scala 25:21]
+        rdwrPort <= io.dataIn @[intervox_transmitter.scala 25:32]
+      else :
+        io.dataOut <= rdwrPort @[intervox_transmitter.scala 26:34]
+
+  module RWSmem_1 :
+    input clock : Clock
+    input reset : Reset
+    output io : { flip enable : UInt<1>, flip write : UInt<1>, flip addr : UInt<1>, flip dataIn : UInt<64>, dataOut : UInt<64>}
+
+    smem mem : UInt<64> [1] @[intervox_transmitter.scala 19:24]
+    io.dataOut is invalid @[intervox_transmitter.scala 21:14]
+    when io.enable : @[intervox_transmitter.scala 23:19]
+      infer mport rdwrPort = mem[UInt<1>("h0")], clock @[intervox_transmitter.scala 24:23]
+      when io.write : @[intervox_transmitter.scala 25:21]
+        rdwrPort <= io.dataIn @[intervox_transmitter.scala 25:32]
+      else :
+        io.dataOut <= rdwrPort @[intervox_transmitter.scala 26:34]
+
+  module biPhaseEncoder :
     input clock : Clock
     input reset : Reset
     output io : { DATA_OUT : UInt<1>, flip AUDIOINPUT : UInt<64>, flip DSPINPUT : UInt<64>, flip ENA : UInt<1>, flip CLK : UInt<1>, flip TRIG : UInt<1>}
@@ -86,34 +114,6 @@ circuit interVox_Encoder :
         when _T_28 : @[intervox_transmitter.scala 141:38]
           bitCntr_enc <= UInt<1>("h0") @[intervox_transmitter.scala 142:25]
           dataIndex <= UInt<1>("h0") @[intervox_transmitter.scala 143:23]
-
-  module RWSmem :
-    input clock : Clock
-    input reset : Reset
-    output io : { flip enable : UInt<1>, flip write : UInt<1>, flip addr : UInt<1>, flip dataIn : UInt<64>, dataOut : UInt<64>}
-
-    smem mem : UInt<64> [1] @[intervox_transmitter.scala 19:24]
-    io.dataOut is invalid @[intervox_transmitter.scala 21:14]
-    when io.enable : @[intervox_transmitter.scala 23:19]
-      infer mport rdwrPort = mem[UInt<1>("h0")], clock @[intervox_transmitter.scala 24:23]
-      when io.write : @[intervox_transmitter.scala 25:21]
-        rdwrPort <= io.dataIn @[intervox_transmitter.scala 25:32]
-      else :
-        io.dataOut <= rdwrPort @[intervox_transmitter.scala 26:34]
-
-  module RWSmem_1 :
-    input clock : Clock
-    input reset : Reset
-    output io : { flip enable : UInt<1>, flip write : UInt<1>, flip addr : UInt<1>, flip dataIn : UInt<64>, dataOut : UInt<64>}
-
-    smem mem : UInt<64> [1] @[intervox_transmitter.scala 19:24]
-    io.dataOut is invalid @[intervox_transmitter.scala 21:14]
-    when io.enable : @[intervox_transmitter.scala 23:19]
-      infer mport rdwrPort = mem[UInt<1>("h0")], clock @[intervox_transmitter.scala 24:23]
-      when io.write : @[intervox_transmitter.scala 25:21]
-        rdwrPort <= io.dataIn @[intervox_transmitter.scala 25:32]
-      else :
-        io.dataOut <= rdwrPort @[intervox_transmitter.scala 26:34]
 
   module edgeDetector :
     input clock : Clock
@@ -256,147 +256,164 @@ circuit interVox_Encoder :
   module interVox_Encoder :
     input clock : Clock
     input reset : UInt<1>
-    output io : { MCLK_O : Clock, flip BCLK_IN : UInt<1>, flip LRCLK_IN : UInt<1>, flip SDATA_IN : UInt<1>, DATA_O : UInt<1>, LRCLK_O : UInt<1>, BCLK_O : UInt<1>, SDATA_O : UInt<1>, NXT_FRAME : UInt<1>}
+    output io : { MCLK_O : Clock, flip BCLK_IN : UInt<1>, flip LRCLK_IN : UInt<1>, flip SDATA_IN : UInt<1>, DATA_O : UInt<1>, LRCLK_O : UInt<1>, BCLK_O : UInt<1>, SDATA_O : UInt<1>, NXT_FRAME : UInt<1>, flip SW : UInt<16>, LED : UInt<16>}
 
-    reg current_state : UInt<2>, clock with :
-      reset => (reset, UInt<2>("h0")) @[intervox_transmitter.scala 227:34]
+    reg currentState : UInt<2>, clock with :
+      reset => (reset, UInt<2>("h0")) @[intervox_transmitter.scala 229:33]
     reg syncing : UInt<1>, clock with :
-      reset => (reset, UInt<1>("h0")) @[intervox_transmitter.scala 229:34]
+      reset => (reset, UInt<1>("h0")) @[intervox_transmitter.scala 231:34]
     reg synced : UInt<1>, clock with :
-      reset => (reset, UInt<1>("h0")) @[intervox_transmitter.scala 230:34]
-    reg clkCntr1 : UInt<4>, clock with :
-      reset => (reset, UInt<4>("h0")) @[intervox_transmitter.scala 234:35]
-    reg fuckyou : UInt<1>, clock with :
-      reset => (reset, UInt<1>("h0")) @[intervox_transmitter.scala 235:35]
+      reset => (reset, UInt<1>("h0")) @[intervox_transmitter.scala 232:34]
+    reg leds : UInt<16>, clock with :
+      reset => (reset, UInt<16>("h0")) @[intervox_transmitter.scala 235:34]
     reg bclkR : UInt<1>, clock with :
-      reset => (reset, UInt<1>("h1")) @[intervox_transmitter.scala 239:34]
-    inst bi_phase_enc of bi_phase_encoder @[intervox_transmitter.scala 241:33]
-    bi_phase_enc.clock <= clock
-    bi_phase_enc.reset <= reset
+      reset => (reset, UInt<1>("h1")) @[intervox_transmitter.scala 237:34]
     reg encoderClk : UInt<1>, clock with :
-      reset => (reset, UInt<1>("h0")) @[intervox_transmitter.scala 243:34]
+      reset => (reset, UInt<1>("h0")) @[intervox_transmitter.scala 239:34]
     reg bitCntr : UInt<8>, clock with :
-      reset => (reset, UInt<8>("h0")) @[intervox_transmitter.scala 245:34]
-    inst BFR of RWSmem @[intervox_transmitter.scala 247:33]
+      reset => (reset, UInt<8>("h0")) @[intervox_transmitter.scala 241:34]
+    inst BFR of RWSmem @[intervox_transmitter.scala 243:33]
     BFR.clock <= clock
     BFR.reset <= reset
-    inst BFR1 of RWSmem_1 @[intervox_transmitter.scala 248:33]
+    inst BFR1 of RWSmem_1 @[intervox_transmitter.scala 244:33]
     BFR1.clock <= clock
     BFR1.reset <= reset
-    inst LREDGE of edgeDetector @[intervox_transmitter.scala 250:33]
+    inst biPhaseEncoder of biPhaseEncoder @[intervox_transmitter.scala 246:35]
+    biPhaseEncoder.clock <= clock
+    biPhaseEncoder.reset <= reset
+    inst LREDGE of edgeDetector @[intervox_transmitter.scala 248:33]
     LREDGE.clock <= clock
     LREDGE.reset <= reset
-    LREDGE.io.INPUT <= io.LRCLK_IN @[intervox_transmitter.scala 251:25]
-    inst BCLKEDGE of edgeDetector_1 @[intervox_transmitter.scala 252:33]
+    LREDGE.io.INPUT <= io.LRCLK_IN @[intervox_transmitter.scala 249:25]
+    inst BCLKEDGE of edgeDetector_1 @[intervox_transmitter.scala 250:33]
     BCLKEDGE.clock <= clock
     BCLKEDGE.reset <= reset
-    BCLKEDGE.io.INPUT <= io.BCLK_IN @[intervox_transmitter.scala 253:25]
-    io.DATA_O <= bi_phase_enc.io.DATA_OUT @[intervox_transmitter.scala 256:25]
-    io.MCLK_O <= clock @[intervox_transmitter.scala 257:25]
-    io.BCLK_O <= io.BCLK_IN @[intervox_transmitter.scala 258:25]
-    io.LRCLK_O <= io.LRCLK_IN @[intervox_transmitter.scala 259:25]
-    io.SDATA_O <= io.SDATA_IN @[intervox_transmitter.scala 260:25]
-    BFR.io.enable <= UInt<1>("h1") @[intervox_transmitter.scala 263:25]
-    BFR.io.addr <= UInt<1>("h1") @[intervox_transmitter.scala 264:25]
-    BFR.io.write <= UInt<1>("h0") @[intervox_transmitter.scala 265:25]
-    BFR.io.dataIn <= UInt<1>("h0") @[intervox_transmitter.scala 266:25]
-    BFR1.io.enable <= UInt<1>("h1") @[intervox_transmitter.scala 267:25]
-    BFR1.io.addr <= UInt<1>("h1") @[intervox_transmitter.scala 268:25]
-    BFR1.io.write <= UInt<1>("h0") @[intervox_transmitter.scala 269:25]
-    BFR1.io.dataIn <= BFR.io.dataOut @[intervox_transmitter.scala 270:25]
-    io.NXT_FRAME <= bi_phase_enc.io.TRIG @[intervox_transmitter.scala 273:31]
-    bi_phase_enc.io.CLK <= encoderClk @[intervox_transmitter.scala 275:31]
-    bi_phase_enc.io.ENA <= UInt<1>("h0") @[intervox_transmitter.scala 276:31]
-    bi_phase_enc.io.TRIG <= BCLKEDGE.io.CHANGE @[intervox_transmitter.scala 277:31]
-    bi_phase_enc.io.AUDIOINPUT <= BFR1.io.dataOut @[intervox_transmitter.scala 279:31]
-    bi_phase_enc.io.DSPINPUT <= UInt<1>("h0") @[intervox_transmitter.scala 281:31]
-    node _T = eq(synced, UInt<1>("h0")) @[intervox_transmitter.scala 298:15]
-    when _T : @[intervox_transmitter.scala 298:23]
-      node _T_1 = eq(LREDGE.io.TRAIL, UInt<1>("h1")) @[intervox_transmitter.scala 300:26]
-      when _T_1 : @[intervox_transmitter.scala 300:34]
-        syncing <= UInt<1>("h1") @[intervox_transmitter.scala 301:15]
-      node _T_2 = eq(syncing, UInt<1>("h1")) @[intervox_transmitter.scala 303:19]
-      when _T_2 : @[intervox_transmitter.scala 303:27]
-        node _bitCntr_T = add(bitCntr, UInt<1>("h1")) @[intervox_transmitter.scala 304:30]
-        node _bitCntr_T_1 = tail(_bitCntr_T, 1) @[intervox_transmitter.scala 304:30]
-        bitCntr <= _bitCntr_T_1 @[intervox_transmitter.scala 304:19]
-        node _T_3 = eq(bitCntr, UInt<7>("h7c")) @[intervox_transmitter.scala 306:20]
-        when _T_3 : @[intervox_transmitter.scala 306:30]
-          synced <= UInt<1>("h1") @[intervox_transmitter.scala 307:19]
-          bitCntr <= UInt<1>("h0") @[intervox_transmitter.scala 308:19]
-    node _T_4 = eq(UInt<2>("h0"), current_state) @[intervox_transmitter.scala 320:24]
-    when _T_4 : @[intervox_transmitter.scala 320:24]
-      current_state <= UInt<2>("h2") @[intervox_transmitter.scala 324:21]
+    BCLKEDGE.io.INPUT <= io.BCLK_IN @[intervox_transmitter.scala 251:25]
+    io.DATA_O <= biPhaseEncoder.io.DATA_OUT @[intervox_transmitter.scala 254:25]
+    io.MCLK_O <= clock @[intervox_transmitter.scala 255:25]
+    io.BCLK_O <= io.BCLK_IN @[intervox_transmitter.scala 256:25]
+    io.LRCLK_O <= io.LRCLK_IN @[intervox_transmitter.scala 257:25]
+    io.SDATA_O <= io.SDATA_IN @[intervox_transmitter.scala 258:25]
+    io.LED <= leds @[intervox_transmitter.scala 259:25]
+    BFR.io.enable <= UInt<1>("h1") @[intervox_transmitter.scala 262:25]
+    BFR.io.addr <= UInt<1>("h1") @[intervox_transmitter.scala 263:25]
+    BFR.io.write <= UInt<1>("h0") @[intervox_transmitter.scala 264:25]
+    BFR.io.dataIn <= UInt<1>("h0") @[intervox_transmitter.scala 265:25]
+    BFR1.io.enable <= UInt<1>("h1") @[intervox_transmitter.scala 266:25]
+    BFR1.io.addr <= UInt<1>("h1") @[intervox_transmitter.scala 267:25]
+    BFR1.io.write <= UInt<1>("h0") @[intervox_transmitter.scala 268:25]
+    BFR1.io.dataIn <= BFR.io.dataOut @[intervox_transmitter.scala 269:25]
+    io.NXT_FRAME <= biPhaseEncoder.io.TRIG @[intervox_transmitter.scala 272:31]
+    biPhaseEncoder.io.CLK <= encoderClk @[intervox_transmitter.scala 274:33]
+    biPhaseEncoder.io.ENA <= UInt<1>("h0") @[intervox_transmitter.scala 275:33]
+    biPhaseEncoder.io.TRIG <= BCLKEDGE.io.CHANGE @[intervox_transmitter.scala 276:33]
+    biPhaseEncoder.io.AUDIOINPUT <= BFR1.io.dataOut @[intervox_transmitter.scala 278:33]
+    biPhaseEncoder.io.DSPINPUT <= UInt<1>("h0") @[intervox_transmitter.scala 280:33]
+    node _T = eq(synced, UInt<1>("h0")) @[intervox_transmitter.scala 297:15]
+    when _T : @[intervox_transmitter.scala 297:23]
+      node _T_1 = eq(LREDGE.io.TRAIL, UInt<1>("h1")) @[intervox_transmitter.scala 299:26]
+      when _T_1 : @[intervox_transmitter.scala 299:34]
+        syncing <= UInt<1>("h1") @[intervox_transmitter.scala 300:15]
+      node _T_2 = eq(syncing, UInt<1>("h1")) @[intervox_transmitter.scala 302:19]
+      when _T_2 : @[intervox_transmitter.scala 302:27]
+        node _bitCntr_T = add(bitCntr, UInt<1>("h1")) @[intervox_transmitter.scala 303:30]
+        node _bitCntr_T_1 = tail(_bitCntr_T, 1) @[intervox_transmitter.scala 303:30]
+        bitCntr <= _bitCntr_T_1 @[intervox_transmitter.scala 303:19]
+        node _T_3 = eq(bitCntr, UInt<7>("h7d")) @[intervox_transmitter.scala 305:20]
+        when _T_3 : @[intervox_transmitter.scala 305:30]
+          synced <= UInt<1>("h1") @[intervox_transmitter.scala 306:19]
+          bitCntr <= UInt<1>("h0") @[intervox_transmitter.scala 307:19]
+    node _T_4 = eq(UInt<2>("h0"), currentState) @[intervox_transmitter.scala 319:23]
+    when _T_4 : @[intervox_transmitter.scala 319:23]
+      currentState <= UInt<2>("h2") @[intervox_transmitter.scala 323:20]
     else :
-      node _T_5 = eq(UInt<2>("h1"), current_state) @[intervox_transmitter.scala 320:24]
-      when _T_5 : @[intervox_transmitter.scala 320:24]
-        current_state <= UInt<2>("h2") @[intervox_transmitter.scala 328:21]
+      node _T_5 = eq(UInt<2>("h1"), currentState) @[intervox_transmitter.scala 319:23]
+      when _T_5 : @[intervox_transmitter.scala 319:23]
+        currentState <= UInt<2>("h2") @[intervox_transmitter.scala 327:20]
       else :
-        node _T_6 = eq(UInt<2>("h2"), current_state) @[intervox_transmitter.scala 320:24]
-        when _T_6 : @[intervox_transmitter.scala 320:24]
-          node _T_7 = eq(synced, UInt<1>("h1")) @[intervox_transmitter.scala 332:19]
-          when _T_7 : @[intervox_transmitter.scala 332:27]
-            bi_phase_enc.io.ENA <= UInt<1>("h1") @[intervox_transmitter.scala 339:29]
-            node _encoderClk_T = not(encoderClk) @[intervox_transmitter.scala 342:23]
-            encoderClk <= _encoderClk_T @[intervox_transmitter.scala 342:20]
-            node _clkCntr1_T = add(clkCntr1, UInt<1>("h1")) @[intervox_transmitter.scala 344:30]
-            node _clkCntr1_T_1 = tail(_clkCntr1_T, 1) @[intervox_transmitter.scala 344:30]
-            clkCntr1 <= _clkCntr1_T_1 @[intervox_transmitter.scala 344:18]
-            node _T_8 = eq(clkCntr1, UInt<2>("h3")) @[intervox_transmitter.scala 345:23]
-            when _T_8 : @[intervox_transmitter.scala 345:31]
-              clkCntr1 <= UInt<1>("h0") @[intervox_transmitter.scala 345:41]
-            node _T_9 = eq(clkCntr1, UInt<1>("h1")) @[intervox_transmitter.scala 347:23]
-            when _T_9 : @[intervox_transmitter.scala 347:31]
-              node _bitCntr_T_2 = add(bitCntr, UInt<1>("h1")) @[intervox_transmitter.scala 350:30]
-              node _bitCntr_T_3 = tail(_bitCntr_T_2, 1) @[intervox_transmitter.scala 350:30]
-              bitCntr <= _bitCntr_T_3 @[intervox_transmitter.scala 350:19]
-              node _T_10 = eq(bitCntr, UInt<1>("h0")) @[intervox_transmitter.scala 354:24]
-              when _T_10 : @[intervox_transmitter.scala 354:32]
-                BFR.io.write <= UInt<1>("h1") @[intervox_transmitter.scala 356:31]
-                BFR.io.dataIn <= UInt<1>("h0") @[intervox_transmitter.scala 357:31]
-              node _T_11 = gt(bitCntr, UInt<5>("h1f")) @[intervox_transmitter.scala 361:24]
-              when _T_11 : @[intervox_transmitter.scala 361:31]
-                BFR.io.write <= UInt<1>("h1") @[intervox_transmitter.scala 366:31]
-                node _T_12 = eq(io.SDATA_IN, UInt<1>("h0")) @[intervox_transmitter.scala 368:30]
-                when _T_12 : @[intervox_transmitter.scala 368:38]
-                  node _BFR_io_dataIn_T = sub(UInt<7>("h47"), bitCntr) @[intervox_transmitter.scala 370:67]
-                  node _BFR_io_dataIn_T_1 = tail(_BFR_io_dataIn_T, 1) @[intervox_transmitter.scala 370:67]
-                  node _BFR_io_dataIn_T_2 = dshl(UInt<1>("h0"), _BFR_io_dataIn_T_1) @[intervox_transmitter.scala 370:58]
-                  node _BFR_io_dataIn_T_3 = add(BFR.io.dataOut, _BFR_io_dataIn_T_2) @[intervox_transmitter.scala 370:51]
-                  node _BFR_io_dataIn_T_4 = tail(_BFR_io_dataIn_T_3, 1) @[intervox_transmitter.scala 370:51]
-                  BFR.io.dataIn <= _BFR_io_dataIn_T_4 @[intervox_transmitter.scala 370:33]
-                node _T_13 = eq(io.SDATA_IN, UInt<1>("h1")) @[intervox_transmitter.scala 373:30]
-                when _T_13 : @[intervox_transmitter.scala 373:38]
-                  node _BFR_io_dataIn_T_5 = sub(UInt<7>("h47"), bitCntr) @[intervox_transmitter.scala 374:68]
-                  node _BFR_io_dataIn_T_6 = tail(_BFR_io_dataIn_T_5, 1) @[intervox_transmitter.scala 374:68]
-                  node _BFR_io_dataIn_T_7 = dshl(UInt<1>("h1"), _BFR_io_dataIn_T_6) @[intervox_transmitter.scala 374:58]
-                  node _BFR_io_dataIn_T_8 = add(BFR.io.dataOut, _BFR_io_dataIn_T_7) @[intervox_transmitter.scala 374:51]
-                  node _BFR_io_dataIn_T_9 = tail(_BFR_io_dataIn_T_8, 1) @[intervox_transmitter.scala 374:51]
-                  BFR.io.dataIn <= _BFR_io_dataIn_T_9 @[intervox_transmitter.scala 374:33]
+        node _T_6 = eq(UInt<2>("h2"), currentState) @[intervox_transmitter.scala 319:23]
+        when _T_6 : @[intervox_transmitter.scala 319:23]
+          node _T_7 = eq(synced, UInt<1>("h1")) @[intervox_transmitter.scala 331:19]
+          when _T_7 : @[intervox_transmitter.scala 331:27]
+            biPhaseEncoder.io.ENA <= UInt<1>("h1") @[intervox_transmitter.scala 338:31]
+            node _encoderClk_T = not(encoderClk) @[intervox_transmitter.scala 341:23]
+            encoderClk <= _encoderClk_T @[intervox_transmitter.scala 341:20]
+            node _T_8 = eq(BCLKEDGE.io.RISE, UInt<1>("h1")) @[intervox_transmitter.scala 344:31]
+            when _T_8 : @[intervox_transmitter.scala 344:39]
+              node _bitCntr_T_2 = add(bitCntr, UInt<1>("h1")) @[intervox_transmitter.scala 347:30]
+              node _bitCntr_T_3 = tail(_bitCntr_T_2, 1) @[intervox_transmitter.scala 347:30]
+              bitCntr <= _bitCntr_T_3 @[intervox_transmitter.scala 347:19]
+              node _T_9 = eq(io.SW, UInt<1>("h0")) @[intervox_transmitter.scala 357:22]
+              when _T_9 : @[intervox_transmitter.scala 357:30]
+                node _T_10 = gt(bitCntr, UInt<5>("h1f")) @[intervox_transmitter.scala 359:26]
+                when _T_10 : @[intervox_transmitter.scala 359:33]
+                  BFR.io.write <= UInt<1>("h1") @[intervox_transmitter.scala 362:33]
+                  node _T_11 = eq(io.SDATA_IN, UInt<1>("h0")) @[intervox_transmitter.scala 364:32]
+                  when _T_11 : @[intervox_transmitter.scala 364:40]
+                    node _BFR_io_dataIn_T = sub(bitCntr, UInt<5>("h1f")) @[intervox_transmitter.scala 368:80]
+                    node _BFR_io_dataIn_T_1 = tail(_BFR_io_dataIn_T, 1) @[intervox_transmitter.scala 368:80]
+                    node _BFR_io_dataIn_T_2 = sub(UInt<6>("h27"), _BFR_io_dataIn_T_1) @[intervox_transmitter.scala 368:69]
+                    node _BFR_io_dataIn_T_3 = tail(_BFR_io_dataIn_T_2, 1) @[intervox_transmitter.scala 368:69]
+                    node _BFR_io_dataIn_T_4 = add(_BFR_io_dataIn_T_3, UInt<4>("h9")) @[intervox_transmitter.scala 368:89]
+                    node _BFR_io_dataIn_T_5 = tail(_BFR_io_dataIn_T_4, 1) @[intervox_transmitter.scala 368:89]
+                    node _BFR_io_dataIn_T_6 = dshl(UInt<1>("h0"), _BFR_io_dataIn_T_5) @[intervox_transmitter.scala 368:60]
+                    node _BFR_io_dataIn_T_7 = add(BFR.io.dataOut, _BFR_io_dataIn_T_6) @[intervox_transmitter.scala 368:53]
+                    node _BFR_io_dataIn_T_8 = tail(_BFR_io_dataIn_T_7, 1) @[intervox_transmitter.scala 368:53]
+                    BFR.io.dataIn <= _BFR_io_dataIn_T_8 @[intervox_transmitter.scala 368:35]
+                  node _T_12 = eq(io.SDATA_IN, UInt<1>("h1")) @[intervox_transmitter.scala 370:32]
+                  when _T_12 : @[intervox_transmitter.scala 370:40]
+                    node _BFR_io_dataIn_T_9 = sub(bitCntr, UInt<5>("h1f")) @[intervox_transmitter.scala 371:81]
+                    node _BFR_io_dataIn_T_10 = tail(_BFR_io_dataIn_T_9, 1) @[intervox_transmitter.scala 371:81]
+                    node _BFR_io_dataIn_T_11 = sub(UInt<6>("h27"), _BFR_io_dataIn_T_10) @[intervox_transmitter.scala 371:70]
+                    node _BFR_io_dataIn_T_12 = tail(_BFR_io_dataIn_T_11, 1) @[intervox_transmitter.scala 371:70]
+                    node _BFR_io_dataIn_T_13 = add(_BFR_io_dataIn_T_12, UInt<4>("h9")) @[intervox_transmitter.scala 371:89]
+                    node _BFR_io_dataIn_T_14 = tail(_BFR_io_dataIn_T_13, 1) @[intervox_transmitter.scala 371:89]
+                    node _BFR_io_dataIn_T_15 = dshl(UInt<1>("h1"), _BFR_io_dataIn_T_14) @[intervox_transmitter.scala 371:60]
+                    node _BFR_io_dataIn_T_16 = add(BFR.io.dataOut, _BFR_io_dataIn_T_15) @[intervox_transmitter.scala 371:53]
+                    node _BFR_io_dataIn_T_17 = tail(_BFR_io_dataIn_T_16, 1) @[intervox_transmitter.scala 371:53]
+                    BFR.io.dataIn <= _BFR_io_dataIn_T_17 @[intervox_transmitter.scala 371:35]
+                else :
+                  BFR.io.write <= UInt<1>("h1") @[intervox_transmitter.scala 375:33]
+                  node _T_13 = eq(io.SDATA_IN, UInt<1>("h0")) @[intervox_transmitter.scala 377:32]
+                  when _T_13 : @[intervox_transmitter.scala 377:41]
+                    node _BFR_io_dataIn_T_18 = sub(UInt<6>("h3f"), bitCntr) @[intervox_transmitter.scala 380:69]
+                    node _BFR_io_dataIn_T_19 = tail(_BFR_io_dataIn_T_18, 1) @[intervox_transmitter.scala 380:69]
+                    node _BFR_io_dataIn_T_20 = add(_BFR_io_dataIn_T_19, UInt<4>("h9")) @[intervox_transmitter.scala 380:81]
+                    node _BFR_io_dataIn_T_21 = tail(_BFR_io_dataIn_T_20, 1) @[intervox_transmitter.scala 380:81]
+                    node _BFR_io_dataIn_T_22 = dshl(UInt<1>("h0"), _BFR_io_dataIn_T_21) @[intervox_transmitter.scala 380:60]
+                    node _BFR_io_dataIn_T_23 = add(BFR.io.dataOut, _BFR_io_dataIn_T_22) @[intervox_transmitter.scala 380:53]
+                    node _BFR_io_dataIn_T_24 = tail(_BFR_io_dataIn_T_23, 1) @[intervox_transmitter.scala 380:53]
+                    BFR.io.dataIn <= _BFR_io_dataIn_T_24 @[intervox_transmitter.scala 380:35]
+                  node _T_14 = eq(io.SDATA_IN, UInt<1>("h1")) @[intervox_transmitter.scala 382:32]
+                  when _T_14 : @[intervox_transmitter.scala 382:40]
+                    node _BFR_io_dataIn_T_25 = sub(UInt<6>("h3f"), bitCntr) @[intervox_transmitter.scala 383:69]
+                    node _BFR_io_dataIn_T_26 = tail(_BFR_io_dataIn_T_25, 1) @[intervox_transmitter.scala 383:69]
+                    node _BFR_io_dataIn_T_27 = add(_BFR_io_dataIn_T_26, UInt<4>("h9")) @[intervox_transmitter.scala 383:81]
+                    node _BFR_io_dataIn_T_28 = tail(_BFR_io_dataIn_T_27, 1) @[intervox_transmitter.scala 383:81]
+                    node _BFR_io_dataIn_T_29 = dshl(UInt<1>("h1"), _BFR_io_dataIn_T_28) @[intervox_transmitter.scala 383:60]
+                    node _BFR_io_dataIn_T_30 = add(BFR.io.dataOut, _BFR_io_dataIn_T_29) @[intervox_transmitter.scala 383:53]
+                    node _BFR_io_dataIn_T_31 = tail(_BFR_io_dataIn_T_30, 1) @[intervox_transmitter.scala 383:53]
+                    BFR.io.dataIn <= _BFR_io_dataIn_T_31 @[intervox_transmitter.scala 383:35]
               else :
-                BFR.io.write <= UInt<1>("h1") @[intervox_transmitter.scala 380:31]
-                node _T_14 = eq(io.SDATA_IN, UInt<1>("h0")) @[intervox_transmitter.scala 382:30]
-                when _T_14 : @[intervox_transmitter.scala 382:39]
-                  node _BFR_io_dataIn_T_10 = sub(UInt<6>("h3f"), bitCntr) @[intervox_transmitter.scala 384:67]
-                  node _BFR_io_dataIn_T_11 = tail(_BFR_io_dataIn_T_10, 1) @[intervox_transmitter.scala 384:67]
-                  node _BFR_io_dataIn_T_12 = dshl(UInt<1>("h0"), _BFR_io_dataIn_T_11) @[intervox_transmitter.scala 384:58]
-                  node _BFR_io_dataIn_T_13 = add(BFR.io.dataOut, _BFR_io_dataIn_T_12) @[intervox_transmitter.scala 384:51]
-                  node _BFR_io_dataIn_T_14 = tail(_BFR_io_dataIn_T_13, 1) @[intervox_transmitter.scala 384:51]
-                  BFR.io.dataIn <= _BFR_io_dataIn_T_14 @[intervox_transmitter.scala 384:33]
-                node _T_15 = eq(io.SDATA_IN, UInt<1>("h1")) @[intervox_transmitter.scala 387:30]
-                when _T_15 : @[intervox_transmitter.scala 387:38]
-                  node _BFR_io_dataIn_T_15 = sub(UInt<6>("h3f"), bitCntr) @[intervox_transmitter.scala 388:67]
-                  node _BFR_io_dataIn_T_16 = tail(_BFR_io_dataIn_T_15, 1) @[intervox_transmitter.scala 388:67]
-                  node _BFR_io_dataIn_T_17 = dshl(UInt<1>("h1"), _BFR_io_dataIn_T_16) @[intervox_transmitter.scala 388:58]
-                  node _BFR_io_dataIn_T_18 = add(BFR.io.dataOut, _BFR_io_dataIn_T_17) @[intervox_transmitter.scala 388:51]
-                  node _BFR_io_dataIn_T_19 = tail(_BFR_io_dataIn_T_18, 1) @[intervox_transmitter.scala 388:51]
-                  BFR.io.dataIn <= _BFR_io_dataIn_T_19 @[intervox_transmitter.scala 388:33]
-              node _T_16 = eq(bitCntr, UInt<6>("h3f")) @[intervox_transmitter.scala 392:24]
-              when _T_16 : @[intervox_transmitter.scala 392:33]
-                BFR.io.write <= UInt<1>("h0") @[intervox_transmitter.scala 395:31]
-                BFR1.io.write <= UInt<1>("h1") @[intervox_transmitter.scala 396:31]
-                BFR1.io.dataIn <= BFR.io.dataOut @[intervox_transmitter.scala 397:31]
-                BFR.io.write <= UInt<1>("h1") @[intervox_transmitter.scala 400:28]
-                BFR.io.dataIn <= UInt<1>("h0") @[intervox_transmitter.scala 401:28]
-                bitCntr <= UInt<1>("h0") @[intervox_transmitter.scala 403:21]
+                BFR.io.write <= UInt<1>("h1") @[intervox_transmitter.scala 389:27]
+                node _BFR_io_dataIn_T_32 = add(UInt<6>("h3f"), UInt<4>("h9")) @[intervox_transmitter.scala 392:46]
+                node _BFR_io_dataIn_T_33 = tail(_BFR_io_dataIn_T_32, 1) @[intervox_transmitter.scala 392:46]
+                node _BFR_io_dataIn_T_34 = dshl(io.SW, _BFR_io_dataIn_T_33) @[intervox_transmitter.scala 392:37]
+                node _BFR_io_dataIn_T_35 = add(UInt<6>("h27"), UInt<4>("h9")) @[intervox_transmitter.scala 392:72]
+                node _BFR_io_dataIn_T_36 = tail(_BFR_io_dataIn_T_35, 1) @[intervox_transmitter.scala 392:72]
+                node _BFR_io_dataIn_T_37 = dshl(io.SW, _BFR_io_dataIn_T_36) @[intervox_transmitter.scala 392:63]
+                node _BFR_io_dataIn_T_38 = add(_BFR_io_dataIn_T_34, _BFR_io_dataIn_T_37) @[intervox_transmitter.scala 392:54]
+                node _BFR_io_dataIn_T_39 = tail(_BFR_io_dataIn_T_38, 1) @[intervox_transmitter.scala 392:54]
+                BFR.io.dataIn <= _BFR_io_dataIn_T_39 @[intervox_transmitter.scala 392:27]
+              node _T_15 = eq(bitCntr, UInt<6>("h3f")) @[intervox_transmitter.scala 395:24]
+              when _T_15 : @[intervox_transmitter.scala 395:33]
+                BFR.io.write <= UInt<1>("h0") @[intervox_transmitter.scala 398:31]
+                BFR1.io.write <= UInt<1>("h1") @[intervox_transmitter.scala 399:31]
+                BFR1.io.dataIn <= BFR.io.dataOut @[intervox_transmitter.scala 400:31]
+                BFR.io.write <= UInt<1>("h1") @[intervox_transmitter.scala 403:28]
+                BFR.io.dataIn <= UInt<1>("h0") @[intervox_transmitter.scala 404:28]
+                node _leds_T = dshr(BFR1.io.dataOut, UInt<6>("h30")) @[intervox_transmitter.scala 408:38]
+                node _leds_T_1 = and(_leds_T, UInt<16>("hffff")) @[intervox_transmitter.scala 408:47]
+                leds <= _leds_T_1 @[intervox_transmitter.scala 408:18]
+                bitCntr <= UInt<1>("h0") @[intervox_transmitter.scala 410:21]
 
