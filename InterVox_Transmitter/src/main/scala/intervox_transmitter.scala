@@ -228,12 +228,6 @@ class interVox_Encoder(width: UInt) extends Module {
   // Synchronisation register. Ensure that we start switching on rising LRCLK
   val syncing           = RegInit(0.U(1.W))    
   val synced            = RegInit(0.U(1.W))
-  
-
-
-  val clkCntr1           = RegInit(0.U(4.W))
-  val fuckyou            = RegInit(0.U(1.W))
-
 
   // Flip reg. for creating the bi-phase encoder clock
   val bclkR             = RegInit(1.U(1.W))      
@@ -402,29 +396,6 @@ class interVox_Encoder(width: UInt) extends Module {
 
             bitCntr := 0.U
           } 
-
-          // when((bitCntr === 63.U)){
-          //   // Allows for one sample delay between input and interVox output.
-          //   // Dump BFR 0 into BFR 1
-          //   BFR.io.write      := 0.U
-          //   BFR1.io.write     := 1.U
-
-          //   fuckyou := ~fuckyou
-
-          //   when(fuckyou === 1.U){
-          //     BFR1.io.dataIn    := (65535.U << 48.U)
-          //   }.otherwise{
-          //     BFR1.io.dataIn    := (65534.U << 48.U)
-          //   }
-            
-          //   //BFR.io.dataOut
-
-          //   // Clear buffer
-          //   BFR.io.write   := 1.U
-          //   BFR.io.dataIn  := 0.U
-
-          //   bitCntr := 0.U
-          // }  
         }
       }        
     }

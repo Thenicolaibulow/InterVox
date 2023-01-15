@@ -64,6 +64,26 @@ class edgeDetector() extends Module {
   io.RISE   := rising
 }
 
+class RWSmem extends Module {
+  val io = IO(new Bundle {
+    val enable    = Input(Bool())
+    val write     = Input(Bool())
+    val addr      = Input(UInt(1.W))
+    val dataIn    = Input(UInt(64.W))
+    val dataOut   = Output(UInt(64.W))
+  })
+
+  val mem = SyncReadMem(1, UInt(64.W))
+
+  io.dataOut := DontCare
+  
+  when(io.enable) {
+    val rdwrPort = mem(io.addr)
+    when (io.write) { rdwrPort := io.dataIn }
+      .otherwise    { io.dataOut := rdwrPort }
+  }
+}
+
 class clock_Recovery() extends Module {
     val io = IO(new Bundle{
         val DATA_IN     = Input (UInt(1.W))
@@ -72,7 +92,15 @@ class clock_Recovery() extends Module {
         val DBUG        = Output (UInt(1.W))
         val DBUG1       = Output (UInt(1.W))
         val LEDS        = Output (UInt(16.W))
+        val DATAREG     = Output (UInt(64.W))
     })
+
+    val BFR         = Module(new RWSmem())
+    // Define buffer default behaviour.
+    BFR.io.enable         := 1.U
+    BFR.io.addr           := 1.U
+    BFR.io.write          := 0.U
+    BFR.io.dataIn         := 0.U
 
     val zero :: puls :: one :: Nil = Enum(3)
 
@@ -81,10 +109,12 @@ class clock_Recovery() extends Module {
     val lastOne     = RegInit(15.U(8.W))
     val overSampleCntr= RegInit(0.U(4.W))
     val inBufr      = RegInit(0.U(2.W))
-    val deltaCntr   = RegInit(0.U(8.W))   
+    val deltaCntr   = RegInit(0.U(8.W))
+    val bitCntr     = RegInit(0.U(7.W))
     val clkRec      = RegInit(0.U(1.W))
     val change      = RegInit(0.U(1.W))
     val dataOut     = RegInit(0.U(1.W))
+    val dataReg     = RegInit(0.U(64.W))
     val syncWord    = RegInit(0.U(1.W))
     val zeroFlipped = RegInit(0.U(1.W))
     val syncFlipped = RegInit(0.U(1.W))
@@ -96,29 +126,16 @@ class clock_Recovery() extends Module {
     io.DBUG         := change
     io.DBUG1        := syncWord
     io.LEDS         := lastOne
+    io.DATAREG      := dataReg
 
     deltaCntr    := deltaCntr + 1.U    
 
-    /*
-        EDGE DETECTION
-    */  
-    switch(io.DATA_IN){
-        is(1.U){
-            when(inBufr < 3.U){ // Rising  _/ = inBufr b01 -> b11
-                // When rising, incriment inBufr.. looks like: 00 [Rising] 01
-                inBufr := inBufr + 1.U
-            }
-        }
-        is(0.U){
-            when(inBufr > 0.U){ // Trailing  \_ = inBufr b10 -> b00
-                // When trailing, decrment inBufr.. looks like: 11 [Trailing] 10
-                inBufr := inBufr - 1.U
-            }
-        }        
-    }
-    when((inBufr(0)) ^ (inBufr(1))){    // Difference in input buffer? - Must be change. 
-        change := 1.U
-    }
+    val DATAEDGE             = Module(new edgeDetector())
+        DATAEDGE.io.INPUT   := io.DATA_IN
+        change              := DATAEDGE.io.CHANGE
+
+    val CLKREC_EDGE             = Module(new edgeDetector())
+        CLKREC_EDGE.io.INPUT   := io.DATA_IN
 
     /*
         WHENEVER A CHANGE IS REGISTERED:
@@ -127,16 +144,27 @@ class clock_Recovery() extends Module {
         // Ensure that 'change' will go low, two cycles from now.
         change := RegNext(RegNext(0.U, 0.U(1.W)), 0.U(1.W))
         // FLip the clock recovery register
-        clkRec      := ~clkRec
+        clkRec          := ~clkRec
         // Reset the delta counter (cycles since last change)
-        deltaCntr   := 0.U        
+        deltaCntr       := 0.U        
         // Prepare for clock recovery during the coming zeros, and syncwords:
-        zeroFlipped := 0.U
-        syncFlipped := 0.U
-        syncFlipped1:= 0.U
-        syncWord := 0.U
+        zeroFlipped     := 0.U
+        syncFlipped     := 0.U
+        syncFlipped1    := 0.U
+        when(syncWord === 1.U){
+            syncWord    := 0.U
+            bitCntr     := 0.U
+            dataReg     := BFR.io.dataOut
+            // Clear buffer
+            BFR.io.write   := 1.U
+            BFR.io.dataIn  := 0.U
+        }
     }
     
+    when(CLKREC_EDGE.io.RISE === 1.U){
+        bitCntr := bitCntr + 1.U
+    }
+
     /*
         DETECT A INCOMING 1
     */
@@ -148,6 +176,10 @@ class clock_Recovery() extends Module {
             // or equal to, our expected 1 cycles (lastOne) + 1.U (slack)
             dataOut := 1.U
             
+            // Enable buffer write
+            BFR.io.write      := 1.U                // 64 (Reverse MSB/LSB)
+            BFR.io.dataIn     := BFR.io.dataOut + (1.U << (64.U - bitCntr))
+
             // Bring back lastOne := deltaCntr? ie. Dynamic 1 bit reference.
             //lastOne := deltaCntr
         }
@@ -164,6 +196,9 @@ class clock_Recovery() extends Module {
             // Flip Clock register, only once for this bit.   
             clkRec := ~clkRec
             zeroFlipped := 1.U
+            // Enable buffer write
+            BFR.io.write      := 1.U                // 64 (Reverse MSB/LSB)
+            BFR.io.dataIn     := BFR.io.dataOut + (0.U << (64.U - bitCntr))            
         }
         // Change data output.
         dataOut := 0.U
@@ -196,11 +231,12 @@ class clock_Recovery() extends Module {
             // and the incoming hardcoded 1 bit, in the syncWord / header-bits.
 
             syncWord := 1.U
-
             when(syncFlipped1 === 0.U){
                 // Flip clk once
                 clkRec := ~clkRec
                 syncFlipped1 := 1.U
+                // Reset bit counter, prepare for next incoming package
+                bitCntr := 0.U                
             }
         }
         when((deltaCntr === (lastOne * 4.U)) & (change === 0.U)){ 
@@ -222,7 +258,7 @@ class clock_Recovery() extends Module {
 class i2s_Transmitter() extends Module{
      val io = IO(new Bundle{
         val CLK_IN  = Input (UInt(1.W))
-        val DATA_IN = Input (UInt(1.W))
+        val DATA_IN = Input (UInt(64.W))
         val NEXT    = Input (UInt(1.W))
         val BCLK    = Output(UInt(1.W))
         val LRCLK   = Output(UInt(1.W))
@@ -230,21 +266,27 @@ class i2s_Transmitter() extends Module{
     })
 
     val enable  = RegInit(0.U(1.W))
-    val bitCntr = RegInit(0.U(6.W))
+    val bitCntr = RegInit(0.U(8.W))
     val lrclk   = RegInit(0.U(1.W))
     val bclk    = RegInit(0.U(1.W))
-    val sdata   = RegInit(0.U(1.W))
-
-    io.BCLK     := bclk
-    io.LRCLK    := lrclk
-    io.SDATA    := sdata
+    val sdataO  = RegInit(0.U(1.W))
+    val sdata   = RegInit(0.U(64.W))
+    
+    sdata       := io.DATA_IN
     io.BCLK     := io.CLK_IN
+    io.LRCLK    := lrclk
+    io.SDATA    := sdataO
 
     val BCLKEDGE            = Module(new edgeDetector())
-        BCLKEDGE.io.INPUT     := io.BCLK
+        BCLKEDGE.io.INPUT     := io.CLK_IN
 
     when(io.NEXT === 1.U){
         enable  := 1.U
+        bitCntr := 0.U
+    }
+    // Set LRCLK low on bit 32
+    when(bitCntr >= 63.U){
+        enable := 0.U
         bitCntr := 0.U
     }
 
@@ -260,18 +302,9 @@ class i2s_Transmitter() extends Module{
             // Set LRCLK low on bit 32
             when(bitCntr === 31.U){
                 lrclk := 0.U
-            }
-            // Set LRCLK low on bit 32
-            when(bitCntr === 63.U){
-                enable := 0.U
-                bitCntr := 0.U
             }            
             // Toggle SDATA
-            when(io.DATA_IN === 1.U){
-                sdata := 1.U
-            }.otherwise{
-                sdata := 0.U
-            }
+            sdataO := 1.U & sdata(bitCntr)
         }
     }
 
@@ -296,13 +329,13 @@ class interVox_Reciever() extends Module {
         io.LEDS     := clockRec.io.LEDS
         io.DATA_OUT := clockRec.io.DATA_OUT
         io.CLK_DBUG := 0.U
-        io.CLK_REC  := 0.U
+        io.CLK_REC  := clockRec.io.CLK_OUT
         io.DBUG1    := clockRec.io.DBUG1
         io.DBUG     := clockRec.io.DBUG
 
     val i2sTrans    = Module(new i2s_Transmitter())
         i2sTrans.io.CLK_IN  := clockRec.io.CLK_OUT
-        i2sTrans.io.DATA_IN := clockRec.io.DATA_OUT
+        i2sTrans.io.DATA_IN := clockRec.io.DATAREG
         i2sTrans.io.NEXT    := clockRec.io.DBUG1
         io.BCLK     := i2sTrans.io.BCLK    
         io.SDATA    := i2sTrans.io.SDATA
