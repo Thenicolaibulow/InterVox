@@ -154,15 +154,16 @@ class clock_Recovery() extends Module {
         zeroFlipped     := 0.U
         syncFlipped     := 0.U
         syncFlipped1    := 0.U
-        when(syncWord === 1.U){
-            syncWord    := 0.U
-            bitCntr     := 0.U
-            dataReg     := BFR.io.dataOut
-            // Clear buffer
-            BFR.io.write   := 1.U
-            BFR.io.dataIn  := 0.U
-        }
     }
+
+    when(syncWord === 1.U){
+        syncWord    := 0.U
+        bitCntr     := 0.U
+        dataReg     := BFR.io.dataOut
+        // Clear buffer
+        BFR.io.write   := 1.U
+        BFR.io.dataIn  := 0.U
+    }    
     
     when(CLKREC_EDGE.io.RISE === 1.U){
         bitCntr := bitCntr + 1.U
@@ -171,7 +172,7 @@ class clock_Recovery() extends Module {
     /*
         DETECT A INCOMING 1
     */
-    when((deltaCntr <= (lastOne))){
+    when((deltaCntr <= (lastOne + 2.U))){
         // We always assume the in coming data to be a 1 bit.
         // We are only sure if in incoming bit is infact a 1,
         when(change === 1.U){
@@ -191,7 +192,7 @@ class clock_Recovery() extends Module {
     /*
         DETECT A INCOMING 0
     */
-    when((deltaCntr > (lastOne + 1.U)) & (deltaCntr < ((lastOne * 2.U) + 2.U))){
+    when((deltaCntr > (lastOne + 2.U)) & (deltaCntr < ((lastOne * 2.U)))){
         // If the deltaCounter has surpassed the reference for a 1 bit.
         // Then we must have a zero.
         when(zeroFlipped === 0.U){
@@ -202,20 +203,20 @@ class clock_Recovery() extends Module {
             // Enable buffer write
             BFR.io.write      := 1.U                // 64 (Reverse MSB/LSB)
             BFR.io.dataIn     := BFR.io.dataOut | (0.U << (63.U - (bitCntr + 2.U)))  // 2.U to avoid header bits           
+            // Change data output.
+            dataOut := 0.U
         }
-        // Change data output.
-        dataOut := 0.U
     }
 
     /*
         DETECT A SYNCWORD (header-bits)
-          \ __ __ /\ _ /
+          \ __ __ /\ / ^
     */
     when(change === 0.U){
 
-        when(deltaCntr === ((lastOne * 2.U) + 2.U)){
+        when((deltaCntr >= ((lastOne * 2.U) + 2.U))){
             
-            // \ _|_ __ /\ _ /          , where | is time at which the above is true.
+            // \ _|_ __ /\ / ^           , where | is time at which the above is true.
 
             // If this is true, the deltaCounter has surpassed the reference
             // of an incoming zero. As such it must be a syncword:
@@ -226,9 +227,9 @@ class clock_Recovery() extends Module {
                 syncFlipped := 1.U
             }                    
         }    
-        when(deltaCntr === ((lastOne * 3.U) + 2.U)){ 
+        when((deltaCntr >= ((lastOne * 3.U))) & (change === 1.U)){ 
 
-            // \ __|__ /\ _ /          , where | is time at which the above is true.
+            // \ __|__ /\ / ^          , where | is time at which the above is true.
 
             // One more clock reg flip is necessary inbetweeen syncWord detect,
             // and the incoming hardcoded 1 bit, in the syncWord / header-bits.
@@ -241,20 +242,7 @@ class clock_Recovery() extends Module {
                 // Reset bit counter, prepare for next incoming package
                 bitCntr := 0.U                
             }
-        }
-        when((deltaCntr === (lastOne * 4.U) + 2.U) & (change === 0.U)){ 
-
-            // \ __ __|/\ _ /          , where | is time at which the above is true.
-
-            // One more clock reg flip is necessary inbetweeen syncWord detect,
-            // and the incoming hardcoded 1 bit, in the syncWord / header-bits.
-
-            when(syncFlipped2 === 0.U){
-                // Flip clk once
-                clkRec := ~clkRec
-                syncFlipped2 := 1.U
-            }
-        }        
+        }      
     }
 
     leds    := (BFR.io.dataOut >> 48.U) & (65535.U)
@@ -278,42 +266,45 @@ class i2s_Transmitter() extends Module{
         val SDATA   = Output(UInt(1.W))
     })
 
-    val enable  = RegInit(0.U(1.W))
     val bitCntr = RegInit(0.U(8.W))
     val lrclk   = RegInit(0.U(1.W))
+    val dlay    = RegInit(0.U(1.W))
     val bclk    = RegInit(0.U(1.W))
     val sdataO  = RegInit(0.U(1.W))
     val sdata   = RegInit(0.U(64.W))
     
     sdata       := io.DATA_IN
-    io.BCLK     := io.CLK_IN
+    io.BCLK     := io.CLK_IN 
     io.LRCLK    := lrclk
     io.SDATA    := sdataO
 
     val BCLKEDGE            = Module(new edgeDetector())
-        BCLKEDGE.io.INPUT     := io.CLK_IN
+        BCLKEDGE.io.INPUT       := io.CLK_IN
 
     when(io.NEXT === 1.U){
-        enable  := 1.U
-        bitCntr := 0.U
-    }
-    // Set LRCLK low on bit 32
-    when(bitCntr >= 63.U){
-        enable := 0.U
         bitCntr := 0.U
     }
 
-    when(enable === 1.U){
-        // Count BCLK cycles
-        when(BCLKEDGE.io.RISE === 1.U){
+    when(bitCntr >= 64.U){
+        bitCntr := 0.U
+    }
+
+    // Count BCLK cycles
+    when(BCLKEDGE.io.RISE === 1.U){
+        when(bitCntr === 0.U){
+            lrclk := 1.U
+            dlay := 0.U
+        }
+        dlay := 1.U
+
+        when(dlay === 1.U){
             // Count bits
             bitCntr := bitCntr + 1.U        
             // Set LRCLK high on bit 0
-            when(bitCntr <= 31.U){
-                lrclk := 1.U
+            when((bitCntr <= 31.U)){
                 // Write left channel bits
                 when(bitCntr <= 24.U){
-                    sdataO := 1.U & sdata(63.U - bitCntr)
+                    sdataO := 1.U & sdata(62.U - bitCntr)   // Off by one due to syncWord 1
                 }.otherwise{
                     sdataO := 0.U
                 }                
@@ -323,17 +314,17 @@ class i2s_Transmitter() extends Module{
                 lrclk := 0.U
                 // Write 24 right channel bits
                 when(bitCntr <= 56.U){
-                    sdataO := 1.U & sdata(39.U - (bitCntr - 31.U))
+                    sdataO := 1.U & sdata(38.U - (bitCntr - 31.U)) // Off by one due to syncWord 1
                 }.otherwise{
                     sdataO := 0.U
                 }
-            }            
+            }                        
         }
     }
 
 }
 
-class interVox_Reciever() extends Module {
+class interVox_Receiver() extends Module {
   val io = IO(new Bundle {
     val INTERVOX_IN = Input(UInt(1.W))
     val CLK_REC     = Output (UInt(1.W))
@@ -374,5 +365,5 @@ class interVox_Reciever() extends Module {
 
 object HelloMain extends App {
   println("Hello World, I will now generate the Verilog file!")
-  emitVerilog(new interVox_Reciever())
+  emitVerilog(new interVox_Receiver())
 }
