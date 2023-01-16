@@ -86,13 +86,15 @@ class RWSmem extends Module {
 
 class clock_Recovery() extends Module {
     val io = IO(new Bundle{
-        val DATA_IN     = Input (UInt(1.W))
+        val DATA_IN     = Input  (UInt(1.W))
         val CLK_OUT     = Output (UInt(1.W))
         val DATA_OUT    = Output (UInt(1.W))
         val DBUG        = Output (UInt(1.W))
         val DBUG1       = Output (UInt(1.W))
-        val LEDS        = Output (UInt(16.W))
+        val LED         = Output (UInt(16.W))
+        val SW          = Input  (UInt(16.W))
         val DATAREG     = Output (UInt(64.W))
+        val BTN_C       = Input  (UInt(1.W))        
     })
 
     val BFR         = Module(new RWSmem())
@@ -107,6 +109,7 @@ class clock_Recovery() extends Module {
     val rising      = RegInit(zero)
     val trailing    = RegInit(zero)
     val lastOne     = RegInit(15.U(8.W))
+    val leds        = RegInit(0.U(16.W))
     val overSampleCntr= RegInit(0.U(4.W))
     val inBufr      = RegInit(0.U(2.W))
     val deltaCntr   = RegInit(0.U(8.W))
@@ -125,7 +128,7 @@ class clock_Recovery() extends Module {
     io.DATA_OUT     := dataOut
     io.DBUG         := change
     io.DBUG1        := syncWord
-    io.LEDS         := lastOne
+    io.LED          := leds
     io.DATAREG      := dataReg
 
     deltaCntr    := deltaCntr + 1.U    
@@ -135,7 +138,7 @@ class clock_Recovery() extends Module {
         change              := DATAEDGE.io.CHANGE
 
     val CLKREC_EDGE             = Module(new edgeDetector())
-        CLKREC_EDGE.io.INPUT   := io.DATA_IN
+        CLKREC_EDGE.io.INPUT   := clkRec
 
     /*
         WHENEVER A CHANGE IS REGISTERED:
@@ -168,7 +171,7 @@ class clock_Recovery() extends Module {
     /*
         DETECT A INCOMING 1
     */
-    when((deltaCntr <= (lastOne + 1.U))){
+    when((deltaCntr <= (lastOne))){
         // We always assume the in coming data to be a 1 bit.
         // We are only sure if in incoming bit is infact a 1,
         when(change === 1.U){
@@ -178,7 +181,7 @@ class clock_Recovery() extends Module {
             
             // Enable buffer write
             BFR.io.write      := 1.U                // 64 (Reverse MSB/LSB)
-            BFR.io.dataIn     := BFR.io.dataOut + (1.U << (64.U - bitCntr))
+            BFR.io.dataIn     := BFR.io.dataOut | (1.U << (63.U - bitCntr + 2.U))   // 2.U to avoid header bits
 
             // Bring back lastOne := deltaCntr? ie. Dynamic 1 bit reference.
             //lastOne := deltaCntr
@@ -198,7 +201,7 @@ class clock_Recovery() extends Module {
             zeroFlipped := 1.U
             // Enable buffer write
             BFR.io.write      := 1.U                // 64 (Reverse MSB/LSB)
-            BFR.io.dataIn     := BFR.io.dataOut + (0.U << (64.U - bitCntr))            
+            BFR.io.dataIn     := BFR.io.dataOut | (0.U << (63.U - (bitCntr + 2.U)))  // 2.U to avoid header bits           
         }
         // Change data output.
         dataOut := 0.U
@@ -223,7 +226,7 @@ class clock_Recovery() extends Module {
                 syncFlipped := 1.U
             }                    
         }    
-        when(deltaCntr === ((lastOne * 3.U))){ 
+        when(deltaCntr === ((lastOne * 3.U) + 2.U)){ 
 
             // \ __|__ /\ _ /          , where | is time at which the above is true.
 
@@ -239,7 +242,7 @@ class clock_Recovery() extends Module {
                 bitCntr := 0.U                
             }
         }
-        when((deltaCntr === (lastOne * 4.U)) & (change === 0.U)){ 
+        when((deltaCntr === (lastOne * 4.U) + 2.U) & (change === 0.U)){ 
 
             // \ __ __|/\ _ /          , where | is time at which the above is true.
 
@@ -253,6 +256,16 @@ class clock_Recovery() extends Module {
             }
         }        
     }
+
+    leds    := (BFR.io.dataOut >> 48.U) & (65535.U)
+
+    // Change lastOne reference on the fly with switches.
+    when(io.SW > 0.U){
+        when(io.BTN_C === 1.U){
+            lastOne := io.SW
+            leds    := io.SW
+        }
+    }    
 }
 
 class i2s_Transmitter() extends Module{
@@ -296,15 +309,25 @@ class i2s_Transmitter() extends Module{
             // Count bits
             bitCntr := bitCntr + 1.U        
             // Set LRCLK high on bit 0
-            when(bitCntr === 0.U){
+            when(bitCntr <= 31.U){
                 lrclk := 1.U
+                // Write left channel bits
+                when(bitCntr <= 24.U){
+                    sdataO := 1.U & sdata(63.U - bitCntr)
+                }.otherwise{
+                    sdataO := 0.U
+                }                
             }
             // Set LRCLK low on bit 32
-            when(bitCntr === 31.U){
+            when(bitCntr > 31.U){
                 lrclk := 0.U
+                // Write 24 right channel bits
+                when(bitCntr <= 56.U){
+                    sdataO := 1.U & sdata(39.U - (bitCntr - 31.U))
+                }.otherwise{
+                    sdataO := 0.U
+                }
             }            
-            // Toggle SDATA
-            sdataO := 1.U & sdata(bitCntr)
         }
     }
 
@@ -318,15 +341,22 @@ class interVox_Reciever() extends Module {
     val CLK_DBUG    = Output (UInt(1.W))
     val DBUG        = Output (UInt(1.W))
     val DBUG1       = Output (UInt(1.W))
-    val LEDS        = Output (UInt(16.W))
+    val LED         = Output (UInt(16.W))
+    val SW          = Input  (UInt(16.W))
     val BCLK        = Output (UInt(1.W))
     val LRCLK       = Output (UInt(1.W))
-    val SDATA       = Output (UInt(1.W))    
+    val SDATA       = Output (UInt(1.W))
+    val BTN_C       = Input (UInt(1.W))
+    val BTN_D       = Input (UInt(1.W))
+    val BTN_L       = Input (UInt(1.W))
+    val BTN_R       = Input (UInt(1.W))        
   })
  
     val clockRec    = Module(new clock_Recovery())
         clockRec.io.DATA_IN := io.INTERVOX_IN
-        io.LEDS     := clockRec.io.LEDS
+        clockRec.io.SW      := io.SW
+        clockRec.io.BTN_C   := io.BTN_C
+        io.LED      := clockRec.io.LED
         io.DATA_OUT := clockRec.io.DATA_OUT
         io.CLK_DBUG := 0.U
         io.CLK_REC  := clockRec.io.CLK_OUT

@@ -1,4 +1,10 @@
-[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/InterVox_Transmitter/src/main/scala/intervox_transmitter.scala:323:7: not found: value current_state[0m
-[0m[[0m[31merror[0m] [0m[0m      current_state := stateTransmit[0m
-[0m[[0m[31merror[0m] [0m[0m      ^[0m
-[0m[[0m[31merror[0m] [0m[0mone error found[0m
+[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/InterVox_Transmitter/src/main/scala/intervox_transmitter.scala:154:17: not found: value zeroFlip[0m
+[0m[[0m[31merror[0m] [0m[0m                zeroFlip  := 1.U[0m
+[0m[[0m[31merror[0m] [0m[0m                ^[0m
+[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/InterVox_Transmitter/src/main/scala/intervox_transmitter.scala:155:22: not found: value zeroFlip[0m
+[0m[[0m[31merror[0m] [0m[0m                when(zeroFlip === 1.U){[0m
+[0m[[0m[31merror[0m] [0m[0m                     ^[0m
+[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/InterVox_Transmitter/src/main/scala/intervox_transmitter.scala:156:19: not found: value zeroFlip[0m
+[0m[[0m[31merror[0m] [0m[0m                  zeroFlip := 0.U[0m
+[0m[[0m[31merror[0m] [0m[0m                  ^[0m
+[0m[[0m[31merror[0m] [0m[0mthree errors found[0m

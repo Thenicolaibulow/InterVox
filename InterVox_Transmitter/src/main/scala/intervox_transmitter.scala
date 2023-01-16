@@ -34,27 +34,31 @@ class biPhaseEncoder() extends Module {
     val DSPINPUT      = Input (UInt(64.W))
     val ENA           = Input (UInt(1.W))
     val CLK           = Input (UInt(1.W))
-    val TRIG          =  Input (UInt(1.W))
   })
     val outReg        = RegInit(0.U(1.W))
     val stereoData    = RegInit(0.U(64.W))
     val dspData       = RegInit(0.U(16.W))
     val bitCntr_enc   = RegInit(0.U(8.W))
-    val hasNone       = RegInit(0.U(1.W))
+    val hasOne        = RegInit(0.U(1.W))
+    val zeroFlip      =  RegInit(0.U(8.W))
+    val stillOne      = RegInit(0.U(1.W))
     val dataIndex     = RegInit(0.U(6.W))
+    val ndexR         = RegInit(0.U(1.W))    
+    val enabled       = RegInit(0.U(1.W))    
 
     io.DATA_OUT := outReg
     // Every new frame, dump data into the Audio register. 
     stereoData  := io.AUDIOINPUT
     dspData     := io.DSPINPUT
-    // Flip reg. for creating the "data_index".
-    val ndexR         = RegInit(0.U(1.W))    
+    enabled     := io.ENA
 
-    when(io.ENA === 1.U){
+    // Clocked at BCLK x 2, or MCLK / 2
+    when(io.CLK === 1.U){
 
-      // Clocked at BCLK x 2, or MCLK / 2
-
-      when(io.CLK === 1.U){
+      when(enabled === 1.U){ 
+          
+          // Count positions ie: 'half-bits'
+          bitCntr_enc := bitCntr_enc + 1.U
 
           /* 
               SYNCWORD
@@ -69,9 +73,10 @@ class biPhaseEncoder() extends Module {
           // Bit 3
           when(bitCntr_enc === 4.U){          
             outReg := ~outReg
-            // Reset hasNone for future use.
-            hasNone := 0.U
           }
+          when(bitCntr_enc === 5.U){          
+            outReg := ~outReg
+          }          
 
           
           when((bitCntr_enc > 5.U)){
@@ -89,11 +94,20 @@ class biPhaseEncoder() extends Module {
                 6 7   8 9  10 11 12 13 14 15 16 17 18 19     48 49 50 51 52 53
             */
 
-            when(bitCntr_enc <= 53.U){         
+            /*
+            
+            AUDIO BUFFERING         MSB           LSB MSB            LSB
+            [Buffer = 64 bits] === [63, 62, 61... 39] [38, 37, 36... 14] [13, 12... 0]
+                                      LEFT 24 Bits      Right 24 Bits       Don't care
+            */  
+
+            when(bitCntr_enc < 53.U){         
                 // 64th bit - current bit count
-              when((stereoData(64.U - (dataIndex + 1.U))) === 0.U) {
-                // If buffer bit is zero, then don't change for one cycle
-                hasNone := 1.U
+              when(ndexR === 0.U){
+                when((stereoData(63.U - dataIndex)) === 1.U) {
+                  // If buffer bit is zero, then don't change for one cycle
+                  hasOne := 1.U
+                }
               }
             }
 
@@ -101,46 +115,56 @@ class biPhaseEncoder() extends Module {
               RIGHT 24 bit DATA:
               Bit 28:52
             */
-            when((bitCntr_enc > 53.U) & (bitCntr_enc <= 101.U)){
+            when((bitCntr_enc >= 53.U) & (bitCntr_enc < 101.U)){
               // 64th bit - current bit count - previous 24Bit
-              when((stereoData((64.U - (dataIndex - 23.U)))) === 0.U) {
-                hasNone := 1.U               
+              when(ndexR === 0.U){
+                when((stereoData((39.U - (dataIndex - 24.U)))) === 1.U) {
+                  hasOne := 1.U               
+                }
               }
-              
             } 
 
             /*
               Append DSP data
               Bit 52:64
             */
-            when((bitCntr_enc > 101.U) & (bitCntr_enc <= 127.U)){
-              /*when((dspData((dataIndex - 47.U)))  === 0.U) {
-                hasNone := 1.U
-              }*/
-              hasNone := 1.U
+            when((bitCntr_enc >= 101.U) & (bitCntr_enc <= 127.U)){
+              when(ndexR === 0.U){
+                when((dspData((dataIndex - 48.U)))  === 1.U) {
+                  hasOne := 1.U
+                }
+              }
             } 
 
             /*
               BIPHASE ENCODING
             */
 
-            when(hasNone === 1.U){
+            when(hasOne === 1.U){
               // If a zero is encoded, don't change state.
-              outReg := outReg
-              hasNone := 0.U
+              outReg := ~outReg
+              stillOne := 1.U
+              when(stillOne === 1.U){
+                hasOne := 0.U
+                stillOne := 0.U
+              }
             }
             .otherwise{
               // Otherwise, when a one is encoded, change state every cycle.
-                outReg := ~outReg
+                outReg    := outReg
+                zeroFlip  := 1.U
+                when(zeroFlip === 1.U){
+                  zeroFlip := 0.U
+                  outReg := ~outReg
+                }
+              }
             }
-          }
-          // Count bits
-          bitCntr_enc := bitCntr_enc + 1.U
           
           // Reset bitcounter
           when(bitCntr_enc === 127.U){
             bitCntr_enc := 0.U
             dataIndex := 0.U
+            enabled := 0.U
           }          
       }      
     }
@@ -222,6 +246,10 @@ class interVox_Encoder(width: UInt) extends Module {
     val NXT_FRAME = Output(UInt(1.W))
     val SW        = Input (UInt(16.W))  
     val LED       = Output(UInt(16.W))
+    val BTN_C     = Input (UInt(1.W))
+    val BTN_D     = Input (UInt(1.W))
+    val BTN_L     = Input (UInt(1.W))
+    val BTN_R     = Input (UInt(1.W))
   })
 
   // Define state enum.. case sentitive!
@@ -230,9 +258,13 @@ class interVox_Encoder(width: UInt) extends Module {
   // Synchronisation register. Ensure that we start switching on rising LRCLK
   val syncing           = RegInit(0.U(1.W))    
   val synced            = RegInit(0.U(1.W))
+  val biPhaseEna        = RegInit(0.U(1.W))
 
   // Debug:
   val leds              = RegInit(0.U(16.W))
+  val left              = RegInit(0.U(16.W))
+  val right             = RegInit(0.U(16.W))
+  val dspData           = RegInit(0.U(16.W))
   // Flip reg. for creating the bi-phase encoder clock
   val bclkR             = RegInit(1.U(1.W))      
   // Clock divider register for encoder
@@ -248,7 +280,9 @@ class interVox_Encoder(width: UInt) extends Module {
   val LREDGE            = Module(new edgeDetector())
     LREDGE.io.INPUT     := io.LRCLK_IN
   val BCLKEDGE          = Module(new edgeDetector())
-    BCLKEDGE.io.INPUT   := io.BCLK_IN    
+    BCLKEDGE.io.INPUT   := io.BCLK_IN 
+  val DATAEDGE          = Module(new edgeDetector())
+    DATAEDGE.io.INPUT   := io.SDATA_IN        
 
   // Assign pins. 
   io.DATA_O             := biPhaseEncoder.io.DATA_OUT
@@ -269,15 +303,14 @@ class interVox_Encoder(width: UInt) extends Module {
   BFR1.io.dataIn        := BFR.io.dataOut
 
   // For debugging: output the biPhaseEncoder trigger signal. 
-  io.NXT_FRAME                := biPhaseEncoder.io.TRIG
+  io.NXT_FRAME                  := BCLKEDGE.io.CHANGE
   // Get the bi-phase encoder ready
-  biPhaseEncoder.io.CLK         := encoderClk
-  biPhaseEncoder.io.ENA         := 0.U
-  biPhaseEncoder.io.TRIG        := BCLKEDGE.io.CHANGE
+  biPhaseEncoder.io.CLK         := BCLKEDGE.io.CHANGE//encoderClk
+  biPhaseEncoder.io.ENA         := biPhaseEna
   // Always feed the bi-phase with the delayed repacked data (BFR1)
   biPhaseEncoder.io.AUDIOINPUT  := BFR1.io.dataOut
   // Hardcode DSP data.
-  biPhaseEncoder.io.DSPINPUT    := 0.U
+  biPhaseEncoder.io.DSPINPUT    := dspData
 
   /*
       Functional overview:
@@ -302,7 +335,7 @@ class interVox_Encoder(width: UInt) extends Module {
     when(syncing  === 1.U){
       bitCntr     := bitCntr + 1.U
 
-      when(bitCntr === 125.U){
+      when(LREDGE.io.RISE === 1.U){
         synced    := 1.U
         bitCntr   := 0.U
       }
@@ -328,20 +361,20 @@ class interVox_Encoder(width: UInt) extends Module {
     }
     is(stateTransmit){
       
-      when(synced === 1.U){ 
+      when((synced === 1.U)){  // ..And LRCLK.io.RISE === 1.U?
 
         /*         
             PLAYBACK MODE
         */
-
-        // Initialize BiPhase Encoder
-        biPhaseEncoder.io.ENA := 1.U
         
         // Clock the BiPhase Encoder at MCLK/2, or BCLK x2
         encoderClk := ~encoderClk
 
         // On rising edge of BCLK:
         when(BCLKEDGE.io.RISE === 1.U){
+          
+          // Initialize BiPhase Encoder
+          biPhaseEna  := 1.U          
           
           // Count incoming I2S bits
           bitCntr := bitCntr + 1.U          
@@ -360,27 +393,25 @@ class interVox_Encoder(width: UInt) extends Module {
               
               // Enable buffer write
               BFR.io.write      := 1.U
-
-              when(io.SDATA_IN === 0.U){             
+              when((io.SDATA_IN === 0.U)){             
                 // (63rd position - 24(Left bits)) - (current bit - the 32 left bits)
                 // Truncate the last 8 bits of a 32 bit word (start at position 39, not 31). of the left audio channel data.
                 // Limits the incoming data to 24 bit pr. channel, purposely. 
-                BFR.io.dataIn     := BFR.io.dataOut + (0.U << (39.U - (bitCntr - 31.U)  + 9.U))
+                BFR.io.dataIn     := BFR.io.dataOut | (0.U << (39.U - (bitCntr - 31.U)))
               }
-              when(io.SDATA_IN === 1.U){              
-                BFR.io.dataIn     := BFR.io.dataOut + (1.U << (39.U  - (bitCntr - 31.U) + 9.U))
+              when((io.SDATA_IN === 1.U)){              
+                BFR.io.dataIn     := BFR.io.dataOut | (1.U << (39.U  - (bitCntr - 31.U)))
               }
             }.otherwise{ 
 
               BFR.io.write      := 1.U            
-
-              when(io.SDATA_IN === 0.U) {
+              when((io.SDATA_IN === 0.U)) {
                 // 63 (Most Left position in BFR) - current bit.
                 // Left channel first.
-                BFR.io.dataIn     := BFR.io.dataOut + (0.U << (63.U - (bitCntr) + 9.U))
+                BFR.io.dataIn     := BFR.io.dataOut | (0.U << (63.U - (bitCntr)))
               }
-              when(io.SDATA_IN === 1.U){
-                BFR.io.dataIn     := BFR.io.dataOut + (1.U << (63.U - (bitCntr) + 9.U))
+              when((io.SDATA_IN === 1.U)){
+                BFR.io.dataIn     := BFR.io.dataOut | (1.U  << (63.U - (bitCntr)))
               }          
             }        
 
@@ -389,7 +420,29 @@ class interVox_Encoder(width: UInt) extends Module {
             BFR.io.write  := 1.U
             // Create a sample with custom data, based off the hardware switches on the basys3.
             // Repeat that 16bit uint for both left and right channel 
-            BFR.io.dataIn := (io.SW << (63.U + 9.U)) + (io.SW << (39.U + 9.U))
+
+            // Set switches according to wanted bits, and..
+            when(io.BTN_L === 1.U){
+              // Press the left button for left channel
+              left    := io.SW
+              leds    := left
+            }
+            when(io.BTN_R === 1.U){
+              // Press the right button for right channel
+              right   := io.SW
+              leds    := right
+            }            
+            when(io.BTN_C === 1.U){
+              // Press the center button for controldata
+              dspData := io.SW
+              leds    := dspData
+            }
+            /*
+              AUDIO BUFFERING        16 bit Left   8 bit      16 bit right      8 bit             Dont care
+              [Buffer = 64 bits] === [63:48]      [47:40]       [39:24]        [23:16]          [15, 14... 0]
+                                                                 
+            */
+            BFR.io.dataIn := (left << (48.U)) | (right << (24.U))
           }
  
           when(bitCntr === 63.U){ 
@@ -398,7 +451,7 @@ class interVox_Encoder(width: UInt) extends Module {
             // Dump buffer 0 into buffer 1
             BFR.io.write      := 0.U
             BFR1.io.write     := 1.U
-            BFR1.io.dataIn    := BFR.io.dataOut            
+            BFR1.io.dataIn     := BFR.io.dataOut            
 
             // Clear buffer 0.
             BFR.io.write   := 1.U
@@ -406,7 +459,10 @@ class interVox_Encoder(width: UInt) extends Module {
 
             // Assign leds to the buffer output.
             // We have to do some conversion, for it to show up properly.
-            leds := (BFR1.io.dataOut >> 48.U) & (65535.U)
+            when(io.BTN_D === 1.U){
+              // Press button down to see left channel buffered audio on the leds
+              leds := (BFR1.io.dataOut >> 48.U) & (65535.U)
+            }
 
             bitCntr := 0.U
           }          

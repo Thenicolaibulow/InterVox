@@ -1,19 +1,4 @@
-[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/Intervox_Reciever/src/main/scala/intervox_receiver.scala:168:13: not found: value bitCntr[0m
-[0m[[0m[31merror[0m] [0m[0m            bitCntr     := 0.U[0m
-[0m[[0m[31merror[0m] [0m[0m            ^[0m
-[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/Intervox_Reciever/src/main/scala/intervox_receiver.scala:174:9: not found: value bitCntr[0m
-[0m[[0m[31merror[0m] [0m[0m        bitCntr := bitCntr + 1.U[0m
+[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/Intervox_Reciever/src/main/scala/intervox_receiver.scala:336:9: not found: value clock_Recovery[0m
+[0m[[0m[31merror[0m] [0m[0m        clock_Recovery.io.SW := io.SW[0m
 [0m[[0m[31merror[0m] [0m[0m        ^[0m
-[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/Intervox_Reciever/src/main/scala/intervox_receiver.scala:174:20: not found: value bitCntr[0m
-[0m[[0m[31merror[0m] [0m[0m        bitCntr := bitCntr + 1.U[0m
-[0m[[0m[31merror[0m] [0m[0m                   ^[0m
-[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/Intervox_Reciever/src/main/scala/intervox_receiver.scala:190:67: not found: value bitCntr[0m
-[0m[[0m[31merror[0m] [0m[0m            BFR.io.dataIn     := BFR.io.dataOut + (1.U << (64.U - bitCntr))[0m
-[0m[[0m[31merror[0m] [0m[0m                                                                  ^[0m
-[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/Intervox_Reciever/src/main/scala/intervox_receiver.scala:210:67: not found: value bitCntr[0m
-[0m[[0m[31merror[0m] [0m[0m            BFR.io.dataIn     := BFR.io.dataOut + (0.U << (64.U - bitCntr))            [0m
-[0m[[0m[31merror[0m] [0m[0m                                                                  ^[0m
-[0m[[0m[31merror[0m] [0m[0m/Users/nixen/Development/fpga/InterVox/Intervox_Reciever/src/main/scala/intervox_receiver.scala:248:17: not found: value bitCntr[0m
-[0m[[0m[31merror[0m] [0m[0m                bitCntr := 0.U                [0m
-[0m[[0m[31merror[0m] [0m[0m                ^[0m
-[0m[[0m[31merror[0m] [0m[0m6 errors found[0m
+[0m[[0m[31merror[0m] [0m[0mone error found[0m

@@ -230,7 +230,10 @@ module clock_Recovery(
   output        io_DATA_OUT,
   output        io_DBUG,
   output        io_DBUG1,
-  output [63:0] io_DATAREG
+  output [15:0] io_LED,
+  input  [15:0] io_SW,
+  output [63:0] io_DATAREG,
+  input         io_BTN_C
 );
 `ifdef RANDOMIZE_REG_INIT
   reg [31:0] _RAND_0;
@@ -238,131 +241,152 @@ module clock_Recovery(
   reg [31:0] _RAND_2;
   reg [31:0] _RAND_3;
   reg [31:0] _RAND_4;
-  reg [63:0] _RAND_5;
+  reg [31:0] _RAND_5;
   reg [31:0] _RAND_6;
-  reg [31:0] _RAND_7;
+  reg [63:0] _RAND_7;
   reg [31:0] _RAND_8;
   reg [31:0] _RAND_9;
   reg [31:0] _RAND_10;
+  reg [31:0] _RAND_11;
+  reg [31:0] _RAND_12;
 `endif // RANDOMIZE_REG_INIT
-  wire  BFR_clock; // @[intervox_receiver.scala 98:29]
-  wire  BFR_io_write; // @[intervox_receiver.scala 98:29]
-  wire [63:0] BFR_io_dataIn; // @[intervox_receiver.scala 98:29]
-  wire [63:0] BFR_io_dataOut; // @[intervox_receiver.scala 98:29]
-  wire  DATAEDGE_clock; // @[intervox_receiver.scala 133:38]
-  wire  DATAEDGE_reset; // @[intervox_receiver.scala 133:38]
-  wire  DATAEDGE_io_INPUT; // @[intervox_receiver.scala 133:38]
-  wire  DATAEDGE_io_RISE; // @[intervox_receiver.scala 133:38]
-  wire  DATAEDGE_io_CHANGE; // @[intervox_receiver.scala 133:38]
-  wire  CLKREC_EDGE_clock; // @[intervox_receiver.scala 137:41]
-  wire  CLKREC_EDGE_reset; // @[intervox_receiver.scala 137:41]
-  wire  CLKREC_EDGE_io_INPUT; // @[intervox_receiver.scala 137:41]
-  wire  CLKREC_EDGE_io_RISE; // @[intervox_receiver.scala 137:41]
-  wire  CLKREC_EDGE_io_CHANGE; // @[intervox_receiver.scala 137:41]
-  reg [7:0] deltaCntr; // @[intervox_receiver.scala 112:30]
-  reg [6:0] bitCntr; // @[intervox_receiver.scala 113:30]
-  reg  clkRec; // @[intervox_receiver.scala 114:30]
-  reg  change; // @[intervox_receiver.scala 115:30]
-  reg  dataOut; // @[intervox_receiver.scala 116:30]
-  reg [63:0] dataReg; // @[intervox_receiver.scala 117:30]
-  reg  syncWord; // @[intervox_receiver.scala 118:30]
-  reg  zeroFlipped; // @[intervox_receiver.scala 119:30]
-  reg  syncFlipped; // @[intervox_receiver.scala 120:30]
-  reg  syncFlipped1; // @[intervox_receiver.scala 121:30]
-  reg  syncFlipped2; // @[intervox_receiver.scala 122:30]
-  wire [7:0] _deltaCntr_T_1 = deltaCntr + 8'h1; // @[intervox_receiver.scala 131:31]
-  wire  _clkRec_T = ~clkRec; // @[intervox_receiver.scala 147:28]
-  wire  _GEN_0 = syncWord ? 1'h0 : syncWord; // @[intervox_receiver.scala 154:31 155:25 118:30]
-  wire [6:0] _GEN_1 = syncWord ? 7'h0 : bitCntr; // @[intervox_receiver.scala 154:31 156:25 113:30]
-  wire  _GEN_6 = change ? ~clkRec : clkRec; // @[intervox_receiver.scala 143:25 147:25 114:30]
-  wire  _GEN_8 = change ? 1'h0 : zeroFlipped; // @[intervox_receiver.scala 143:25 151:25 119:30]
-  wire  _GEN_9 = change ? 1'h0 : syncFlipped; // @[intervox_receiver.scala 143:25 152:25 120:30]
-  wire  _GEN_10 = change ? 1'h0 : syncFlipped1; // @[intervox_receiver.scala 143:25 153:25 121:30]
-  wire  _GEN_11 = change ? _GEN_0 : syncWord; // @[intervox_receiver.scala 143:25 118:30]
-  wire [6:0] _GEN_12 = change ? _GEN_1 : bitCntr; // @[intervox_receiver.scala 143:25 113:30]
-  wire  _GEN_14 = change & syncWord; // @[intervox_receiver.scala 143:25 102:27]
-  wire [6:0] _bitCntr_T_1 = bitCntr + 7'h1; // @[intervox_receiver.scala 165:28]
-  wire [6:0] _GEN_16 = CLKREC_EDGE_io_RISE ? _bitCntr_T_1 : _GEN_12; // @[intervox_receiver.scala 164:38 165:17]
-  wire [6:0] _BFR_io_dataIn_T_1 = 7'h40 - bitCntr; // @[intervox_receiver.scala 181:65]
-  wire [127:0] _BFR_io_dataIn_T_2 = 128'h1 << _BFR_io_dataIn_T_1; // @[intervox_receiver.scala 181:56]
-  wire [127:0] _GEN_53 = {{64'd0}, BFR_io_dataOut}; // @[intervox_receiver.scala 181:49]
-  wire [127:0] _BFR_io_dataIn_T_4 = _GEN_53 + _BFR_io_dataIn_T_2; // @[intervox_receiver.scala 181:49]
-  wire  _GEN_17 = change | dataOut; // @[intervox_receiver.scala 174:29 177:21 116:30]
-  wire  _GEN_18 = change | _GEN_14; // @[intervox_receiver.scala 174:29 180:31]
-  wire [127:0] _GEN_19 = change ? _BFR_io_dataIn_T_4 : 128'h0; // @[intervox_receiver.scala 174:29 181:31]
-  wire  _GEN_21 = deltaCntr <= 8'h10 ? _GEN_18 : _GEN_14; // @[intervox_receiver.scala 171:41]
-  wire [127:0] _GEN_22 = deltaCntr <= 8'h10 ? _GEN_19 : 128'h0; // @[intervox_receiver.scala 171:41]
-  wire [9:0] _T_10 = 8'hf * 2'h2; // @[intervox_receiver.scala 191:65]
-  wire [9:0] _T_12 = _T_10 + 10'h2; // @[intervox_receiver.scala 191:72]
-  wire [9:0] _GEN_54 = {{2'd0}, deltaCntr}; // @[intervox_receiver.scala 191:53]
-  wire [127:0] _BFR_io_dataIn_T_7 = 128'h0 << _BFR_io_dataIn_T_1; // @[intervox_receiver.scala 201:56]
-  wire [127:0] _BFR_io_dataIn_T_9 = _GEN_53 + _BFR_io_dataIn_T_7; // @[intervox_receiver.scala 201:49]
-  wire  _GEN_23 = ~zeroFlipped ? _clkRec_T : _GEN_6; // @[intervox_receiver.scala 194:34 197:20]
-  wire  _GEN_24 = ~zeroFlipped | _GEN_8; // @[intervox_receiver.scala 194:34 198:25]
-  wire  _GEN_25 = ~zeroFlipped | _GEN_21; // @[intervox_receiver.scala 194:34 200:31]
-  wire [127:0] _GEN_26 = ~zeroFlipped ? _BFR_io_dataIn_T_9 : _GEN_22; // @[intervox_receiver.scala 194:34 201:31]
-  wire  _GEN_27 = deltaCntr > 8'h10 & _GEN_54 < _T_12 ? _GEN_23 : _GEN_6; // @[intervox_receiver.scala 191:80]
-  wire [127:0] _GEN_30 = deltaCntr > 8'h10 & _GEN_54 < _T_12 ? _GEN_26 : _GEN_22; // @[intervox_receiver.scala 191:80]
-  wire  _T_16 = ~change; // @[intervox_receiver.scala 211:17]
-  wire  _GEN_32 = ~syncFlipped ? _clkRec_T : _GEN_27; // @[intervox_receiver.scala 220:38 222:24]
-  wire  _GEN_33 = ~syncFlipped | _GEN_9; // @[intervox_receiver.scala 220:38 223:29]
-  wire  _GEN_34 = _GEN_54 == _T_12 ? _GEN_32 : _GEN_27; // @[intervox_receiver.scala 213:52]
-  wire [9:0] _T_22 = 8'hf * 2'h3; // @[intervox_receiver.scala 226:38]
-  wire  _GEN_36 = ~syncFlipped1 ? _clkRec_T : _GEN_34; // @[intervox_receiver.scala 234:39 236:24]
-  wire  _GEN_37 = ~syncFlipped1 | _GEN_10; // @[intervox_receiver.scala 234:39 237:30]
-  wire  _GEN_39 = _GEN_54 == _T_22 | _GEN_11; // @[intervox_receiver.scala 226:46 233:22]
-  wire  _GEN_40 = _GEN_54 == _T_22 ? _GEN_36 : _GEN_34; // @[intervox_receiver.scala 226:46]
-  wire [10:0] _T_25 = 8'hf * 3'h4; // @[intervox_receiver.scala 242:38]
-  wire [10:0] _GEN_58 = {{3'd0}, deltaCntr}; // @[intervox_receiver.scala 242:25]
-  wire  _GEN_44 = ~syncFlipped2 | syncFlipped2; // @[intervox_receiver.scala 122:30 249:39 252:30]
-  RWSmem BFR ( // @[intervox_receiver.scala 98:29]
+  wire  BFR_clock; // @[intervox_receiver.scala 100:29]
+  wire  BFR_io_write; // @[intervox_receiver.scala 100:29]
+  wire [63:0] BFR_io_dataIn; // @[intervox_receiver.scala 100:29]
+  wire [63:0] BFR_io_dataOut; // @[intervox_receiver.scala 100:29]
+  wire  DATAEDGE_clock; // @[intervox_receiver.scala 136:38]
+  wire  DATAEDGE_reset; // @[intervox_receiver.scala 136:38]
+  wire  DATAEDGE_io_INPUT; // @[intervox_receiver.scala 136:38]
+  wire  DATAEDGE_io_RISE; // @[intervox_receiver.scala 136:38]
+  wire  DATAEDGE_io_CHANGE; // @[intervox_receiver.scala 136:38]
+  wire  CLKREC_EDGE_clock; // @[intervox_receiver.scala 140:41]
+  wire  CLKREC_EDGE_reset; // @[intervox_receiver.scala 140:41]
+  wire  CLKREC_EDGE_io_INPUT; // @[intervox_receiver.scala 140:41]
+  wire  CLKREC_EDGE_io_RISE; // @[intervox_receiver.scala 140:41]
+  wire  CLKREC_EDGE_io_CHANGE; // @[intervox_receiver.scala 140:41]
+  reg [7:0] lastOne; // @[intervox_receiver.scala 111:30]
+  reg [15:0] leds; // @[intervox_receiver.scala 112:30]
+  reg [7:0] deltaCntr; // @[intervox_receiver.scala 115:30]
+  reg [6:0] bitCntr; // @[intervox_receiver.scala 116:30]
+  reg  clkRec; // @[intervox_receiver.scala 117:30]
+  reg  change; // @[intervox_receiver.scala 118:30]
+  reg  dataOut; // @[intervox_receiver.scala 119:30]
+  reg [63:0] dataReg; // @[intervox_receiver.scala 120:30]
+  reg  syncWord; // @[intervox_receiver.scala 121:30]
+  reg  zeroFlipped; // @[intervox_receiver.scala 122:30]
+  reg  syncFlipped; // @[intervox_receiver.scala 123:30]
+  reg  syncFlipped1; // @[intervox_receiver.scala 124:30]
+  reg  syncFlipped2; // @[intervox_receiver.scala 125:30]
+  wire [7:0] _deltaCntr_T_1 = deltaCntr + 8'h1; // @[intervox_receiver.scala 134:31]
+  wire  _clkRec_T = ~clkRec; // @[intervox_receiver.scala 150:28]
+  wire  _GEN_0 = syncWord ? 1'h0 : syncWord; // @[intervox_receiver.scala 157:31 158:25 121:30]
+  wire [6:0] _GEN_1 = syncWord ? 7'h0 : bitCntr; // @[intervox_receiver.scala 157:31 159:25 116:30]
+  wire  _GEN_6 = change ? ~clkRec : clkRec; // @[intervox_receiver.scala 146:25 150:25 117:30]
+  wire  _GEN_8 = change ? 1'h0 : zeroFlipped; // @[intervox_receiver.scala 146:25 154:25 122:30]
+  wire  _GEN_9 = change ? 1'h0 : syncFlipped; // @[intervox_receiver.scala 146:25 155:25 123:30]
+  wire  _GEN_10 = change ? 1'h0 : syncFlipped1; // @[intervox_receiver.scala 146:25 156:25 124:30]
+  wire  _GEN_11 = change ? _GEN_0 : syncWord; // @[intervox_receiver.scala 146:25 121:30]
+  wire [6:0] _GEN_12 = change ? _GEN_1 : bitCntr; // @[intervox_receiver.scala 146:25 116:30]
+  wire  _GEN_14 = change & syncWord; // @[intervox_receiver.scala 146:25 104:27]
+  wire [6:0] _bitCntr_T_1 = bitCntr + 7'h1; // @[intervox_receiver.scala 168:28]
+  wire [6:0] _GEN_16 = CLKREC_EDGE_io_RISE ? _bitCntr_T_1 : _GEN_12; // @[intervox_receiver.scala 167:38 168:17]
+  wire [6:0] _BFR_io_dataIn_T_1 = 7'h3f - bitCntr; // @[intervox_receiver.scala 184:65]
+  wire [6:0] _BFR_io_dataIn_T_3 = _BFR_io_dataIn_T_1 + 7'h2; // @[intervox_receiver.scala 184:75]
+  wire [127:0] _BFR_io_dataIn_T_4 = 128'h1 << _BFR_io_dataIn_T_3; // @[intervox_receiver.scala 184:56]
+  wire [127:0] _GEN_57 = {{64'd0}, BFR_io_dataOut}; // @[intervox_receiver.scala 184:49]
+  wire [127:0] _BFR_io_dataIn_T_5 = _GEN_57 | _BFR_io_dataIn_T_4; // @[intervox_receiver.scala 184:49]
+  wire  _GEN_17 = change | dataOut; // @[intervox_receiver.scala 177:29 180:21 119:30]
+  wire  _GEN_18 = change | _GEN_14; // @[intervox_receiver.scala 177:29 183:31]
+  wire [127:0] _GEN_19 = change ? _BFR_io_dataIn_T_5 : 128'h0; // @[intervox_receiver.scala 177:29 184:31]
+  wire  _GEN_21 = deltaCntr <= lastOne ? _GEN_18 : _GEN_14; // @[intervox_receiver.scala 174:35]
+  wire [127:0] _GEN_22 = deltaCntr <= lastOne ? _GEN_19 : 128'h0; // @[intervox_receiver.scala 174:35]
+  wire [7:0] _T_6 = lastOne + 8'h1; // @[intervox_receiver.scala 194:32]
+  wire [9:0] _T_8 = lastOne * 2'h2; // @[intervox_receiver.scala 194:65]
+  wire [9:0] _T_10 = _T_8 + 10'h2; // @[intervox_receiver.scala 194:72]
+  wire [9:0] _GEN_58 = {{2'd0}, deltaCntr}; // @[intervox_receiver.scala 194:53]
+  wire [6:0] _BFR_io_dataIn_T_7 = bitCntr + 7'h2; // @[intervox_receiver.scala 204:76]
+  wire [6:0] _BFR_io_dataIn_T_9 = 7'h3f - _BFR_io_dataIn_T_7; // @[intervox_receiver.scala 204:65]
+  wire [127:0] _BFR_io_dataIn_T_10 = 128'h0 << _BFR_io_dataIn_T_9; // @[intervox_receiver.scala 204:56]
+  wire [127:0] _BFR_io_dataIn_T_11 = _GEN_57 | _BFR_io_dataIn_T_10; // @[intervox_receiver.scala 204:49]
+  wire  _GEN_23 = ~zeroFlipped ? _clkRec_T : _GEN_6; // @[intervox_receiver.scala 197:34 200:20]
+  wire  _GEN_24 = ~zeroFlipped | _GEN_8; // @[intervox_receiver.scala 197:34 201:25]
+  wire  _GEN_25 = ~zeroFlipped | _GEN_21; // @[intervox_receiver.scala 197:34 203:31]
+  wire [127:0] _GEN_26 = ~zeroFlipped ? _BFR_io_dataIn_T_11 : _GEN_22; // @[intervox_receiver.scala 197:34 204:31]
+  wire  _GEN_27 = deltaCntr > _T_6 & _GEN_58 < _T_10 ? _GEN_23 : _GEN_6; // @[intervox_receiver.scala 194:80]
+  wire [127:0] _GEN_30 = deltaCntr > _T_6 & _GEN_58 < _T_10 ? _GEN_26 : _GEN_22; // @[intervox_receiver.scala 194:80]
+  wire  _T_14 = ~change; // @[intervox_receiver.scala 214:17]
+  wire  _GEN_32 = ~syncFlipped ? _clkRec_T : _GEN_27; // @[intervox_receiver.scala 223:38 225:24]
+  wire  _GEN_33 = ~syncFlipped | _GEN_9; // @[intervox_receiver.scala 223:38 226:29]
+  wire  _GEN_34 = _GEN_58 == _T_10 ? _GEN_32 : _GEN_27; // @[intervox_receiver.scala 216:52]
+  wire [9:0] _T_20 = lastOne * 2'h3; // @[intervox_receiver.scala 229:38]
+  wire [9:0] _T_22 = _T_20 + 10'h2; // @[intervox_receiver.scala 229:45]
+  wire  _GEN_36 = ~syncFlipped1 ? _clkRec_T : _GEN_34; // @[intervox_receiver.scala 237:39 239:24]
+  wire  _GEN_37 = ~syncFlipped1 | _GEN_10; // @[intervox_receiver.scala 237:39 240:30]
+  wire  _GEN_39 = _GEN_58 == _T_22 | _GEN_11; // @[intervox_receiver.scala 229:52 236:22]
+  wire  _GEN_40 = _GEN_58 == _T_22 ? _GEN_36 : _GEN_34; // @[intervox_receiver.scala 229:52]
+  wire [10:0] _T_25 = lastOne * 3'h4; // @[intervox_receiver.scala 245:38]
+  wire [10:0] _T_27 = _T_25 + 11'h2; // @[intervox_receiver.scala 245:45]
+  wire [10:0] _GEN_62 = {{3'd0}, deltaCntr}; // @[intervox_receiver.scala 245:25]
+  wire  _GEN_44 = ~syncFlipped2 | syncFlipped2; // @[intervox_receiver.scala 125:30 252:39 255:30]
+  wire [63:0] _leds_T = {{48'd0}, BFR_io_dataOut[63:48]}; // @[intervox_receiver.scala 260:32]
+  wire [63:0] _leds_T_1 = _leds_T & 64'hffff; // @[intervox_receiver.scala 260:41]
+  wire [15:0] _GEN_53 = io_BTN_C ? io_SW : {{8'd0}, lastOne}; // @[intervox_receiver.scala 264:31 265:21 111:30]
+  wire [63:0] _GEN_54 = io_BTN_C ? {{48'd0}, io_SW} : _leds_T_1; // @[intervox_receiver.scala 260:13 264:31 266:21]
+  wire [15:0] _GEN_55 = io_SW > 16'h0 ? _GEN_53 : {{8'd0}, lastOne}; // @[intervox_receiver.scala 263:22 111:30]
+  wire [63:0] _GEN_56 = io_SW > 16'h0 ? _GEN_54 : _leds_T_1; // @[intervox_receiver.scala 260:13 263:22]
+  wire [15:0] _GEN_64 = reset ? 16'hf : _GEN_55; // @[intervox_receiver.scala 111:{30,30}]
+  wire [63:0] _GEN_65 = reset ? 64'h0 : _GEN_56; // @[intervox_receiver.scala 112:{30,30}]
+  RWSmem BFR ( // @[intervox_receiver.scala 100:29]
     .clock(BFR_clock),
     .io_write(BFR_io_write),
     .io_dataIn(BFR_io_dataIn),
     .io_dataOut(BFR_io_dataOut)
   );
-  edgeDetector DATAEDGE ( // @[intervox_receiver.scala 133:38]
+  edgeDetector DATAEDGE ( // @[intervox_receiver.scala 136:38]
     .clock(DATAEDGE_clock),
     .reset(DATAEDGE_reset),
     .io_INPUT(DATAEDGE_io_INPUT),
     .io_RISE(DATAEDGE_io_RISE),
     .io_CHANGE(DATAEDGE_io_CHANGE)
   );
-  edgeDetector CLKREC_EDGE ( // @[intervox_receiver.scala 137:41]
+  edgeDetector CLKREC_EDGE ( // @[intervox_receiver.scala 140:41]
     .clock(CLKREC_EDGE_clock),
     .reset(CLKREC_EDGE_reset),
     .io_INPUT(CLKREC_EDGE_io_INPUT),
     .io_RISE(CLKREC_EDGE_io_RISE),
     .io_CHANGE(CLKREC_EDGE_io_CHANGE)
   );
-  assign io_CLK_OUT = clkRec; // @[intervox_receiver.scala 124:21]
-  assign io_DATA_OUT = dataOut; // @[intervox_receiver.scala 125:21]
-  assign io_DBUG = change; // @[intervox_receiver.scala 126:21]
-  assign io_DBUG1 = syncWord; // @[intervox_receiver.scala 127:21]
-  assign io_DATAREG = dataReg; // @[intervox_receiver.scala 129:21]
+  assign io_CLK_OUT = clkRec; // @[intervox_receiver.scala 127:21]
+  assign io_DATA_OUT = dataOut; // @[intervox_receiver.scala 128:21]
+  assign io_DBUG = change; // @[intervox_receiver.scala 129:21]
+  assign io_DBUG1 = syncWord; // @[intervox_receiver.scala 130:21]
+  assign io_LED = leds; // @[intervox_receiver.scala 131:21]
+  assign io_DATAREG = dataReg; // @[intervox_receiver.scala 132:21]
   assign BFR_clock = clock;
-  assign BFR_io_write = deltaCntr > 8'h10 & _GEN_54 < _T_12 ? _GEN_25 : _GEN_21; // @[intervox_receiver.scala 191:80]
+  assign BFR_io_write = deltaCntr > _T_6 & _GEN_58 < _T_10 ? _GEN_25 : _GEN_21; // @[intervox_receiver.scala 194:80]
   assign BFR_io_dataIn = _GEN_30[63:0];
   assign DATAEDGE_clock = clock;
   assign DATAEDGE_reset = reset;
-  assign DATAEDGE_io_INPUT = io_DATA_IN; // @[intervox_receiver.scala 134:29]
+  assign DATAEDGE_io_INPUT = io_DATA_IN; // @[intervox_receiver.scala 137:29]
   assign CLKREC_EDGE_clock = clock;
   assign CLKREC_EDGE_reset = reset;
-  assign CLKREC_EDGE_io_INPUT = io_DATA_IN; // @[intervox_receiver.scala 138:32]
+  assign CLKREC_EDGE_io_INPUT = clkRec; // @[intervox_receiver.scala 141:32]
   always @(posedge clock) begin
-    if (reset) begin // @[intervox_receiver.scala 112:30]
-      deltaCntr <= 8'h0; // @[intervox_receiver.scala 112:30]
-    end else if (change) begin // @[intervox_receiver.scala 143:25]
-      deltaCntr <= 8'h0; // @[intervox_receiver.scala 149:25]
+    lastOne <= _GEN_64[7:0]; // @[intervox_receiver.scala 111:{30,30}]
+    leds <= _GEN_65[15:0]; // @[intervox_receiver.scala 112:{30,30}]
+    if (reset) begin // @[intervox_receiver.scala 115:30]
+      deltaCntr <= 8'h0; // @[intervox_receiver.scala 115:30]
+    end else if (change) begin // @[intervox_receiver.scala 146:25]
+      deltaCntr <= 8'h0; // @[intervox_receiver.scala 152:25]
     end else begin
-      deltaCntr <= _deltaCntr_T_1; // @[intervox_receiver.scala 131:18]
+      deltaCntr <= _deltaCntr_T_1; // @[intervox_receiver.scala 134:18]
     end
-    if (reset) begin // @[intervox_receiver.scala 113:30]
-      bitCntr <= 7'h0; // @[intervox_receiver.scala 113:30]
-    end else if (~change) begin // @[intervox_receiver.scala 211:25]
-      if (_GEN_54 == _T_22) begin // @[intervox_receiver.scala 226:46]
-        if (~syncFlipped1) begin // @[intervox_receiver.scala 234:39]
-          bitCntr <= 7'h0; // @[intervox_receiver.scala 239:25]
+    if (reset) begin // @[intervox_receiver.scala 116:30]
+      bitCntr <= 7'h0; // @[intervox_receiver.scala 116:30]
+    end else if (~change) begin // @[intervox_receiver.scala 214:25]
+      if (_GEN_58 == _T_22) begin // @[intervox_receiver.scala 229:52]
+        if (~syncFlipped1) begin // @[intervox_receiver.scala 237:39]
+          bitCntr <= 7'h0; // @[intervox_receiver.scala 242:25]
         end else begin
           bitCntr <= _GEN_16;
         end
@@ -372,68 +396,68 @@ module clock_Recovery(
     end else begin
       bitCntr <= _GEN_16;
     end
-    if (reset) begin // @[intervox_receiver.scala 114:30]
-      clkRec <= 1'h0; // @[intervox_receiver.scala 114:30]
-    end else if (~change) begin // @[intervox_receiver.scala 211:25]
-      if (_GEN_58 == _T_25 & _T_16) begin // @[intervox_receiver.scala 242:65]
-        if (~syncFlipped2) begin // @[intervox_receiver.scala 249:39]
-          clkRec <= _clkRec_T; // @[intervox_receiver.scala 251:24]
+    if (reset) begin // @[intervox_receiver.scala 117:30]
+      clkRec <= 1'h0; // @[intervox_receiver.scala 117:30]
+    end else if (~change) begin // @[intervox_receiver.scala 214:25]
+      if (_GEN_62 == _T_27 & _T_14) begin // @[intervox_receiver.scala 245:71]
+        if (~syncFlipped2) begin // @[intervox_receiver.scala 252:39]
+          clkRec <= _clkRec_T; // @[intervox_receiver.scala 254:24]
         end else begin
           clkRec <= _GEN_40;
         end
       end else begin
         clkRec <= _GEN_40;
       end
-    end else if (deltaCntr > 8'h10 & _GEN_54 < _T_12) begin // @[intervox_receiver.scala 191:80]
-      if (~zeroFlipped) begin // @[intervox_receiver.scala 194:34]
-        clkRec <= _clkRec_T; // @[intervox_receiver.scala 197:20]
+    end else if (deltaCntr > _T_6 & _GEN_58 < _T_10) begin // @[intervox_receiver.scala 194:80]
+      if (~zeroFlipped) begin // @[intervox_receiver.scala 197:34]
+        clkRec <= _clkRec_T; // @[intervox_receiver.scala 200:20]
       end else begin
         clkRec <= _GEN_6;
       end
     end else begin
       clkRec <= _GEN_6;
     end
-    if (reset) begin // @[intervox_receiver.scala 115:30]
-      change <= 1'h0; // @[intervox_receiver.scala 115:30]
-    end else if (change) begin // @[intervox_receiver.scala 143:25]
-      change <= 1'h0; // @[intervox_receiver.scala 145:16]
-    end else begin
-      change <= DATAEDGE_io_CHANGE; // @[intervox_receiver.scala 135:29]
-    end
-    if (reset) begin // @[intervox_receiver.scala 116:30]
-      dataOut <= 1'h0; // @[intervox_receiver.scala 116:30]
-    end else if (deltaCntr > 8'h10 & _GEN_54 < _T_12) begin // @[intervox_receiver.scala 191:80]
-      dataOut <= 1'h0; // @[intervox_receiver.scala 204:17]
-    end else if (deltaCntr <= 8'h10) begin // @[intervox_receiver.scala 171:41]
-      dataOut <= _GEN_17;
-    end
-    if (reset) begin // @[intervox_receiver.scala 117:30]
-      dataReg <= 64'h0; // @[intervox_receiver.scala 117:30]
-    end else if (change) begin // @[intervox_receiver.scala 143:25]
-      if (syncWord) begin // @[intervox_receiver.scala 154:31]
-        dataReg <= BFR_io_dataOut; // @[intervox_receiver.scala 157:25]
-      end
-    end
     if (reset) begin // @[intervox_receiver.scala 118:30]
-      syncWord <= 1'h0; // @[intervox_receiver.scala 118:30]
-    end else if (~change) begin // @[intervox_receiver.scala 211:25]
-      syncWord <= _GEN_39;
-    end else if (change) begin // @[intervox_receiver.scala 143:25]
-      if (syncWord) begin // @[intervox_receiver.scala 154:31]
-        syncWord <= 1'h0; // @[intervox_receiver.scala 155:25]
-      end
+      change <= 1'h0; // @[intervox_receiver.scala 118:30]
+    end else if (change) begin // @[intervox_receiver.scala 146:25]
+      change <= 1'h0; // @[intervox_receiver.scala 148:16]
+    end else begin
+      change <= DATAEDGE_io_CHANGE; // @[intervox_receiver.scala 138:29]
     end
     if (reset) begin // @[intervox_receiver.scala 119:30]
-      zeroFlipped <= 1'h0; // @[intervox_receiver.scala 119:30]
-    end else if (deltaCntr > 8'h10 & _GEN_54 < _T_12) begin // @[intervox_receiver.scala 191:80]
-      zeroFlipped <= _GEN_24;
-    end else if (change) begin // @[intervox_receiver.scala 143:25]
-      zeroFlipped <= 1'h0; // @[intervox_receiver.scala 151:25]
+      dataOut <= 1'h0; // @[intervox_receiver.scala 119:30]
+    end else if (deltaCntr > _T_6 & _GEN_58 < _T_10) begin // @[intervox_receiver.scala 194:80]
+      dataOut <= 1'h0; // @[intervox_receiver.scala 207:17]
+    end else if (deltaCntr <= lastOne) begin // @[intervox_receiver.scala 174:35]
+      dataOut <= _GEN_17;
     end
     if (reset) begin // @[intervox_receiver.scala 120:30]
-      syncFlipped <= 1'h0; // @[intervox_receiver.scala 120:30]
-    end else if (~change) begin // @[intervox_receiver.scala 211:25]
-      if (_GEN_54 == _T_12) begin // @[intervox_receiver.scala 213:52]
+      dataReg <= 64'h0; // @[intervox_receiver.scala 120:30]
+    end else if (change) begin // @[intervox_receiver.scala 146:25]
+      if (syncWord) begin // @[intervox_receiver.scala 157:31]
+        dataReg <= BFR_io_dataOut; // @[intervox_receiver.scala 160:25]
+      end
+    end
+    if (reset) begin // @[intervox_receiver.scala 121:30]
+      syncWord <= 1'h0; // @[intervox_receiver.scala 121:30]
+    end else if (~change) begin // @[intervox_receiver.scala 214:25]
+      syncWord <= _GEN_39;
+    end else if (change) begin // @[intervox_receiver.scala 146:25]
+      if (syncWord) begin // @[intervox_receiver.scala 157:31]
+        syncWord <= 1'h0; // @[intervox_receiver.scala 158:25]
+      end
+    end
+    if (reset) begin // @[intervox_receiver.scala 122:30]
+      zeroFlipped <= 1'h0; // @[intervox_receiver.scala 122:30]
+    end else if (deltaCntr > _T_6 & _GEN_58 < _T_10) begin // @[intervox_receiver.scala 194:80]
+      zeroFlipped <= _GEN_24;
+    end else if (change) begin // @[intervox_receiver.scala 146:25]
+      zeroFlipped <= 1'h0; // @[intervox_receiver.scala 154:25]
+    end
+    if (reset) begin // @[intervox_receiver.scala 123:30]
+      syncFlipped <= 1'h0; // @[intervox_receiver.scala 123:30]
+    end else if (~change) begin // @[intervox_receiver.scala 214:25]
+      if (_GEN_58 == _T_10) begin // @[intervox_receiver.scala 216:52]
         syncFlipped <= _GEN_33;
       end else begin
         syncFlipped <= _GEN_9;
@@ -441,10 +465,10 @@ module clock_Recovery(
     end else begin
       syncFlipped <= _GEN_9;
     end
-    if (reset) begin // @[intervox_receiver.scala 121:30]
-      syncFlipped1 <= 1'h0; // @[intervox_receiver.scala 121:30]
-    end else if (~change) begin // @[intervox_receiver.scala 211:25]
-      if (_GEN_54 == _T_22) begin // @[intervox_receiver.scala 226:46]
+    if (reset) begin // @[intervox_receiver.scala 124:30]
+      syncFlipped1 <= 1'h0; // @[intervox_receiver.scala 124:30]
+    end else if (~change) begin // @[intervox_receiver.scala 214:25]
+      if (_GEN_58 == _T_22) begin // @[intervox_receiver.scala 229:52]
         syncFlipped1 <= _GEN_37;
       end else begin
         syncFlipped1 <= _GEN_10;
@@ -452,10 +476,10 @@ module clock_Recovery(
     end else begin
       syncFlipped1 <= _GEN_10;
     end
-    if (reset) begin // @[intervox_receiver.scala 122:30]
-      syncFlipped2 <= 1'h0; // @[intervox_receiver.scala 122:30]
-    end else if (~change) begin // @[intervox_receiver.scala 211:25]
-      if (_GEN_58 == _T_25 & _T_16) begin // @[intervox_receiver.scala 242:65]
+    if (reset) begin // @[intervox_receiver.scala 125:30]
+      syncFlipped2 <= 1'h0; // @[intervox_receiver.scala 125:30]
+    end else if (~change) begin // @[intervox_receiver.scala 214:25]
+      if (_GEN_62 == _T_27 & _T_14) begin // @[intervox_receiver.scala 245:71]
         syncFlipped2 <= _GEN_44;
       end
     end
@@ -497,27 +521,31 @@ initial begin
     `endif
 `ifdef RANDOMIZE_REG_INIT
   _RAND_0 = {1{`RANDOM}};
-  deltaCntr = _RAND_0[7:0];
+  lastOne = _RAND_0[7:0];
   _RAND_1 = {1{`RANDOM}};
-  bitCntr = _RAND_1[6:0];
+  leds = _RAND_1[15:0];
   _RAND_2 = {1{`RANDOM}};
-  clkRec = _RAND_2[0:0];
+  deltaCntr = _RAND_2[7:0];
   _RAND_3 = {1{`RANDOM}};
-  change = _RAND_3[0:0];
+  bitCntr = _RAND_3[6:0];
   _RAND_4 = {1{`RANDOM}};
-  dataOut = _RAND_4[0:0];
-  _RAND_5 = {2{`RANDOM}};
-  dataReg = _RAND_5[63:0];
+  clkRec = _RAND_4[0:0];
+  _RAND_5 = {1{`RANDOM}};
+  change = _RAND_5[0:0];
   _RAND_6 = {1{`RANDOM}};
-  syncWord = _RAND_6[0:0];
-  _RAND_7 = {1{`RANDOM}};
-  zeroFlipped = _RAND_7[0:0];
+  dataOut = _RAND_6[0:0];
+  _RAND_7 = {2{`RANDOM}};
+  dataReg = _RAND_7[63:0];
   _RAND_8 = {1{`RANDOM}};
-  syncFlipped = _RAND_8[0:0];
+  syncWord = _RAND_8[0:0];
   _RAND_9 = {1{`RANDOM}};
-  syncFlipped1 = _RAND_9[0:0];
+  zeroFlipped = _RAND_9[0:0];
   _RAND_10 = {1{`RANDOM}};
-  syncFlipped2 = _RAND_10[0:0];
+  syncFlipped = _RAND_10[0:0];
+  _RAND_11 = {1{`RANDOM}};
+  syncFlipped1 = _RAND_11[0:0];
+  _RAND_12 = {1{`RANDOM}};
+  syncFlipped2 = _RAND_12[0:0];
 `endif // RANDOMIZE_REG_INIT
   `endif // RANDOMIZE
 end // initial
@@ -543,76 +571,87 @@ module i2s_Transmitter(
   reg [31:0] _RAND_3;
   reg [63:0] _RAND_4;
 `endif // RANDOMIZE_REG_INIT
-  wire  BCLKEDGE_clock; // @[intervox_receiver.scala 280:37]
-  wire  BCLKEDGE_reset; // @[intervox_receiver.scala 280:37]
-  wire  BCLKEDGE_io_INPUT; // @[intervox_receiver.scala 280:37]
-  wire  BCLKEDGE_io_RISE; // @[intervox_receiver.scala 280:37]
-  wire  BCLKEDGE_io_CHANGE; // @[intervox_receiver.scala 280:37]
-  reg  enable; // @[intervox_receiver.scala 268:26]
-  reg [7:0] bitCntr; // @[intervox_receiver.scala 269:26]
-  reg  lrclk; // @[intervox_receiver.scala 270:26]
-  reg  sdataO; // @[intervox_receiver.scala 272:26]
-  reg [63:0] sdata; // @[intervox_receiver.scala 273:26]
-  wire  _GEN_0 = io_NEXT | enable; // @[intervox_receiver.scala 283:26 284:17 268:26]
-  wire [7:0] _GEN_1 = io_NEXT ? 8'h0 : bitCntr; // @[intervox_receiver.scala 283:26 285:17 269:26]
-  wire [7:0] _GEN_3 = bitCntr >= 8'h3f ? 8'h0 : _GEN_1; // @[intervox_receiver.scala 288:26 290:17]
-  wire [7:0] _bitCntr_T_1 = bitCntr + 8'h1; // @[intervox_receiver.scala 297:32]
-  wire  _GEN_4 = bitCntr == 8'h0 | lrclk; // @[intervox_receiver.scala 299:34 300:23 270:26]
-  wire [63:0] _sdataO_T = sdata >> bitCntr; // @[intervox_receiver.scala 307:34]
-  edgeDetector BCLKEDGE ( // @[intervox_receiver.scala 280:37]
+  wire  BCLKEDGE_clock; // @[intervox_receiver.scala 293:37]
+  wire  BCLKEDGE_reset; // @[intervox_receiver.scala 293:37]
+  wire  BCLKEDGE_io_INPUT; // @[intervox_receiver.scala 293:37]
+  wire  BCLKEDGE_io_RISE; // @[intervox_receiver.scala 293:37]
+  wire  BCLKEDGE_io_CHANGE; // @[intervox_receiver.scala 293:37]
+  reg  enable; // @[intervox_receiver.scala 281:26]
+  reg [7:0] bitCntr; // @[intervox_receiver.scala 282:26]
+  reg  lrclk; // @[intervox_receiver.scala 283:26]
+  reg  sdataO; // @[intervox_receiver.scala 285:26]
+  reg [63:0] sdata; // @[intervox_receiver.scala 286:26]
+  wire  _GEN_0 = io_NEXT | enable; // @[intervox_receiver.scala 296:26 297:17 281:26]
+  wire [7:0] _GEN_1 = io_NEXT ? 8'h0 : bitCntr; // @[intervox_receiver.scala 296:26 298:17 282:26]
+  wire [7:0] _GEN_3 = bitCntr >= 8'h3f ? 8'h0 : _GEN_1; // @[intervox_receiver.scala 301:26 303:17]
+  wire [7:0] _bitCntr_T_1 = bitCntr + 8'h1; // @[intervox_receiver.scala 310:32]
+  wire [7:0] _sdataO_T_1 = 8'h3f - bitCntr; // @[intervox_receiver.scala 316:48]
+  wire [63:0] _sdataO_T_2 = sdata >> _sdataO_T_1; // @[intervox_receiver.scala 316:42]
+  wire  _GEN_4 = bitCntr <= 8'h18 & _sdataO_T_2[0]; // @[intervox_receiver.scala 315:38 316:28 318:28]
+  wire  _GEN_5 = bitCntr <= 8'h1f | lrclk; // @[intervox_receiver.scala 312:34 313:23 283:26]
+  wire  _GEN_6 = bitCntr <= 8'h1f ? _GEN_4 : sdataO; // @[intervox_receiver.scala 285:26 312:34]
+  wire [7:0] _sdataO_T_6 = bitCntr - 8'h1f; // @[intervox_receiver.scala 326:59]
+  wire [7:0] _sdataO_T_8 = 8'h27 - _sdataO_T_6; // @[intervox_receiver.scala 326:48]
+  wire [63:0] _sdataO_T_9 = sdata >> _sdataO_T_8; // @[intervox_receiver.scala 326:42]
+  wire  _GEN_7 = bitCntr <= 8'h38 & _sdataO_T_9[0]; // @[intervox_receiver.scala 325:38 326:28 328:28]
+  edgeDetector BCLKEDGE ( // @[intervox_receiver.scala 293:37]
     .clock(BCLKEDGE_clock),
     .reset(BCLKEDGE_reset),
     .io_INPUT(BCLKEDGE_io_INPUT),
     .io_RISE(BCLKEDGE_io_RISE),
     .io_CHANGE(BCLKEDGE_io_CHANGE)
   );
-  assign io_BCLK = io_CLK_IN; // @[intervox_receiver.scala 276:17]
-  assign io_LRCLK = lrclk; // @[intervox_receiver.scala 277:17]
-  assign io_SDATA = sdataO; // @[intervox_receiver.scala 278:17]
+  assign io_BCLK = io_CLK_IN; // @[intervox_receiver.scala 289:17]
+  assign io_LRCLK = lrclk; // @[intervox_receiver.scala 290:17]
+  assign io_SDATA = sdataO; // @[intervox_receiver.scala 291:17]
   assign BCLKEDGE_clock = clock;
   assign BCLKEDGE_reset = reset;
-  assign BCLKEDGE_io_INPUT = io_CLK_IN; // @[intervox_receiver.scala 281:31]
+  assign BCLKEDGE_io_INPUT = io_CLK_IN; // @[intervox_receiver.scala 294:31]
   always @(posedge clock) begin
-    if (reset) begin // @[intervox_receiver.scala 268:26]
-      enable <= 1'h0; // @[intervox_receiver.scala 268:26]
-    end else if (bitCntr >= 8'h3f) begin // @[intervox_receiver.scala 288:26]
-      enable <= 1'h0; // @[intervox_receiver.scala 289:16]
+    if (reset) begin // @[intervox_receiver.scala 281:26]
+      enable <= 1'h0; // @[intervox_receiver.scala 281:26]
+    end else if (bitCntr >= 8'h3f) begin // @[intervox_receiver.scala 301:26]
+      enable <= 1'h0; // @[intervox_receiver.scala 302:16]
     end else begin
       enable <= _GEN_0;
     end
-    if (reset) begin // @[intervox_receiver.scala 269:26]
-      bitCntr <= 8'h0; // @[intervox_receiver.scala 269:26]
-    end else if (enable) begin // @[intervox_receiver.scala 293:25]
-      if (BCLKEDGE_io_RISE) begin // @[intervox_receiver.scala 295:39]
-        bitCntr <= _bitCntr_T_1; // @[intervox_receiver.scala 297:21]
+    if (reset) begin // @[intervox_receiver.scala 282:26]
+      bitCntr <= 8'h0; // @[intervox_receiver.scala 282:26]
+    end else if (enable) begin // @[intervox_receiver.scala 306:25]
+      if (BCLKEDGE_io_RISE) begin // @[intervox_receiver.scala 308:39]
+        bitCntr <= _bitCntr_T_1; // @[intervox_receiver.scala 310:21]
       end else begin
         bitCntr <= _GEN_3;
       end
     end else begin
       bitCntr <= _GEN_3;
     end
-    if (reset) begin // @[intervox_receiver.scala 270:26]
-      lrclk <= 1'h0; // @[intervox_receiver.scala 270:26]
-    end else if (enable) begin // @[intervox_receiver.scala 293:25]
-      if (BCLKEDGE_io_RISE) begin // @[intervox_receiver.scala 295:39]
-        if (bitCntr == 8'h1f) begin // @[intervox_receiver.scala 303:35]
-          lrclk <= 1'h0; // @[intervox_receiver.scala 304:23]
+    if (reset) begin // @[intervox_receiver.scala 283:26]
+      lrclk <= 1'h0; // @[intervox_receiver.scala 283:26]
+    end else if (enable) begin // @[intervox_receiver.scala 306:25]
+      if (BCLKEDGE_io_RISE) begin // @[intervox_receiver.scala 308:39]
+        if (bitCntr > 8'h1f) begin // @[intervox_receiver.scala 322:33]
+          lrclk <= 1'h0; // @[intervox_receiver.scala 323:23]
         end else begin
-          lrclk <= _GEN_4;
+          lrclk <= _GEN_5;
         end
       end
     end
-    if (reset) begin // @[intervox_receiver.scala 272:26]
-      sdataO <= 1'h0; // @[intervox_receiver.scala 272:26]
-    end else if (enable) begin // @[intervox_receiver.scala 293:25]
-      if (BCLKEDGE_io_RISE) begin // @[intervox_receiver.scala 295:39]
-        sdataO <= _sdataO_T[0]; // @[intervox_receiver.scala 307:20]
+    if (reset) begin // @[intervox_receiver.scala 285:26]
+      sdataO <= 1'h0; // @[intervox_receiver.scala 285:26]
+    end else if (enable) begin // @[intervox_receiver.scala 306:25]
+      if (BCLKEDGE_io_RISE) begin // @[intervox_receiver.scala 308:39]
+        if (bitCntr > 8'h1f) begin // @[intervox_receiver.scala 322:33]
+          sdataO <= _GEN_7;
+        end else begin
+          sdataO <= _GEN_6;
+        end
       end
     end
-    if (reset) begin // @[intervox_receiver.scala 273:26]
-      sdata <= 64'h0; // @[intervox_receiver.scala 273:26]
+    if (reset) begin // @[intervox_receiver.scala 286:26]
+      sdata <= 64'h0; // @[intervox_receiver.scala 286:26]
     end else begin
-      sdata <= io_DATA_IN; // @[intervox_receiver.scala 275:17]
+      sdata <= io_DATA_IN; // @[intervox_receiver.scala 288:17]
     end
   end
 // Register and memory initialization
@@ -678,28 +717,36 @@ module interVox_Reciever(
   output        io_CLK_DBUG,
   output        io_DBUG,
   output        io_DBUG1,
-  output [15:0] io_LEDS,
+  output [15:0] io_LED,
+  input  [15:0] io_SW,
   output        io_BCLK,
   output        io_LRCLK,
-  output        io_SDATA
+  output        io_SDATA,
+  input         io_BTN_C,
+  input         io_BTN_D,
+  input         io_BTN_L,
+  input         io_BTN_R
 );
-  wire  clockRec_clock; // @[intervox_receiver.scala 327:29]
-  wire  clockRec_reset; // @[intervox_receiver.scala 327:29]
-  wire  clockRec_io_DATA_IN; // @[intervox_receiver.scala 327:29]
-  wire  clockRec_io_CLK_OUT; // @[intervox_receiver.scala 327:29]
-  wire  clockRec_io_DATA_OUT; // @[intervox_receiver.scala 327:29]
-  wire  clockRec_io_DBUG; // @[intervox_receiver.scala 327:29]
-  wire  clockRec_io_DBUG1; // @[intervox_receiver.scala 327:29]
-  wire [63:0] clockRec_io_DATAREG; // @[intervox_receiver.scala 327:29]
-  wire  i2sTrans_clock; // @[intervox_receiver.scala 336:29]
-  wire  i2sTrans_reset; // @[intervox_receiver.scala 336:29]
-  wire  i2sTrans_io_CLK_IN; // @[intervox_receiver.scala 336:29]
-  wire [63:0] i2sTrans_io_DATA_IN; // @[intervox_receiver.scala 336:29]
-  wire  i2sTrans_io_NEXT; // @[intervox_receiver.scala 336:29]
-  wire  i2sTrans_io_BCLK; // @[intervox_receiver.scala 336:29]
-  wire  i2sTrans_io_LRCLK; // @[intervox_receiver.scala 336:29]
-  wire  i2sTrans_io_SDATA; // @[intervox_receiver.scala 336:29]
-  clock_Recovery clockRec ( // @[intervox_receiver.scala 327:29]
+  wire  clockRec_clock; // @[intervox_receiver.scala 355:29]
+  wire  clockRec_reset; // @[intervox_receiver.scala 355:29]
+  wire  clockRec_io_DATA_IN; // @[intervox_receiver.scala 355:29]
+  wire  clockRec_io_CLK_OUT; // @[intervox_receiver.scala 355:29]
+  wire  clockRec_io_DATA_OUT; // @[intervox_receiver.scala 355:29]
+  wire  clockRec_io_DBUG; // @[intervox_receiver.scala 355:29]
+  wire  clockRec_io_DBUG1; // @[intervox_receiver.scala 355:29]
+  wire [15:0] clockRec_io_LED; // @[intervox_receiver.scala 355:29]
+  wire [15:0] clockRec_io_SW; // @[intervox_receiver.scala 355:29]
+  wire [63:0] clockRec_io_DATAREG; // @[intervox_receiver.scala 355:29]
+  wire  clockRec_io_BTN_C; // @[intervox_receiver.scala 355:29]
+  wire  i2sTrans_clock; // @[intervox_receiver.scala 366:29]
+  wire  i2sTrans_reset; // @[intervox_receiver.scala 366:29]
+  wire  i2sTrans_io_CLK_IN; // @[intervox_receiver.scala 366:29]
+  wire [63:0] i2sTrans_io_DATA_IN; // @[intervox_receiver.scala 366:29]
+  wire  i2sTrans_io_NEXT; // @[intervox_receiver.scala 366:29]
+  wire  i2sTrans_io_BCLK; // @[intervox_receiver.scala 366:29]
+  wire  i2sTrans_io_LRCLK; // @[intervox_receiver.scala 366:29]
+  wire  i2sTrans_io_SDATA; // @[intervox_receiver.scala 366:29]
+  clock_Recovery clockRec ( // @[intervox_receiver.scala 355:29]
     .clock(clockRec_clock),
     .reset(clockRec_reset),
     .io_DATA_IN(clockRec_io_DATA_IN),
@@ -707,9 +754,12 @@ module interVox_Reciever(
     .io_DATA_OUT(clockRec_io_DATA_OUT),
     .io_DBUG(clockRec_io_DBUG),
     .io_DBUG1(clockRec_io_DBUG1),
-    .io_DATAREG(clockRec_io_DATAREG)
+    .io_LED(clockRec_io_LED),
+    .io_SW(clockRec_io_SW),
+    .io_DATAREG(clockRec_io_DATAREG),
+    .io_BTN_C(clockRec_io_BTN_C)
   );
-  i2s_Transmitter i2sTrans ( // @[intervox_receiver.scala 336:29]
+  i2s_Transmitter i2sTrans ( // @[intervox_receiver.scala 366:29]
     .clock(i2sTrans_clock),
     .reset(i2sTrans_reset),
     .io_CLK_IN(i2sTrans_io_CLK_IN),
@@ -719,21 +769,23 @@ module interVox_Reciever(
     .io_LRCLK(i2sTrans_io_LRCLK),
     .io_SDATA(i2sTrans_io_SDATA)
   );
-  assign io_CLK_REC = clockRec_io_CLK_OUT; // @[intervox_receiver.scala 332:21]
-  assign io_DATA_OUT = clockRec_io_DATA_OUT; // @[intervox_receiver.scala 330:21]
-  assign io_CLK_DBUG = 1'h0; // @[intervox_receiver.scala 331:21]
-  assign io_DBUG = clockRec_io_DBUG; // @[intervox_receiver.scala 334:21]
-  assign io_DBUG1 = clockRec_io_DBUG1; // @[intervox_receiver.scala 333:21]
-  assign io_LEDS = 16'hf; // @[intervox_receiver.scala 329:21]
-  assign io_BCLK = i2sTrans_io_BCLK; // @[intervox_receiver.scala 340:21]
-  assign io_LRCLK = i2sTrans_io_LRCLK; // @[intervox_receiver.scala 342:21]
-  assign io_SDATA = i2sTrans_io_SDATA; // @[intervox_receiver.scala 341:21]
+  assign io_CLK_REC = clockRec_io_CLK_OUT; // @[intervox_receiver.scala 362:21]
+  assign io_DATA_OUT = clockRec_io_DATA_OUT; // @[intervox_receiver.scala 360:21]
+  assign io_CLK_DBUG = 1'h0; // @[intervox_receiver.scala 361:21]
+  assign io_DBUG = clockRec_io_DBUG; // @[intervox_receiver.scala 364:21]
+  assign io_DBUG1 = clockRec_io_DBUG1; // @[intervox_receiver.scala 363:21]
+  assign io_LED = clockRec_io_LED; // @[intervox_receiver.scala 359:21]
+  assign io_BCLK = i2sTrans_io_BCLK; // @[intervox_receiver.scala 370:21]
+  assign io_LRCLK = i2sTrans_io_LRCLK; // @[intervox_receiver.scala 372:21]
+  assign io_SDATA = i2sTrans_io_SDATA; // @[intervox_receiver.scala 371:21]
   assign clockRec_clock = clock;
   assign clockRec_reset = reset;
-  assign clockRec_io_DATA_IN = io_INTERVOX_IN; // @[intervox_receiver.scala 328:29]
+  assign clockRec_io_DATA_IN = io_INTERVOX_IN; // @[intervox_receiver.scala 356:29]
+  assign clockRec_io_SW = io_SW; // @[intervox_receiver.scala 357:29]
+  assign clockRec_io_BTN_C = io_BTN_C; // @[intervox_receiver.scala 358:29]
   assign i2sTrans_clock = clock;
   assign i2sTrans_reset = reset;
-  assign i2sTrans_io_CLK_IN = clockRec_io_CLK_OUT; // @[intervox_receiver.scala 337:29]
-  assign i2sTrans_io_DATA_IN = clockRec_io_DATAREG; // @[intervox_receiver.scala 338:29]
-  assign i2sTrans_io_NEXT = clockRec_io_DBUG1; // @[intervox_receiver.scala 339:29]
+  assign i2sTrans_io_CLK_IN = clockRec_io_CLK_OUT; // @[intervox_receiver.scala 367:29]
+  assign i2sTrans_io_DATA_IN = clockRec_io_DATAREG; // @[intervox_receiver.scala 368:29]
+  assign i2sTrans_io_NEXT = clockRec_io_DBUG1; // @[intervox_receiver.scala 369:29]
 endmodule

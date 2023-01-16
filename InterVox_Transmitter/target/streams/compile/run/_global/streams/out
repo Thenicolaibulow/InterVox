@@ -1,7 +1,16 @@
-[0m[[0m[31merror[0m] [0m[0mchisel3.internal.ChiselException: Connection between sink (bi_phase_encoder.io.DSPINPUT: IO[UInt<64>]) and source (interVox_Encoder.io.SW: IO[SInt<12>]) failed @: Sink (UInt<64>) and Source (SInt<12>) have different types.[0m
+[0m[[0m[31merror[0m] [0m[0mjava.lang.IllegalArgumentException: requirement failed: The literal value 1 was elaborated with a specified width of 0 bits, but at least 1 bits are required.[0m
 [0m[[0m[31merror[0m] [0m[0m	at ... ()[0m
-[0m[[0m[31merror[0m] [0m[0m	at interVox_Encoder.<init>(intervox_transmitter.scala:196)[0m
-[0m[[0m[31merror[0m] [0m[0m	at HelloMain$.$anonfun$new$135(intervox_transmitter.scala:340)[0m
+[0m[[0m[31merror[0m] [0m[0m	at biPhaseEncoder.$anonfun$hasNone$2(intervox_transmitter.scala:42)[0m
+[0m[[0m[31merror[0m] [0m[0m	at chisel3.internal.prefix$.apply(prefix.scala:48)[0m
+[0m[[0m[31merror[0m] [0m[0m	at biPhaseEncoder.$anonfun$hasNone$1(intervox_transmitter.scala:42)[0m
+[0m[[0m[31merror[0m] [0m[0m	at chisel3.internal.plugin.package$.autoNameRecursively(package.scala:33)[0m
+[0m[[0m[31merror[0m] [0m[0m	at biPhaseEncoder.<init>(intervox_transmitter.scala:42)[0m
+[0m[[0m[31merror[0m] [0m[0m	at interVox_Encoder.$anonfun$biPhaseEncoder$2(intervox_transmitter.scala:267)[0m
+[0m[[0m[31merror[0m] [0m[0m	at chisel3.Module$.do_apply(Module.scala:53)[0m
+[0m[[0m[31merror[0m] [0m[0m	at interVox_Encoder.$anonfun$biPhaseEncoder$1(intervox_transmitter.scala:267)[0m
+[0m[[0m[31merror[0m] [0m[0m	at chisel3.internal.plugin.package$.autoNameRecursively(package.scala:33)[0m
+[0m[[0m[31merror[0m] [0m[0m	at interVox_Encoder.<init>(intervox_transmitter.scala:267)[0m
+[0m[[0m[31merror[0m] [0m[0m	at HelloMain$.$anonfun$new$191(intervox_transmitter.scala:466)[0m
 [0m[[0m[31merror[0m] [0m[0m	at ... ()[0m
 [0m[[0m[31merror[0m] [0m[0m	at ... (Stack trace trimmed to user code only. Rerun with --full-stacktrace to see the full stack trace)[0m
-[0m[[0m[31merror[0m] [0m[0m(Compile / [31mrun[0m) chisel3.internal.ChiselException: Connection between sink (bi_phase_encoder.io.DSPINPUT: IO[UInt<64>]) and source (interVox_Encoder.io.SW: IO[SInt<12>]) failed @: Sink (UInt<64>) and Source (SInt<12>) have different types.[0m
+[0m[[0m[31merror[0m] [0m[0m(Compile / [31mrun[0m) java.lang.IllegalArgumentException: requirement failed: The literal value 1 was elaborated with a specified width of 0 bits, but at least 1 bits are required.[0m
