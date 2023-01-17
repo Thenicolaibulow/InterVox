@@ -1,16 +1,17 @@
-[0m[[0m[31merror[0m] [0m[0mchisel3.internal.ChiselException: Cannot reassign to read-only i2s_Transmitter.?: OpResult[Bool][0m
+[0m[[0m[31merror[0m] [0m[0mjava.lang.NullPointerException: Cannot invoke "edgeDetector.io()" because the return value of "clock_Recovery.CLKEDGE()" is null[0m
 [0m[[0m[31merror[0m] [0m[0m	at ... ()[0m
-[0m[[0m[31merror[0m] [0m[0m	at i2s_Transmitter.$anonfun$new$123(intervox_receiver.scala:286)[0m
+[0m[[0m[31merror[0m] [0m[0m	at clock_Recovery.$anonfun$new$54(intervox_receiver.scala:132)[0m
+[0m[[0m[31merror[0m] [0m[0m	at chisel3.Data.$anonfun$$colon$eq$1(Data.scala:748)[0m
 [0m[[0m[31merror[0m] [0m[0m	at scala.runtime.java8.JFunction0$mcV$sp.apply(JFunction0$mcV$sp.java:23)[0m
-[0m[[0m[31merror[0m] [0m[0m	at chisel3.WhenContext.<init>(When.scala:143)[0m
-[0m[[0m[31merror[0m] [0m[0m	at chisel3.when$.apply(When.scala:38)[0m
-[0m[[0m[31merror[0m] [0m[0m	at i2s_Transmitter.<init>(intervox_receiver.scala:284)[0m
-[0m[[0m[31merror[0m] [0m[0m	at interVox_Receiver.$anonfun$i2sTrans$2(intervox_receiver.scala:353)[0m
+[0m[[0m[31merror[0m] [0m[0m	at chisel3.internal.prefix$.apply(prefix.scala:31)[0m
+[0m[[0m[31merror[0m] [0m[0m	at chisel3.Data.$colon$eq(Data.scala:748)[0m
+[0m[[0m[31merror[0m] [0m[0m	at clock_Recovery.<init>(intervox_receiver.scala:132)[0m
+[0m[[0m[31merror[0m] [0m[0m	at interVox_Receiver.$anonfun$clockRec$2(intervox_receiver.scala:336)[0m
 [0m[[0m[31merror[0m] [0m[0m	at chisel3.Module$.do_apply(Module.scala:53)[0m
-[0m[[0m[31merror[0m] [0m[0m	at interVox_Receiver.$anonfun$i2sTrans$1(intervox_receiver.scala:353)[0m
+[0m[[0m[31merror[0m] [0m[0m	at interVox_Receiver.$anonfun$clockRec$1(intervox_receiver.scala:336)[0m
 [0m[[0m[31merror[0m] [0m[0m	at chisel3.internal.plugin.package$.autoNameRecursively(package.scala:33)[0m
-[0m[[0m[31merror[0m] [0m[0m	at interVox_Receiver.<init>(intervox_receiver.scala:353)[0m
-[0m[[0m[31merror[0m] [0m[0m	at HelloMain$.$anonfun$new$164(intervox_receiver.scala:364)[0m
+[0m[[0m[31merror[0m] [0m[0m	at interVox_Receiver.<init>(intervox_receiver.scala:336)[0m
+[0m[[0m[31merror[0m] [0m[0m	at HelloMain$.$anonfun$new$165(intervox_receiver.scala:358)[0m
 [0m[[0m[31merror[0m] [0m[0m	at ... ()[0m
 [0m[[0m[31merror[0m] [0m[0m	at ... (Stack trace trimmed to user code only. Rerun with --full-stacktrace to see the full stack trace)[0m
-[0m[[0m[31merror[0m] [0m[0m(Compile / [31mrun[0m) chisel3.internal.ChiselException: Cannot reassign to read-only i2s_Transmitter.?: OpResult[Bool][0m
+[0m[[0m[31merror[0m] [0m[0m(Compile / [31mrun[0m) java.lang.NullPointerException: Cannot invoke "edgeDetector.io()" because the return value of "clock_Recovery.CLKEDGE()" is null[0m

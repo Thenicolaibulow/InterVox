@@ -4,8 +4,6 @@
 [0m[[0m[0mdebug[0m] [0m[0m	  /Users/nixen/Development/fpga/InterVox/Intervox_Reciever/target/scala-2.12/classes/RWSmem.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	interVox_Receiver.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	  /Users/nixen/Development/fpga/InterVox/Intervox_Reciever/target/scala-2.12/classes/interVox_Receiver.class[0m
-[0m[[0m[0mdebug[0m] [0m[0m	clk_wiz_0_clk_wiz.v[0m
-[0m[[0m[0mdebug[0m] [0m[0m	  /Users/nixen/Development/fpga/InterVox/Intervox_Reciever/target/scala-2.12/classes/clk_wiz_0_clk_wiz.v[0m
 [0m[[0m[0mdebug[0m] [0m[0m	i2s_Transmitter.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	  /Users/nixen/Development/fpga/InterVox/Intervox_Reciever/target/scala-2.12/classes/i2s_Transmitter.class[0m
 [0m[[0m[0mdebug[0m] [0m[0m	edgeDetector.class[0m

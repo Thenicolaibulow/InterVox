@@ -203,13 +203,11 @@ class edgeDetector() extends Module {
     when((inBufrPrev === 0.U) & (inBufr === 1.U)){ // Rising
       trailing  := 0.U
       rising    := 1.U
-      change    := 1.U
     }
 
     when((inBufrPrev === 2.U) & (inBufr === 1.U)){ // Trailing
       trailing  := 1.U
       rising    := 0.U
-      change    := 1.U
     }
 
     when(trailing === 1.U){trailing := 0.U}

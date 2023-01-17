@@ -56,7 +56,7 @@ class edgeDetector() extends Module {
     when(rising === 1.U)  {rising   := 0.U}  
     
     when(change === 1.U){
-      change   := RegNext(0.U)
+      change   := 0.U
     }
 
   io.CHANGE := change
@@ -121,7 +121,6 @@ class clock_Recovery() extends Module {
     val bitCntr     = RegInit(0.U(7.W))
     val clkRec      = RegInit(0.U(1.W))
     val written     = RegInit(0.U(1.W))
-    val change      = RegInit(0.U(1.W))
     val dataOut     = RegInit(0.U(1.W))
     val syncWord    = RegInit(0.U(1.W))
     val zeroFlipped = RegInit(0.U(1.W))
@@ -129,25 +128,26 @@ class clock_Recovery() extends Module {
     val syncFlipped1= RegInit(0.U(1.W))
     val syncFlipped2= RegInit(0.U(1.W))
 
-    io.CLK_OUT      := clkRec
+    
     io.DATA_OUT     := dataOut
-    io.DBUG         := change
     io.DBUG1        := syncWord
     io.LED          := leds
-    io.DATAREG      := BFR1.io.dataOut
 
     deltaCntr    := deltaCntr + 1.U    
 
     val DATAEDGE             = Module(new edgeDetector())
         DATAEDGE.io.INPUT   := io.DATA_IN
-        change              := DATAEDGE.io.CHANGE
+    val CLKEDGE             = Module(new edgeDetector())
+        CLKEDGE.io.INPUT    := clkRec
+
+    io.CLK_OUT      := CLKEDGE.io.RISE
+    io.DATAREG      := BFR1.io.dataOut
+    io.DBUG         := DATAEDGE.io.CHANGE
 
     /*
         WHENEVER A CHANGE IS REGISTERED:
     */
-    when(change === 1.U){
-        // Ensure that 'change' will go low, two cycles from now.
-        change := RegNext(RegNext(0.U, 0.U(1.W)), 0.U(1.W))
+    when(DATAEDGE.io.CHANGE === 1.U){
         // FLip the clock recovery register
         clkRec          := ~clkRec
         // Reset the delta counter (cycles since last change)
@@ -166,9 +166,16 @@ class clock_Recovery() extends Module {
         BFR.io.dataIn  := 0.U
     }    
     
-    when(clkRec === 1.U){
+    when(CLKEDGE.io.RISE === 1.U){
         bitCntr := bitCntr + 1.U
-        written := 0.U
+        // Enable buffer write
+        BFR.io.write      := 1.U                // 64 (Reverse MSB/LSB)
+        when(dataOut === 1.U){
+            BFR.io.dataIn     := BFR.io.dataOut | (1.U << (63.U - bitCntr))    
+        }.otherwise{
+            BFR.io.dataIn     := BFR.io.dataOut & (0.U << (63.U - (bitCntr)))
+        }
+
     }
 
     /*
@@ -177,17 +184,10 @@ class clock_Recovery() extends Module {
     when((deltaCntr <= (lastOne))){
         // We always assume the in coming data to be a 1 bit.
         // We are only sure if in incoming bit is infact a 1,
-        when(change === 1.U){
+        when(DATAEDGE.io.CHANGE === 1.U){
             // If a change is present, whilst the deltacounter is smaller than
             // or equal to, our expected 1 cycles (lastOne) + 1.U (slack)            
-            when(written === 0.U){
-                // Enable buffer write
-                BFR.io.write      := 1.U                // 64 (Reverse MSB/LSB)
-                BFR.io.dataIn     := BFR.io.dataOut | (1.U << (63.U - bitCntr))
-                dataOut := 1.U
-            }
-            // Bring back lastOne := deltaCntr? ie. Dynamic 1 bit reference.
-            //lastOne := deltaCntr
+            dataOut := 1.U
         }
     }
 
@@ -197,13 +197,9 @@ class clock_Recovery() extends Module {
     when((deltaCntr > (lastOne)) & (deltaCntr < ((lastOne * 2.U)))){
         // If the deltaCounter has surpassed the reference for a 1 bit.
         // Then we must have a zero.
-        when(written === 0.U){
-            // Enable buffer write
-            BFR.io.write      := 1.U                // 64 (Reverse MSB/LSB)
-            BFR.io.dataIn     := BFR.io.dataOut & (0.U << (63.U - (bitCntr)))
-            // Change data output.
-            dataOut := 0.U    
-        }                
+        // Change data output.
+        dataOut := 0.U    
+
         when(zeroFlipped === 0.U){
         // And will have to flip the clock register by an approximation.
             // Flip Clock register, only once for this bit.   
@@ -216,7 +212,7 @@ class clock_Recovery() extends Module {
         DETECT A SYNCWORD (header-bits)
           \ __ __ /\ / ^
     */
-    when(change === 0.U){
+    when(DATAEDGE.io.CHANGE === 0.U){
 
         when((deltaCntr >= ((lastOne * 2.U)))){
             
@@ -231,7 +227,7 @@ class clock_Recovery() extends Module {
                 syncFlipped := 1.U
             }                    
         }    
-        when((deltaCntr >= ((lastOne * 3.U))) & (change === 1.U)){ 
+        when((deltaCntr >= ((lastOne * 3.U))) & (DATAEDGE.io.CHANGE === 1.U)){ 
 
             // \ __|__ /\ / ^          , where | is time at which the above is true.
 
@@ -269,54 +265,47 @@ class i2s_Transmitter() extends Module{
         val CLK_IN  = Input (UInt(1.W))
         val DATA_IN = Input (UInt(64.W))
         val NEXT    = Input (UInt(1.W))
-        val BCLK    = Output(UInt(1.W))
         val LRCLK   = Output(UInt(1.W))
         val SDATA   = Output(UInt(1.W))
-    })
+    })       
 
-    val bitCntr = RegInit(0.U(8.W))
+    val bitCntrTrans = RegInit(0.U(8.W))
     val lrclk   = RegInit(0.U(1.W))
     val sdataO  = RegInit(0.U(1.W))
-    val sdata   = RegInit(0.U(64.W))    
-    
-    sdata       := io.DATA_IN
+
     io.LRCLK    := lrclk
     io.SDATA    := sdataO
-    io.BCLK     := io.CLK_IN         
 
     // On syncword detect, reset bit counter.
-    // when(io.NEXT === 1.U){
-    //     bitCntr := 0.U
-    // }
+    when(io.NEXT === 1.U){
+        bitCntrTrans := 0.U
+    }
 
     when(io.CLK_IN === 1.U){
-
-        when(bitCntr > 63.U){bitCntr := 0.U}
-
         // Count BCLK cycles
-        bitCntr := bitCntr + 1.U        
+        bitCntrTrans := bitCntrTrans + 1.U        
 
-        when(bitCntr === 0.U){
+        when(bitCntrTrans === 0.U){
             // Set LRCLK high on bit 0
             lrclk := 1.U
         }
-        when(bitCntr > 31.U){
+        when(bitCntrTrans > 31.U){
             // Set LRCLK low on bit 32
             lrclk := 0.U
         }                       
-        when((bitCntr <= 24.U)){
+        when((bitCntrTrans <= 24.U)){
             // Write 24 left channel bits
-            sdataO := 1.U //& sdata(60.U - bitCntr)
+            sdataO := 1.U & io.DATA_IN(60.U - bitCntrTrans)
         }
-        when((bitCntr > 24.U) & (bitCntr <= 31.U)){
+        when((bitCntrTrans > 24.U) & (bitCntrTrans <= 31.U)){
             // Fill with zeros until right channel
             sdataO := 0.U
         }
-        when((bitCntr <= 56.U) & (bitCntr > 31.U)){
+        when((bitCntrTrans <= 56.U) & (bitCntrTrans > 31.U)){
             // Write 24 right channel bits
-            sdataO := 1.U //& sdata(36.U - (bitCntr + 31.U))
+            sdataO := 1.U & io.DATA_IN(36.U - (bitCntrTrans + 31.U))
         }
-        when((bitCntr > 56.U)){
+        when((bitCntrTrans > 56.U)){
             // Fill until frame is done.
             sdataO := 0.U
         }   
@@ -349,7 +338,7 @@ class interVox_Receiver() extends Module {
         io.LED      := clockRec.io.LED
         io.DATA_OUT := clockRec.io.DATA_OUT
         io.CLK_DBUG := 0.U
-        io.CLK_REC  := clockRec.io.CLK_OUT
+        io.CLK_REC  := 0.U
         io.DBUG1    := clockRec.io.DBUG1
         io.DBUG     := clockRec.io.DBUG
 
@@ -357,7 +346,7 @@ class interVox_Receiver() extends Module {
         i2sTrans.io.CLK_IN  := clockRec.io.CLK_OUT
         i2sTrans.io.DATA_IN := clockRec.io.DATAREG
         i2sTrans.io.NEXT    := clockRec.io.DBUG1
-        io.BCLK     := i2sTrans.io.BCLK    
+        io.BCLK     := clockRec.io.CLK_OUT  
         io.SDATA    := i2sTrans.io.SDATA
         io.LRCLK    := i2sTrans.io.LRCLK    
 }
