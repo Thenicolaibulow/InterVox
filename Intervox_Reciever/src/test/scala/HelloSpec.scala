@@ -8,7 +8,7 @@ import org.scalatest.{Matchers, FlatSpec}
 
 class interVox_Reciever_spec extends AnyFlatSpec with ChiselScalatestTester {
   "interVox_Reciever" should "pass" in {
-    test(new interVox_Reciever())
+    test(new interVox_Receiver())
       .withAnnotations(Seq(WriteVcdAnnotation)) { dut => 
     
       dut.clock.setTimeout(0)

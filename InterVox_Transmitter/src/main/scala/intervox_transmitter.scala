@@ -196,9 +196,9 @@ class edgeDetector() extends Module {
       }        
     }
 
-    when((rising === 1.U) | (trailing === 1.U)){ // Change
+    when((inBufr(0)) ^ (inBufr(1))){ // Change
       change    := 1.U
-    }    
+    }        
 
     when((inBufrPrev === 0.U) & (inBufr === 1.U)){ // Rising
       trailing  := 0.U

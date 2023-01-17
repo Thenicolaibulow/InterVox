@@ -302,7 +302,7 @@ module edgeDetector(
   reg  change; // @[intervox_transmitter.scala 176:34]
   wire [1:0] _inBufr_T_1 = inBufr + 2'h1; // @[intervox_transmitter.scala 186:35]
   wire [1:0] _inBufr_T_3 = inBufr - 2'h1; // @[intervox_transmitter.scala 193:35]
-  wire  _GEN_8 = rising | trailing | change; // @[intervox_transmitter.scala 199:48 200:17 176:34]
+  wire  _GEN_8 = inBufr[0] ^ inBufr[1] | change; // @[intervox_transmitter.scala 199:36 200:17 176:34]
   wire  _T_8 = inBufr == 2'h1; // @[intervox_transmitter.scala 203:41]
   wire  _GEN_9 = inBufrPrev == 2'h0 & inBufr == 2'h1 ? 1'h0 : trailing; // @[intervox_transmitter.scala 203:50 204:17 174:34]
   wire  _GEN_10 = inBufrPrev == 2'h0 & inBufr == 2'h1 | rising; // @[intervox_transmitter.scala 203:50 205:17 175:34]
